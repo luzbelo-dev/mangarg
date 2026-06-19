@@ -22,6 +22,11 @@ export const routes: Routes = [
       import('./features/explore/explore.routes').then(m => m.EXPLORE_ROUTES),
   },
   {
+    path: 'download',
+    loadChildren: () =>
+      import('./features/download/download.routes').then(m => m.DOWNLOAD_ROUTES),
+  },
+  {
     path: 'extensions',
     loadChildren: () =>
       import('./features/extensions/extensions.routes').then(m => m.EXTENSIONS_ROUTES),

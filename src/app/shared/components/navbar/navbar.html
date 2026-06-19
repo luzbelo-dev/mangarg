@@ -20,11 +20,9 @@
           <span class="navbar__badge">{{ libraryCount() }}</span>
         }
       </a>
-      @if (showInstallBtn()) {
-        <button class="navbar__install-btn" (click)="installApp()">
-          {{ t().nav.install }}
-        </button>
-      }
+      <a routerLink="/download" routerLinkActive="active" class="navbar__link navbar__link--download">
+        {{ t().nav.download }}
+      </a>
     </div>
 
     <div class="navbar__controls">
