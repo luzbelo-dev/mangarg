@@ -47,10 +47,15 @@ export class MangaReaderComponent implements OnInit {
   nextChapter = signal<MangaDexChapter | null>(null);
   prevChapterData = signal<MangaDexChapter | null>(null);
 
+  failedPages = signal<Set<number>>(new Set());
+  retryingPages = signal<Set<number>>(new Set());
+
   private toolbarTimeout: ReturnType<typeof setTimeout> | null = null;
   private malId = 0;
   private mangaDexId = '';
   private chapters: MangaDexChapter[] = [];
+  private retryCounts = new Map<number, number>();
+  private preloadedPages = new Set<number>();
 
   ngOnInit(): void {
     this.historyService.loadHistory().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
@@ -65,6 +70,10 @@ export class MangaReaderComponent implements OnInit {
         this.error.set(null);
         this.currentPage.set(0);
         this.isLastPage.set(false);
+        this.failedPages.set(new Set());
+        this.retryingPages.set(new Set());
+        this.retryCounts.clear();
+        this.preloadedPages.clear();
         this.updateAdjacentChapters();
       }),
       switchMap(params =>
@@ -87,13 +96,14 @@ export class MangaReaderComponent implements OnInit {
         if (progress && !progress.completed) {
           this.currentPage.set(progress.lastPage);
         }
+        this.preloadAhead(this.currentPage());
       }
     });
 
     if (this.mangaDexId) {
-      this.mangaDexService.getChapterFeedAll(this.mangaDexId).pipe(
+      this.mangaDexService.getChapterFeedStreaming(this.mangaDexId).pipe(
         takeUntilDestroyed(this.destroyRef),
-      ).subscribe(chapters => {
+      ).subscribe(({ chapters }) => {
         this.chapters = chapters;
         this.updateAdjacentChapters();
       });
@@ -113,6 +123,10 @@ export class MangaReaderComponent implements OnInit {
   getPageUrl(pageIndex: number): string {
     const imgs = this.images();
     if (!imgs) return '';
+    const failed = this.failedPages();
+    if (failed.has(pageIndex) && this.settings().quality === 'full') {
+      return this.imageService.buildImageUrl(imgs, pageIndex, 'dataSaver');
+    }
     return this.imageService.buildImageUrl(imgs, pageIndex, this.settings().quality);
   }
 
@@ -123,11 +137,63 @@ export class MangaReaderComponent implements OnInit {
     return Array.from({ length: count }, (_, i) => this.getPageUrl(i));
   }
 
+  onImageError(event: Event, pageIndex: number): void {
+    const img = event.target as HTMLImageElement;
+    const retries = this.retryCounts.get(pageIndex) ?? 0;
+
+    if (retries < 2) {
+      this.retryCounts.set(pageIndex, retries + 1);
+      const retrying = new Set(this.retryingPages());
+      retrying.add(pageIndex);
+      this.retryingPages.set(retrying);
+
+      setTimeout(() => {
+        const currentSrc = img.src;
+        img.src = '';
+        img.src = currentSrc + (currentSrc.includes('?') ? '&' : '?') + 'r=' + retries;
+        const r = new Set(this.retryingPages());
+        r.delete(pageIndex);
+        this.retryingPages.set(r);
+      }, 1000 * (retries + 1));
+      return;
+    }
+
+    if (this.settings().quality === 'full') {
+      const imgs = this.images();
+      if (imgs) {
+        this.retryCounts.set(pageIndex, 0);
+        img.src = this.imageService.buildImageUrl(imgs, pageIndex, 'dataSaver');
+        return;
+      }
+    }
+
+    const failed = new Set(this.failedPages());
+    failed.add(pageIndex);
+    this.failedPages.set(failed);
+  }
+
+  isPageFailed(pageIndex: number): boolean {
+    return this.failedPages().has(pageIndex);
+  }
+
+  retryPage(pageIndex: number): void {
+    this.retryCounts.delete(pageIndex);
+    const failed = new Set(this.failedPages());
+    failed.delete(pageIndex);
+    this.failedPages.set(failed);
+
+    const imgs = this.images();
+    if (imgs) {
+      this.imageService.clearCache();
+    }
+  }
+
   nextPage(): void {
     if (this.currentPage() < this.totalPages() - 1) {
       this.currentPage.update(p => p + 1);
       this.isLastPage.set(this.currentPage() >= this.totalPages() - 1);
       this.saveProgress();
+      this.preloadAhead(this.currentPage());
     }
   }
 
@@ -136,6 +202,21 @@ export class MangaReaderComponent implements OnInit {
       this.currentPage.update(p => p - 1);
       this.isLastPage.set(false);
       this.saveProgress();
+      this.preloadAhead(this.currentPage());
+    }
+  }
+
+  private preloadAhead(fromPage: number): void {
+    const total = this.totalPages();
+    const imgs = this.images();
+    if (!imgs) return;
+
+    for (let i = 1; i <= 3; i++) {
+      const target = fromPage + i;
+      if (target >= total || this.preloadedPages.has(target)) continue;
+      this.preloadedPages.add(target);
+      const img = new Image();
+      img.src = this.imageService.buildImageUrl(imgs, target, this.settings().quality);
     }
   }
 

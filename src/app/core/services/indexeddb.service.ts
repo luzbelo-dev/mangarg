@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 const DB_NAME = 'manga-ale-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 @Injectable({ providedIn: 'root' })
 export class IndexedDbService {
@@ -32,6 +32,10 @@ export class IndexedDbService {
           const historyStore = db.createObjectStore('reading-history', { keyPath: 'chapterId' });
           historyStore.createIndex('mal_id', 'mal_id', { unique: false });
           historyStore.createIndex('readAt', 'readAt', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('chapter-cache')) {
+          db.createObjectStore('chapter-cache', { keyPath: 'mangaDexId' });
         }
       };
 

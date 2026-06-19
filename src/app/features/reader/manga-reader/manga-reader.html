@@ -87,14 +87,22 @@
         (click)="onPageClick($event)"
         (wheel)="onPageWheel($event)"
       >
-        <img
-          [src]="getPageUrl(currentPage())"
-          [alt]="t().reader.page + ' ' + (currentPage() + 1)"
-          class="reader__page-image"
-          [style.transform]="'scale(' + settings().zoom / 100 + ')'"
-          referrerpolicy="no-referrer"
-          draggable="false"
-        />
+        @if (isPageFailed(currentPage())) {
+          <div class="reader__page-error">
+            <p>{{ t().reader.imageError }}</p>
+            <button (click)="retryPage(currentPage())">{{ t().reader.retry }}</button>
+          </div>
+        } @else {
+          <img
+            [src]="getPageUrl(currentPage())"
+            [alt]="t().reader.page + ' ' + (currentPage() + 1)"
+            class="reader__page-image"
+            [style.transform]="'scale(' + settings().zoom / 100 + ')'"
+            referrerpolicy="no-referrer"
+            draggable="false"
+            (error)="onImageError($event, currentPage())"
+          />
+        }
       </div>
     }
 
@@ -108,17 +116,25 @@
         (scroll)="onLongstripScroll($event)"
       >
         @for (url of allPageUrls; track url; let i = $index) {
-          <img
-            [src]="url"
-            [alt]="t().reader.page + ' ' + (i + 1)"
-            class="reader__strip-image"
-            [style.transform]="'scale(' + settings().zoom / 100 + ')'"
-            referrerpolicy="no-referrer"
-            crossorigin="anonymous"
-            [style.transform-origin]="'top center'"
-            loading="lazy"
-            draggable="false"
-          />
+          @if (isPageFailed(i)) {
+            <div class="reader__strip-error">
+              <p>{{ t().reader.imageError }}</p>
+              <button (click)="retryPage(i)">{{ t().reader.retry }}</button>
+            </div>
+          } @else {
+            <img
+              [src]="url"
+              [alt]="t().reader.page + ' ' + (i + 1)"
+              class="reader__strip-image"
+              [style.transform]="'scale(' + settings().zoom / 100 + ')'"
+              referrerpolicy="no-referrer"
+              crossorigin="anonymous"
+              [style.transform-origin]="'top center'"
+              loading="lazy"
+              draggable="false"
+              (error)="onImageError($event, i)"
+            />
+          }
         }
       </div>
     }

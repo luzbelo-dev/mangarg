@@ -39,6 +39,11 @@
           </div>
         </button>
       }
+      @if (loadingMore()) {
+        <div class="chapters__loading-more">
+          <mt-loading-spinner size="sm" />
+        </div>
+      }
     </div>
   }
 </div>
