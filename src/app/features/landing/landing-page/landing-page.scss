@@ -13,6 +13,19 @@
     letter-spacing: -0.5px;
   }
 
+  &__badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-light);
+    border: 1px solid var(--accent);
+    margin-bottom: 16px;
+    letter-spacing: 0.3px;
+  }
+
   &__subtitle {
     font-size: 1.05rem;
     color: var(--text-muted);

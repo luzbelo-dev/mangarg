@@ -52,6 +52,7 @@ export const translations = {
       featureNoProxyDesc: 'Tu app, tus datos. Open source, sin tracking, sin anuncios.',
     },
     landing: {
+      inDevelopment: 'Proyecto en desarrollo — Futuro lector de manga open source multiplataforma',
       subtitle: 'Tu lector de manga gratuito, open source, sin anuncios. Buscá, leé y organizá tu manga favorito.',
       startReading: 'Empezar a leer',
       download: 'Descargar app',
@@ -277,6 +278,7 @@ export const translations = {
       featureNoProxyDesc: 'Your app, your data. Open source, no tracking, no ads.',
     },
     landing: {
+      inDevelopment: 'Project in development — Future open source cross-platform manga reader',
       subtitle: 'Your free, open source manga reader. No ads. Search, read and organize your favorite manga.',
       startReading: 'Start reading',
       download: 'Download app',
@@ -478,6 +480,7 @@ export interface Translations {
     trackers: string;
   };
   landing: {
+    inDevelopment: string;
     subtitle: string;
     startReading: string;
     download: string;
