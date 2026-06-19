@@ -104,6 +104,7 @@
         class="reader__longstrip"
         [class.fit-width]="settings().fitMode === 'width'"
         (click)="onLongstripClick($event)"
+        (scroll)="onLongstripScroll($event)"
       >
         @for (url of allPageUrls; track url; let i = $index) {
           <img

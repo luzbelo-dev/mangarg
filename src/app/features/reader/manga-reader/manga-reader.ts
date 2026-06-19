@@ -164,13 +164,43 @@ export class MangaReaderComponent implements OnInit {
   goToPage(page: number): void {
     if (page >= 0 && page < this.totalPages()) {
       this.currentPage.set(page);
+      this.isLastPage.set(page >= this.totalPages() - 1);
       this.saveProgress();
+
+      if (this.settings().mode === 'longstrip' && this.longstripContainer) {
+        const images = this.longstripContainer.nativeElement.querySelectorAll('img');
+        if (images[page]) {
+          images[page].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
     }
   }
 
   onSliderChange(event: Event): void {
     const value = parseInt((event.target as HTMLInputElement).value, 10);
     this.goToPage(value);
+  }
+
+  onLongstripScroll(event: Event): void {
+    const container = event.target as HTMLElement;
+    const images = container.querySelectorAll('img');
+    const scrollTop = container.scrollTop;
+    const containerHeight = container.clientHeight;
+
+    let currentIdx = 0;
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i] as HTMLElement;
+      const imgTop = img.offsetTop - container.offsetTop;
+      if (imgTop <= scrollTop + containerHeight / 3) {
+        currentIdx = i;
+      }
+    }
+
+    if (currentIdx !== this.currentPage()) {
+      this.currentPage.set(currentIdx);
+      this.isLastPage.set(currentIdx >= this.totalPages() - 1);
+      this.saveProgress();
+    }
   }
 
   private saveProgress(): void {
