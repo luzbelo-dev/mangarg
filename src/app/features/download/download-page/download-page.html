@@ -32,22 +32,18 @@
       <div class="download__card-icon">&#128241;</div>
       <h2 class="download__card-title">Android</h2>
       <p class="download__card-desc">{{ t().download.androidDesc }}</p>
-      @if (canInstallPwa()) {
-        <button class="download__card-btn download__card-btn--primary" (click)="installPwa()">
-          {{ t().download.installNow }}
-        </button>
-      } @else if (installed()) {
-        <span class="download__card-installed">{{ t().download.installed }}</span>
-      } @else {
-        <div class="download__card-steps">
-          <p>{{ t().download.androidSteps }}</p>
-          <ol>
-            <li>{{ t().download.androidStep1 }}</li>
-            <li>{{ t().download.androidStep2 }}</li>
-            <li>{{ t().download.androidStep3 }}</li>
-          </ol>
-        </div>
-      }
+      <a
+        [href]="githubReleasesUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="download__card-btn download__card-btn--primary"
+      >
+        {{ t().download.downloadApk }}
+      </a>
+      <div class="download__card-steps">
+        <p>{{ t().landing.androidHow1 }}</p>
+        <p>{{ t().landing.androidHow2 }}</p>
+      </div>
     </div>
 
     <!-- iPhone / iPad -->
