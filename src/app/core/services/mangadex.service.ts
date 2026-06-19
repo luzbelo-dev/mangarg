@@ -1,5 +1,5 @@
 import { Injectable, inject, isDevMode } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of, expand, reduce, EMPTY } from 'rxjs';
 import {
   MangaDexResponse,
@@ -12,51 +12,42 @@ import {
 export class MangaDexService {
   private readonly http = inject(HttpClient);
   private readonly isDev = isDevMode();
+  private readonly apiBase = 'https://api.mangadex.org';
 
-  private buildUrl(apiPath: string, params: Record<string, string | string[]>): { url: string; params: HttpParams } {
-    if (this.isDev) {
-      let httpParams = new HttpParams();
-      for (const [key, val] of Object.entries(params)) {
-        if (Array.isArray(val)) {
-          for (const v of val) {
-            httpParams = httpParams.append(key, v);
-          }
-        } else {
-          httpParams = httpParams.set(key, val);
-        }
-      }
-      return { url: `https://api.mangadex.org${apiPath}`, params: httpParams };
-    }
-
-    let httpParams = new HttpParams().set('path', apiPath);
+  private getUrl(path: string, params: Record<string, string | string[]> = {}): string {
+    const fullUrl = new URL(this.apiBase + path);
     for (const [key, val] of Object.entries(params)) {
       if (Array.isArray(val)) {
         for (const v of val) {
-          httpParams = httpParams.append(key, v);
+          fullUrl.searchParams.append(key, v);
         }
       } else {
-        httpParams = httpParams.set(key, val);
+        fullUrl.searchParams.set(key, val);
       }
     }
-    return { url: '/.netlify/functions/mangadex-proxy', params: httpParams };
+
+    if (this.isDev) {
+      return fullUrl.toString();
+    }
+    return `/.netlify/functions/mangadex-proxy?url=${encodeURIComponent(fullUrl.toString())}`;
   }
 
   findMangaByTitle(title: string): Observable<MangaDexManga | null> {
-    const { url, params } = this.buildUrl('/manga', {
+    const url = this.getUrl('/manga', {
       title,
       limit: '5',
       'includes[]': 'cover_art',
       'availableTranslatedLanguage[]': ['en', 'es', 'es-la'],
     });
 
-    return this.http.get<MangaDexResponse<MangaDexManga>>(url, { params }).pipe(
+    return this.http.get<MangaDexResponse<MangaDexManga>>(url).pipe(
       map(res => res.data[0] ?? null),
       catchError(() => of(null))
     );
   }
 
   getChapterFeed(mangaDexId: string, offset = 0, limit = 100): Observable<{ chapters: MangaDexChapter[]; total: number }> {
-    const { url, params } = this.buildUrl(`/manga/${mangaDexId}/feed`, {
+    const url = this.getUrl(`/manga/${mangaDexId}/feed`, {
       'translatedLanguage[]': ['en', 'es', 'es-la'],
       'order[chapter]': 'asc',
       'includes[]': 'scanlation_group',
@@ -65,7 +56,7 @@ export class MangaDexService {
       includeFuturePublishAt: '0',
     });
 
-    return this.http.get<MangaDexResponse<MangaDexChapter>>(url, { params }).pipe(
+    return this.http.get<MangaDexResponse<MangaDexChapter>>(url).pipe(
       map(res => ({ chapters: res.data, total: res.total })),
       catchError(() => of({ chapters: [], total: 0 }))
     );
@@ -85,8 +76,8 @@ export class MangaDexService {
   }
 
   getAtHomeServer(chapterId: string): Observable<MangaDexAtHomeResponse> {
-    const { url, params } = this.buildUrl(`/at-home/server/${chapterId}`, {});
-    return this.http.get<MangaDexAtHomeResponse>(url, { params });
+    const url = this.getUrl(`/at-home/server/${chapterId}`);
+    return this.http.get<MangaDexAtHomeResponse>(url);
   }
 
   getMangaDexUrl(mangaDexId: string): string {
