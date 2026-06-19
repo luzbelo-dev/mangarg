@@ -17,9 +17,16 @@ exports.handler = async function (event) {
 
   if (!b64) {
     return {
-      statusCode: 400,
+      statusCode: 200,
       headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Missing q parameter", keys: Object.keys(event.queryStringParameters || {}) }),
+      body: JSON.stringify({
+        error: "Missing q parameter",
+        receivedKeys: Object.keys(params),
+        rawQuery: event.rawQuery || "none",
+        rawUrl: event.rawUrl || "none",
+        path: event.path || "none",
+        httpMethod: event.httpMethod || "none",
+      }),
     };
   }
 
