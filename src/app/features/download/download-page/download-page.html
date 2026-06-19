@@ -4,27 +4,20 @@
     <p class="download__tagline">{{ t().download.tagline }}</p>
   </div>
 
-  @if (installed()) {
-    <div class="download__installed">
-      <span class="download__installed-icon">&#10003;</span>
-      <p>{{ t().download.alreadyInstalled }}</p>
-    </div>
-  }
-
   <div class="download__grid">
     <!-- Windows -->
     <div class="download__card">
       <div class="download__card-icon">&#128187;</div>
       <h2 class="download__card-title">Windows</h2>
       <p class="download__card-desc">{{ t().download.windowsDesc }}</p>
-      <a
-        [href]="githubReleasesUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="download__card-btn"
-      >
+      <a [href]="exeUrl" class="download__card-btn">
         {{ t().download.downloadExe }}
       </a>
+      <div class="download__card-steps">
+        <p>{{ t().landing.windowsHow1 }}</p>
+        <p>{{ t().landing.windowsHow2 }}</p>
+        <p>{{ t().landing.windowsHow3 }}</p>
+      </div>
     </div>
 
     <!-- Android -->
@@ -32,12 +25,7 @@
       <div class="download__card-icon">&#128241;</div>
       <h2 class="download__card-title">Android</h2>
       <p class="download__card-desc">{{ t().download.androidDesc }}</p>
-      <a
-        [href]="githubReleasesUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="download__card-btn download__card-btn--primary"
-      >
+      <a [href]="apkUrl" class="download__card-btn download__card-btn--primary">
         {{ t().download.downloadApk }}
       </a>
       <div class="download__card-steps">
@@ -65,12 +53,7 @@
       <div class="download__card-icon">&#128421;</div>
       <h2 class="download__card-title">Linux / Mac</h2>
       <p class="download__card-desc">{{ t().download.linuxDesc }}</p>
-      <a
-        [href]="githubRepoUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="download__card-btn"
-      >
+      <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer" class="download__card-btn">
         {{ t().download.viewSource }}
       </a>
       <div class="download__card-steps download__card-steps--code">

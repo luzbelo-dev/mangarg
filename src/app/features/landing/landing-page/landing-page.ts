@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateService } from '../../../core/i18n/translate.service';
 
@@ -10,15 +10,14 @@ import { TranslateService } from '../../../core/i18n/translate.service';
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.scss',
 })
-export class LandingPageComponent implements OnInit {
+export class LandingPageComponent {
   protected readonly i18n = inject(TranslateService);
   t = this.i18n.t;
   lang = this.i18n.lang;
 
-  canInstallPwa = signal(false);
-  private deferredPrompt: any = null;
-
-  readonly githubReleasesUrl = 'https://github.com/alearenass090/mi-manga-dinamita/releases';
+  readonly apkUrl = 'https://github.com/alearenass090/mi-manga-dinamita/releases/latest/download/mi-manga-dinamita.apk';
+  readonly exeUrl = 'https://github.com/alearenass090/mi-manga-dinamita/releases/latest/download/Mi.Manga.Dinamita.1.0.0.exe';
+  readonly githubRepoUrl = 'https://github.com/alearenass090/mi-manga-dinamita';
 
   readonly extensions = [
     { name: 'Mihon (Tachiyomi)', platform: 'Android', url: 'https://mihon.app' },
@@ -28,20 +27,4 @@ export class LandingPageComponent implements OnInit {
     { name: 'MangaDex', platform: 'Web', url: 'https://mangadex.org' },
     { name: 'Manga Plus', platform: 'Web / App', url: 'https://mangaplus.shueisha.co.jp' },
   ];
-
-  ngOnInit(): void {
-    window.addEventListener('beforeinstallprompt', (e: Event) => {
-      e.preventDefault();
-      this.deferredPrompt = e;
-      this.canInstallPwa.set(true);
-    });
-  }
-
-  async installPwa(): Promise<void> {
-    if (!this.deferredPrompt) return;
-    this.deferredPrompt.prompt();
-    await this.deferredPrompt.userChoice;
-    this.canInstallPwa.set(false);
-    this.deferredPrompt = null;
-  }
 }
