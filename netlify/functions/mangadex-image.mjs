@@ -1,46 +1,42 @@
-export default async (req) => {
-  const url = new URL(req.url);
-  const imageUrl = url.searchParams.get('url');
+export async function handler(event) {
+  const imageUrl = event.queryStringParameters?.url;
 
   if (!imageUrl) {
-    return new Response('Missing url parameter', { status: 400 });
+    return { statusCode: 400, body: 'Missing url parameter' };
   }
 
-  const allowed = ['uploads.mangadex.org', 'cmdxd98sb0x3yprd.mangadex.network'];
   let hostname;
   try {
     hostname = new URL(imageUrl).hostname;
   } catch {
-    return new Response('Invalid url', { status: 400 });
+    return { statusCode: 400, body: 'Invalid url' };
   }
 
   if (!hostname.endsWith('.mangadex.org') && !hostname.endsWith('.mangadex.network')) {
-    return new Response('Domain not allowed', { status: 403 });
+    return { statusCode: 403, body: 'Domain not allowed' };
   }
 
   try {
     const response = await fetch(imageUrl);
 
     if (!response.ok) {
-      return new Response('Upstream error', { status: response.status });
+      return { statusCode: response.status, body: 'Upstream error' };
     }
 
-    const body = await response.arrayBuffer();
+    const buffer = await response.arrayBuffer();
     const contentType = response.headers.get('content-type') || 'image/jpeg';
 
-    return new Response(body, {
-      status: 200,
+    return {
+      statusCode: 200,
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=86400',
         'Access-Control-Allow-Origin': '*',
       },
-    });
+      body: Buffer.from(buffer).toString('base64'),
+      isBase64Encoded: true,
+    };
   } catch {
-    return new Response('Failed to fetch image', { status: 502 });
+    return { statusCode: 502, body: 'Failed to fetch image' };
   }
-};
-
-export const config = {
-  path: '/.netlify/functions/mangadex-image',
-};
+}
