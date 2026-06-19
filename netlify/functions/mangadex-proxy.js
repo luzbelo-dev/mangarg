@@ -13,13 +13,22 @@ exports.handler = async function (event) {
     };
   }
 
-  var targetUrl = (event.queryStringParameters || {}).url;
+  var params = event.queryStringParameters || {};
+  var targetUrl = params.url;
 
   if (!targetUrl) {
     return {
       statusCode: 400,
-      headers: { "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({ error: "Missing url parameter" }),
+      headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        error: "Missing url parameter",
+        debug: {
+          receivedParams: Object.keys(params),
+          path: event.path,
+          rawUrl: event.rawUrl || "N/A",
+          rawQuery: event.rawQuery || "N/A",
+        },
+      }),
     };
   }
 
