@@ -16,27 +16,40 @@ export async function handler(event) {
     return { statusCode: 403, body: 'Domain not allowed' };
   }
 
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+      body: '',
+    };
+  }
+
   try {
     const response = await fetch(imageUrl);
 
     if (!response.ok) {
-      return { statusCode: response.status, body: 'Upstream error' };
+      return { statusCode: response.status, body: 'Upstream error: ' + response.status };
     }
 
-    const buffer = await response.arrayBuffer();
+    const arrayBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
     const contentType = response.headers.get('content-type') || 'image/jpeg';
 
     return {
       statusCode: 200,
       headers: {
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400',
         'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=86400',
       },
-      body: Buffer.from(buffer).toString('base64'),
+      body: base64,
       isBase64Encoded: true,
     };
-  } catch {
-    return { statusCode: 502, body: 'Failed to fetch image' };
+  } catch (err) {
+    return { statusCode: 502, body: 'Fetch failed: ' + err.message };
   }
 }
