@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, isDevMode } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of, expand, reduce, EMPTY, switchMap, tap } from 'rxjs';
 import {
@@ -21,6 +21,7 @@ const CHAPTER_CACHE_TTL = 24 * 60 * 60 * 1000;
 export class MangaDexService {
   private readonly http = inject(HttpClient);
   private readonly db = inject(IndexedDbService);
+  private readonly isDev = isDevMode();
   private readonly apiBase = 'https://api.mangadex.org';
 
   private getUrl(path: string, params: Record<string, string | string[]> = {}): string {
@@ -34,7 +35,12 @@ export class MangaDexService {
         fullUrl.searchParams.set(key, val);
       }
     }
-    return fullUrl.toString();
+
+    if (this.isDev) {
+      return fullUrl.toString();
+    }
+    const b64 = btoa(fullUrl.toString()).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return `/.netlify/functions/mangadex-proxy?q=${b64}`;
   }
 
   findMangaByTitle(title: string): Observable<MangaDexManga | null> {
