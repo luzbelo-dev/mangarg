@@ -133,7 +133,7 @@
       @for (ext of extensions; track ext.name) {
         <a [href]="ext.url" target="_blank" rel="noopener noreferrer" class="landing__ext-card">
           <strong>{{ ext.name }}</strong>
-          <span class="landing__ext-platform">{{ ext.platform }}</span>
+          <span class="landing__ext-platform">{{ ext.platforms[0] }}</span>
         </a>
       }
     </div>

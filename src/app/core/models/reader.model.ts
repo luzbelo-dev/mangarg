@@ -12,7 +12,6 @@ export interface ReaderSettings {
 export interface ChapterImages {
   baseUrl: string;
   hash: string;
-  filenames: string[];
   filenameFull: string[];
   filenameSaver: string[];
   expiresAt: number;

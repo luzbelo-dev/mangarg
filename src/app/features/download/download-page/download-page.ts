@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslateService } from '../../../core/i18n/translate.service';
+import { DOWNLOAD_LINKS } from '../../../core/constants/download-links';
 
 @Component({
   selector: 'mt-download-page',
@@ -12,7 +13,7 @@ export class DownloadPageComponent {
   protected readonly i18n = inject(TranslateService);
   t = this.i18n.t;
 
-  readonly apkUrl = 'https://github.com/alearenass090/mi-manga-dinamita/releases/latest/download/mi-manga-dinamita.apk';
-  readonly exeUrl = 'https://github.com/alearenass090/mi-manga-dinamita/releases/latest/download/Mi.Manga.Dinamita.1.0.0.exe';
-  readonly githubRepoUrl = 'https://github.com/alearenass090/mi-manga-dinamita';
+  readonly apkUrl = DOWNLOAD_LINKS.apk;
+  readonly exeUrl = DOWNLOAD_LINKS.exe;
+  readonly githubRepoUrl = DOWNLOAD_LINKS.repo;
 }

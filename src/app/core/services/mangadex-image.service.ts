@@ -19,7 +19,6 @@ export class MangaDexImageService {
         const images: ChapterImages = {
           baseUrl: res.baseUrl,
           hash: res.chapter.hash,
-          filenames: res.chapter.dataSaver,
           filenameFull: res.chapter.data,
           filenameSaver: res.chapter.dataSaver,
           expiresAt: Date.now() + 14 * 60 * 1000,

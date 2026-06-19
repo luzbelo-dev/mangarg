@@ -8,7 +8,7 @@ export const translations = {
       explore: 'Explorar',
       library: 'Biblioteca',
       extensions: 'Extensiones',
-      favorites: 'Favoritos',
+
       download: 'Descargar',
       filterBy: 'Filtrar por',
       sfw: 'SFW',
@@ -215,16 +215,6 @@ export const translations = {
       empty: 'No leíste nada todavía',
       lastRead: 'Último leído',
     },
-    favorites: {
-      title: 'Mis Favoritos',
-      chapter: 'Capítulo',
-      remove: 'Quitar',
-      empty: 'No tenés manga en favoritos todavía',
-      searchManga: 'Buscar manga',
-      prevChapter: 'Capítulo anterior',
-      nextChapter: 'Siguiente capítulo',
-      currentChapter: 'Capítulo actual',
-    },
   },
   en: {
     nav: {
@@ -233,7 +223,7 @@ export const translations = {
       explore: 'Explore',
       library: 'Library',
       extensions: 'Extensions',
-      favorites: 'Favorites',
+
       download: 'Download',
       filterBy: 'Filter by',
       sfw: 'SFW',
@@ -440,16 +430,6 @@ export const translations = {
       empty: "You haven't read anything yet",
       lastRead: 'Last read',
     },
-    favorites: {
-      title: 'My Favorites',
-      chapter: 'Chapter',
-      remove: 'Remove',
-      empty: "You don't have any favorites yet",
-      searchManga: 'Search manga',
-      prevChapter: 'Previous chapter',
-      nextChapter: 'Next chapter',
-      currentChapter: 'Current chapter',
-    },
   },
 };
 
@@ -460,7 +440,6 @@ export interface Translations {
     explore: string;
     library: string;
     extensions: string;
-    favorites: string;
     download: string;
     filterBy: string;
     sfw: string;
@@ -666,15 +645,5 @@ export interface Translations {
     clear: string;
     empty: string;
     lastRead: string;
-  };
-  favorites: {
-    title: string;
-    chapter: string;
-    remove: string;
-    empty: string;
-    searchManga: string;
-    prevChapter: string;
-    nextChapter: string;
-    currentChapter: string;
   };
 }

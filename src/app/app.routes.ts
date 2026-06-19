@@ -43,12 +43,7 @@ export const routes: Routes = [
       import('./features/reader/reader.routes').then(m => m.READER_ROUTES),
   },
   {
-    path: 'favorites',
-    redirectTo: 'library',
-    pathMatch: 'full',
-  },
-  {
     path: '**',
-    redirectTo: 'search',
+    redirectTo: '',
   },
 ];

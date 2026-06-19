@@ -14,7 +14,6 @@ export class DownloadService {
   private readonly abortControllers = new Map<string, AbortController>();
   private loaded = false;
 
-  readonly allDownloads$ = this.downloads$.asObservable();
   readonly downloading$ = this.activeDownloads$.asObservable();
 
   loadDownloads(): Observable<void> {
@@ -141,8 +140,7 @@ export class DownloadService {
     if (chapters.length === 0) return of(undefined);
 
     return from(chapters).pipe(
-      concatMap(ch => this.deleteChapterDownload(ch.chapterId)),
-      finalize(() => {})
+      concatMap(ch => this.deleteChapterDownload(ch.chapterId))
     );
   }
 
