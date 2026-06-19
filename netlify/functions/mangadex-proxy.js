@@ -36,7 +36,12 @@ exports.handler = async function(event) {
   var https = require("https");
 
   return new Promise(function(resolve) {
-    https.get(targetUrl, function(res) {
+    var parsed = new (require("url").URL)(targetUrl);
+    https.get({
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      headers: { "User-Agent": "MiMangaDinamita/1.0" }
+    }, function(res) {
       var data = "";
       res.on("data", function(c) { data += c; });
       res.on("end", function() {
