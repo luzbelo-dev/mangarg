@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Mi Manga Dinamita - Arquitectura</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f0f1a;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 40px 20px;
+    overflow-x: auto;
+  }
+  h1 { text-align: center; font-size: 1.8rem; margin-bottom: 6px; color: #fff; }
+  .sub { text-align: center; color: #666; margin-bottom: 40px; font-size: 0.85rem; }
+  #canvas { display: block; margin: 0 auto; }
+  .legend {
+    display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+    margin: 30px auto 0; padding: 14px; background: #161625; border-radius: 10px; max-width: 750px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.75rem; color: #aaa; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+  #tooltip {
+    display: none; position: fixed; background: #1a1a30; border: 1px solid #555;
+    color: #ddd; padding: 8px 14px; border-radius: 8px; font-size: 0.8rem;
+    pointer-events: none; z-index: 100; max-width: 300px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Mi Manga Dinamita</h1>
+<p class="sub">Arquitectura del proyecto -- Angular 22 + RxJS</p>
+<canvas id="canvas"></canvas>
+<div id="tooltip"></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#6c5ce7"></div> Config/Entry</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2ecc71"></div> Model</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div> Service</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div> Interceptor</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3498db"></div> Component</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f39c12"></div> Route/i18n</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1abc9c"></div> Pipe</div>
+</div>
+
+<script>
+const tree = {
+  label: 'src/app/', color: '#6c5ce7', tip: 'Raiz del proyecto Angular', children: [
+    { label: 'app.config.ts', color: '#6c5ce7', tip: 'Providers: Router, HttpClient, Interceptor' },
+    { label: 'app.routes.ts', color: '#f39c12', tip: 'Rutas: /search /explore /library /reader /manga/:id' },
+    { label: 'styles.scss', color: '#9b59b6', tip: 'Variables CSS, tema dark/light, resets' },
+    { label: 'core/', color: '#e74c3c', tip: 'Logica central, APIs, estado', children: [
+      { label: 'models/', color: '#2ecc71', tip: 'Interfaces TypeScript', children: [
+        { label: 'manga.model', color: '#2ecc71', tip: 'JikanManga, paginacion (MyAnimeList)' },
+        { label: 'mangadex.model', color: '#2ecc71', tip: 'MangaDexChapter, AtHomeResponse' },
+        { label: 'tracking.model', color: '#2ecc71', tip: 'LibraryManga, ReadingHistory, categorias' },
+        { label: 'reader.model', color: '#2ecc71', tip: 'ReaderSettings, ChapterImages, zoom' },
+        { label: 'download.model', color: '#2ecc71', tip: 'DownloadedChapter, DownloadedPage' },
+      ]},
+      { label: 'services/', color: '#e74c3c', tip: 'APIs, estado, persistencia', children: [
+        { label: 'jikan', color: '#e74c3c', tip: 'Busqueda, top manga, generos (Jikan API)' },
+        { label: 'mangadex', color: '#e74c3c', tip: 'Capitulos, at-home server (MangaDex API)' },
+        { label: 'mdx-image', color: '#e74c3c', tip: 'URLs imagenes, cache 14min, proxy prod' },
+        { label: 'library', color: '#e74c3c', tip: 'Biblioteca: BehaviorSubject + localStorage' },
+        { label: 'history', color: '#e74c3c', tip: 'Historial lectura, IndexedDB' },
+        { label: 'download', color: '#e74c3c', tip: 'Descargas offline, blobs en IndexedDB' },
+        { label: 'tracking', color: '#e74c3c', tip: 'Capitulo actual por manga' },
+        { label: 'indexeddb', color: '#e74c3c', tip: 'Wrapper tipado de IndexedDB (3 stores)' },
+        { label: 'theme', color: '#e74c3c', tip: 'Dark/Light con signals + CSS vars' },
+        { label: 'reader-set', color: '#e74c3c', tip: 'Modo, calidad, zoom, localStorage' },
+        { label: 'search-st', color: '#e74c3c', tip: 'Persiste query entre navegaciones' },
+      ]},
+      { label: 'interceptors/', color: '#e67e22', tip: 'Middleware HTTP', children: [
+        { label: 'rate-limit', color: '#e67e22', tip: 'Min 350ms entre requests a Jikan' },
+      ]},
+      { label: 'i18n/', color: '#f39c12', tip: 'Traducciones', children: [
+        { label: 'translations', color: '#f39c12', tip: 'Diccionario completo ES/EN' },
+        { label: 'translate.svc', color: '#e74c3c', tip: 'Signal de idioma activo + localStorage' },
+      ]},
+    ]},
+    { label: 'shared/', color: '#3498db', tip: 'Componentes reutilizables', children: [
+      { label: 'navbar', color: '#3498db', tip: 'Buscar, Explorar, Biblioteca, idioma, tema' },
+      { label: 'manga-card', color: '#3498db', tip: 'Tarjeta: cover, titulo, score, generos' },
+      { label: 'score-badge', color: '#3498db', tip: 'Puntuacion con color (verde/amarillo/rojo)' },
+      { label: 'spinner', color: '#3498db', tip: 'Spinner animado CSS (sm/md/lg)' },
+      { label: 'truncate', color: '#1abc9c', tip: 'Pipe: corta texto largo con ...' },
+    ]},
+    { label: 'features/', color: '#9b59b6', tip: 'Paginas (lazy-loaded)', children: [
+      { label: 'search/', color: '#3498db', tip: '/search', children: [
+        { label: 'search-page', color: '#3498db', tip: 'Barra + rankings top scored y populares' },
+        { label: 'search-bar', color: '#3498db', tip: 'Input reactivo: debounce + switchMap + catchError' },
+      ]},
+      { label: 'explore/', color: '#3498db', tip: '/explore', children: [
+        { label: 'explore-page', color: '#3498db', tip: '25 generos como chips combinables, grid resultados' },
+      ]},
+      { label: 'detail/', color: '#3498db', tip: '/manga/:id', children: [
+        { label: 'manga-detail', color: '#3498db', tip: 'Info completa + links + agregar a biblioteca' },
+        { label: 'chapter-list', color: '#3498db', tip: 'Capitulos leido/no leido, click para leer' },
+      ]},
+      { label: 'reader/', color: '#3498db', tip: '/reader/:chapterId', children: [
+        { label: 'manga-reader', color: '#3498db', tip: 'Lector: pagina/scroll, zoom, fullscreen, teclado' },
+      ]},
+      { label: 'library/', color: '#3498db', tip: '/library', children: [
+        { label: 'library-page', color: '#3498db', tip: 'Categorias, grid/lista, sort' },
+        { label: 'library-card', color: '#3498db', tip: 'Card con menu de categoria' },
+        { label: 'downloads', color: '#3498db', tip: 'Gestion de descargas offline' },
+      ]},
+    ]},
+  ]
+};
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const dpr = window.devicePixelRatio || 1;
+
+const NODE_H = 28;
+const NODE_PAD_X = 12;
+const GAP_X = 14;
+const GAP_Y = 50;
+const FONT = '13px Consolas, monospace';
+const LINE_COLOR = '#2a2a4a';
+
+let nodes = [];
+
+function measureText(text) {
+  ctx.font = FONT;
+  return ctx.measureText(text).width + NODE_PAD_X * 2;
+}
+
+function layoutNode(node, depth) {
+  node.depth = depth;
+  node.w = measureText(node.label);
+  node.h = NODE_H;
+
+  if (!node.children || node.children.length === 0) {
+    node.totalW = node.w;
+    return;
+  }
+
+  node.children.forEach(c => layoutNode(c, depth + 1));
+
+  const childrenTotalW = node.children.reduce((sum, c) => sum + c.totalW, 0)
+    + (node.children.length - 1) * GAP_X;
+
+  node.totalW = Math.max(node.w, childrenTotalW);
+}
+
+function positionNode(node, cx, y) {
+  node.x = cx - node.w / 2;
+  node.y = y;
+  node.cx = cx;
+  nodes.push(node);
+
+  if (!node.children || node.children.length === 0) return;
+
+  const childY = y + NODE_H + GAP_Y;
+  const childrenTotalW = node.children.reduce((sum, c) => sum + c.totalW, 0)
+    + (node.children.length - 1) * GAP_X;
+
+  let startX = cx - childrenTotalW / 2;
+
+  node.children.forEach(child => {
+    const childCx = startX + child.totalW / 2;
+    positionNode(child, childCx, childY);
+    startX += child.totalW + GAP_X;
+  });
+}
+
+function drawLines(node) {
+  if (!node.children || node.children.length === 0) return;
+
+  const parentBottomX = node.cx;
+  const parentBottomY = node.y + node.h;
+
+  node.children.forEach(child => {
+    const childTopX = child.cx;
+    const childTopY = child.y;
+    const midY = parentBottomY + (childTopY - parentBottomY) / 2;
+
+    ctx.beginPath();
+    ctx.moveTo(parentBottomX, parentBottomY);
+    ctx.lineTo(parentBottomX, midY);
+    ctx.lineTo(childTopX, midY);
+    ctx.lineTo(childTopX, childTopY);
+    ctx.strokeStyle = LINE_COLOR;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    drawLines(child);
+  });
+}
+
+function drawNode(node) {
+  const r = 6;
+  const x = node.x, y = node.y, w = node.w, h = node.h;
+
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, r);
+  ctx.fillStyle = node.color + '22';
+  ctx.fill();
+  ctx.strokeStyle = node.color;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.font = FONT;
+  ctx.fillStyle = node.color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(node.label, x + w / 2, y + h / 2);
+}
+
+function render() {
+  nodes = [];
+  layoutNode(tree, 0);
+
+  const pad = 40;
+  const maxDepth = getMaxDepth(tree);
+  const totalH = (maxDepth + 1) * (NODE_H + GAP_Y) + pad * 2;
+  const totalW = tree.totalW + pad * 2;
+
+  canvas.width = totalW * dpr;
+  canvas.height = totalH * dpr;
+  canvas.style.width = totalW + 'px';
+  canvas.style.height = totalH + 'px';
+  ctx.scale(dpr, dpr);
+
+  positionNode(tree, totalW / 2, pad);
+
+  ctx.clearRect(0, 0, totalW, totalH);
+  drawLines(tree);
+  nodes.forEach(n => drawNode(n));
+}
+
+function getMaxDepth(node) {
+  if (!node.children || node.children.length === 0) return node.depth;
+  return Math.max(...node.children.map(c => getMaxDepth(c)));
+}
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const hit = nodes.find(n => mx >= n.x && mx <= n.x + n.w && my >= n.y && my <= n.y + n.h);
+
+  if (hit && hit.tip) {
+    tooltip.textContent = hit.tip;
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX + 12) + 'px';
+    tooltip.style.top = (e.clientY - 30) + 'px';
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+
+canvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+
+render();
+window.addEventListener('resize', render);
+</script>
+
+</body>
+</html>
