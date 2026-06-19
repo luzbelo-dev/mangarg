@@ -1,4 +1,4 @@
-import { Injectable, inject, isDevMode } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable, map, shareReplay, of } from 'rxjs';
 import { MangaDexService } from './mangadex.service';
 import { ChapterImages, ImageQuality } from '../models/reader.model';
@@ -40,10 +40,7 @@ export class MangaDexImageService {
     const filename = filenames[pageIndex];
     const rawUrl = `${images.baseUrl}/${qualityPath}/${images.hash}/${filename}`;
 
-    if (isDevMode()) {
-      return rawUrl;
-    }
-    return `/api/image/?url=${encodeURIComponent(rawUrl)}`;
+    return rawUrl;
   }
 
   reportImageLoad(url: string, success: boolean, bytes: number, duration: number, cached: boolean): void {
