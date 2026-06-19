@@ -13,22 +13,24 @@ exports.handler = async function (event) {
     };
   }
 
-  var params = event.queryStringParameters || {};
-  var targetUrl = params.url;
+  var b64 = (event.queryStringParameters || {}).q;
 
-  if (!targetUrl) {
+  if (!b64) {
     return {
       statusCode: 400,
       headers: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" },
-      body: JSON.stringify({
-        error: "Missing url parameter",
-        debug: {
-          receivedParams: Object.keys(params),
-          path: event.path,
-          rawUrl: event.rawUrl || "N/A",
-          rawQuery: event.rawQuery || "N/A",
-        },
-      }),
+      body: JSON.stringify({ error: "Missing q parameter", keys: Object.keys(event.queryStringParameters || {}) }),
+    };
+  }
+
+  var targetUrl;
+  try {
+    targetUrl = Buffer.from(b64, "base64").toString("utf8");
+  } catch (e) {
+    return {
+      statusCode: 400,
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ error: "Invalid base64" }),
     };
   }
 

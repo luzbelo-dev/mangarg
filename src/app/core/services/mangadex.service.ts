@@ -29,7 +29,8 @@ export class MangaDexService {
     if (this.isDev) {
       return fullUrl.toString();
     }
-    return `/.netlify/functions/mangadex-proxy?url=${encodeURIComponent(fullUrl.toString())}`;
+    const b64 = btoa(fullUrl.toString());
+    return `/.netlify/functions/mangadex-proxy?q=${b64}`;
   }
 
   findMangaByTitle(title: string): Observable<MangaDexManga | null> {
