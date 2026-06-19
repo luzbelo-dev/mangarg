@@ -28,15 +28,17 @@ export class ChapterListComponent implements OnInit {
   t = this.i18n.t;
   chapters = signal<MangaDexChapter[]>([]);
   loading = signal(true);
+  loadingMore = signal(false);
 
   ngOnInit(): void {
     this.historyService.loadHistory().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
 
-    this.mangaDexService.getChapterFeedAll(this.mangaDexId()).pipe(
+    this.mangaDexService.getChapterFeedStreaming(this.mangaDexId()).pipe(
       takeUntilDestroyed(this.destroyRef),
-    ).subscribe(chapters => {
+    ).subscribe(({ chapters, done }) => {
       this.chapters.set(chapters);
       this.loading.set(false);
+      this.loadingMore.set(!done);
     });
   }
 

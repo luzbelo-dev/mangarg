@@ -117,6 +117,7 @@ export const translations = {
       zoomOut: 'Alejar',
       close: 'Cerrar',
       loadError: 'Error al cargar la imagen',
+      imageError: 'No se pudo cargar esta imagen',
       retry: 'Reintentar',
       noPages: 'No hay páginas disponibles',
     },
@@ -267,6 +268,7 @@ export const translations = {
       zoomOut: 'Zoom out',
       close: 'Close',
       loadError: 'Failed to load image',
+      imageError: 'Could not load this image',
       retry: 'Retry',
       noPages: 'No pages available',
     },
@@ -419,6 +421,7 @@ export interface Translations {
     zoomOut: string;
     close: string;
     loadError: string;
+    imageError: string;
     retry: string;
     noPages: string;
   };

@@ -115,6 +115,12 @@
       text-transform: uppercase;
     }
   }
+
+  &__loading-more {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0;
+  }
 }
 
 @media (max-width: 640px) {
