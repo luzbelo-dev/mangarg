@@ -1,4 +1,5 @@
 const https = require("https");
+const url = require("url");
 
 exports.handler = async function (event) {
   if (event.httpMethod === "OPTIONS") {
@@ -13,11 +14,15 @@ exports.handler = async function (event) {
     };
   }
 
-  var path = event.path.replace("/.netlify/functions/mangadex-proxy", "");
-  if (!path) path = "/";
+  var apiPath = (event.queryStringParameters || {}).path;
+  if (!apiPath) {
+    return { statusCode: 400, body: "Missing path parameter" };
+  }
 
-  var qs = event.rawQuery ? "?" + event.rawQuery : "";
-  var targetUrl = "https://api.mangadex.org" + path + qs;
+  var params = Object.assign({}, event.queryStringParameters);
+  delete params.path;
+  var qs = new url.URLSearchParams(params).toString();
+  var targetUrl = "https://api.mangadex.org" + apiPath + (qs ? "?" + qs : "");
 
   return new Promise(function (resolve) {
     https
