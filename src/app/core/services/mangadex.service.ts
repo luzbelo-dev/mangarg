@@ -65,12 +65,12 @@ export class MangaDexService {
 
   getChapterFeedAll(mangaDexId: string): Observable<MangaDexChapter[]> {
     const limit = 100;
+    let offset = 0;
     return this.getChapterFeed(mangaDexId, 0, limit).pipe(
       expand(result => {
-        const fetched = result.chapters.length;
-        if (fetched === 0 || fetched < limit) return EMPTY;
-        const nextOffset = result.chapters.length;
-        return this.getChapterFeed(mangaDexId, nextOffset, limit);
+        offset += result.chapters.length;
+        if (result.chapters.length === 0 || result.chapters.length < limit) return EMPTY;
+        return this.getChapterFeed(mangaDexId, offset, limit);
       }),
       reduce((acc, result) => [...acc, ...result.chapters], [] as MangaDexChapter[])
     );
