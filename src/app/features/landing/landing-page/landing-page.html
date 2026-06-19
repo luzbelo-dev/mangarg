@@ -84,26 +84,44 @@
     <h2 class="landing__section-title">{{ t().landing.downloadTitle }}</h2>
     <p class="landing__section-desc">{{ t().landing.downloadDesc }}</p>
     <div class="landing__download-grid">
-      <a [href]="githubReleasesUrl" target="_blank" rel="noopener noreferrer" class="landing__download-card">
+
+      <div class="landing__download-card landing__download-card--large">
         <span>&#128187;</span>
         <strong>Windows</strong>
-        <small>{{ t().landing.downloadExe }}</small>
-      </a>
-      <div class="landing__download-card" [class.landing__download-card--clickable]="canInstallPwa()" (click)="canInstallPwa() ? installPwa() : null">
+        <a [href]="githubReleasesUrl" target="_blank" rel="noopener noreferrer" class="landing__download-btn">
+          {{ t().landing.downloadExe }}
+        </a>
+        <div class="landing__download-info">
+          <p>{{ t().landing.windowsHow1 }}</p>
+          <p>{{ t().landing.windowsHow2 }}</p>
+          <p>{{ t().landing.windowsHow3 }}</p>
+        </div>
+      </div>
+
+      <div class="landing__download-card landing__download-card--large">
         <span>&#128241;</span>
         <strong>Android</strong>
-        <small>{{ canInstallPwa() ? t().landing.tapToInstall : t().landing.androidInstructions }}</small>
+        <a [href]="githubReleasesUrl" target="_blank" rel="noopener noreferrer" class="landing__download-btn">
+          {{ t().landing.downloadApk }}
+        </a>
+        <div class="landing__download-info">
+          <p>{{ t().landing.androidHow1 }}</p>
+          <p>{{ t().landing.androidHow2 }}</p>
+        </div>
       </div>
-      <div class="landing__download-card">
+
+      <a routerLink="/download" class="landing__download-card">
         <span>&#127822;</span>
         <strong>iPhone</strong>
         <small>{{ t().landing.iosInstructions }}</small>
-      </div>
+      </a>
+
       <a routerLink="/download" class="landing__download-card">
         <span>&#128421;</span>
         <strong>Linux / Mac</strong>
         <small>{{ t().landing.cloneRepo }}</small>
       </a>
+
     </div>
   </section>
 

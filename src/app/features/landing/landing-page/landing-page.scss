@@ -184,7 +184,9 @@
 
     &:hover { border-color: var(--accent); transform: translateY(-2px); }
 
-    &--clickable { cursor: pointer; }
+    &--large {
+      grid-column: span 1;
+    }
 
     span { font-size: 2rem; }
 
@@ -197,6 +199,45 @@
       font-size: 0.7rem;
       color: var(--text-muted);
       line-height: 1.4;
+    }
+  }
+
+  &__download-btn {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease;
+    margin-top: 4px;
+
+    &:hover { background: var(--accent-hover); }
+  }
+
+  &__download-info {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    width: 100%;
+
+    p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      padding-left: 12px;
+      position: relative;
+      margin-bottom: 4px;
+
+      &::before {
+        content: '›';
+        position: absolute;
+        left: 0;
+        color: var(--accent);
+        font-weight: 700;
+      }
     }
   }
 

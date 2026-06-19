@@ -30,13 +30,8 @@ export const translations = {
       alreadyInstalled: 'Ya tenés la app instalada',
       windowsDesc: 'Descargá el .exe portable. Sin instalación, abrí y listo.',
       downloadExe: 'Descargar para Windows',
-      androidDesc: 'Instalá la app directo en tu celular. Icono propio, pantalla completa.',
-      installNow: 'Descargar para Android',
-      installed: 'Instalada',
-      androidSteps: 'Desde Chrome en tu celular:',
-      androidStep1: 'Tocá el menú (tres puntos arriba a la derecha)',
-      androidStep2: 'Seleccioná "Instalar aplicación" o "Agregar a pantalla de inicio"',
-      androidStep3: 'Listo, la app aparece como cualquier otra app',
+      downloadApk: 'Descargar APK',
+      androidDesc: 'Descargá el APK e instalá como cualquier app.',
       iosDesc: 'Instalá la app desde Safari.',
       iosStep1: 'Abrí esta página en Safari',
       iosStep2: 'Tocá el botón de compartir (cuadrado con flecha)',
@@ -80,9 +75,13 @@ export const translations = {
       feat6Desc: 'Modo oscuro y claro. Español e inglés.',
       downloadTitle: 'Descargá la app',
       downloadDesc: 'Descargá Mi Manga Dinamita en tu dispositivo. Funciona más rápido que la web.',
-      downloadExe: 'Descargar .exe portable',
-      tapToInstall: 'Tocar para instalar',
-      androidInstructions: 'Menú de Chrome > Instalar aplicación',
+      downloadExe: 'Descargar .exe',
+      downloadApk: 'Descargar APK',
+      windowsHow1: 'Descargás el .exe portable (91 MB), no necesita instalación',
+      windowsHow2: 'Abrilo y listo. Va directo a MangaDex sin proxy = ultra rápido',
+      windowsHow3: 'Podés ponerlo en el escritorio o donde quieras',
+      androidHow1: 'Descargás el .apk e instalás como cualquier app',
+      androidHow2: 'Puede pedir "permitir orígenes desconocidos" en ajustes',
       iosInstructions: 'Safari > Compartir > Agregar a inicio',
       cloneRepo: 'Clonar repo + npm start',
       extensionsTitle: 'Extensiones recomendadas',
@@ -256,13 +255,8 @@ export const translations = {
       alreadyInstalled: 'App is already installed',
       windowsDesc: 'Download the portable .exe. No installation needed.',
       downloadExe: 'Download for Windows',
-      androidDesc: 'Install the app on your phone. Own icon, fullscreen.',
-      installNow: 'Download for Android',
-      installed: 'Installed',
-      androidSteps: 'From Chrome on your phone:',
-      androidStep1: 'Tap the menu (three dots, top right)',
-      androidStep2: 'Select "Install app" or "Add to Home screen"',
-      androidStep3: 'Done! The app appears like any other app',
+      downloadApk: 'Download APK',
+      androidDesc: 'Download the APK and install like any app.',
       iosDesc: 'Install the app from Safari.',
       iosStep1: 'Open this page in Safari',
       iosStep2: 'Tap the share button (square with arrow)',
@@ -306,9 +300,13 @@ export const translations = {
       feat6Desc: 'Dark and light mode. English and Spanish.',
       downloadTitle: 'Download the app',
       downloadDesc: 'Download Mi Manga Dinamita to your device. Faster than the web.',
-      downloadExe: 'Download portable .exe',
-      tapToInstall: 'Tap to install',
-      androidInstructions: 'Chrome menu > Install app',
+      downloadExe: 'Download .exe',
+      downloadApk: 'Download APK',
+      windowsHow1: 'Download the portable .exe (91 MB), no installation needed',
+      windowsHow2: 'Open it and go. Direct MangaDex connection = ultra fast',
+      windowsHow3: 'Put it on your desktop or wherever you want',
+      androidHow1: 'Download the .apk and install like any app',
+      androidHow2: 'May ask to "allow unknown sources" in settings',
       iosInstructions: 'Safari > Share > Add to Home Screen',
       cloneRepo: 'Clone repo + npm start',
       extensionsTitle: 'Recommended extensions',
@@ -509,8 +507,12 @@ export interface Translations {
     downloadTitle: string;
     downloadDesc: string;
     downloadExe: string;
-    tapToInstall: string;
-    androidInstructions: string;
+    downloadApk: string;
+    windowsHow1: string;
+    windowsHow2: string;
+    windowsHow3: string;
+    androidHow1: string;
+    androidHow2: string;
     iosInstructions: string;
     cloneRepo: string;
     extensionsTitle: string;
@@ -522,13 +524,8 @@ export interface Translations {
     alreadyInstalled: string;
     windowsDesc: string;
     downloadExe: string;
+    downloadApk: string;
     androidDesc: string;
-    installNow: string;
-    installed: string;
-    androidSteps: string;
-    androidStep1: string;
-    androidStep2: string;
-    androidStep3: string;
     iosDesc: string;
     iosStep1: string;
     iosStep2: string;
