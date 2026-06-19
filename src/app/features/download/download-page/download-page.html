@@ -1,0 +1,107 @@
+<div class="download">
+  <div class="download__hero">
+    <h1 class="download__title">Mi Manga Dinamita</h1>
+    <p class="download__tagline">{{ t().download.tagline }}</p>
+  </div>
+
+  @if (installed()) {
+    <div class="download__installed">
+      <span class="download__installed-icon">&#10003;</span>
+      <p>{{ t().download.alreadyInstalled }}</p>
+    </div>
+  }
+
+  <div class="download__grid">
+    <!-- Windows -->
+    <div class="download__card">
+      <div class="download__card-icon">&#128187;</div>
+      <h2 class="download__card-title">Windows</h2>
+      <p class="download__card-desc">{{ t().download.windowsDesc }}</p>
+      <a
+        [href]="githubReleasesUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="download__card-btn"
+      >
+        {{ t().download.downloadExe }}
+      </a>
+    </div>
+
+    <!-- Android -->
+    <div class="download__card">
+      <div class="download__card-icon">&#128241;</div>
+      <h2 class="download__card-title">Android</h2>
+      <p class="download__card-desc">{{ t().download.androidDesc }}</p>
+      @if (canInstallPwa()) {
+        <button class="download__card-btn download__card-btn--primary" (click)="installPwa()">
+          {{ t().download.installNow }}
+        </button>
+      } @else if (installed()) {
+        <span class="download__card-installed">{{ t().download.installed }}</span>
+      } @else {
+        <div class="download__card-steps">
+          <p>{{ t().download.androidSteps }}</p>
+          <ol>
+            <li>{{ t().download.androidStep1 }}</li>
+            <li>{{ t().download.androidStep2 }}</li>
+            <li>{{ t().download.androidStep3 }}</li>
+          </ol>
+        </div>
+      }
+    </div>
+
+    <!-- iPhone / iPad -->
+    <div class="download__card">
+      <div class="download__card-icon">&#127822;</div>
+      <h2 class="download__card-title">iPhone / iPad</h2>
+      <p class="download__card-desc">{{ t().download.iosDesc }}</p>
+      <div class="download__card-steps">
+        <ol>
+          <li>{{ t().download.iosStep1 }}</li>
+          <li>{{ t().download.iosStep2 }}</li>
+          <li>{{ t().download.iosStep3 }}</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Linux / Mac -->
+    <div class="download__card">
+      <div class="download__card-icon">&#128421;</div>
+      <h2 class="download__card-title">Linux / Mac</h2>
+      <p class="download__card-desc">{{ t().download.linuxDesc }}</p>
+      <a
+        [href]="githubRepoUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="download__card-btn"
+      >
+        {{ t().download.viewSource }}
+      </a>
+      <div class="download__card-steps download__card-steps--code">
+        <code>git clone {{ githubRepoUrl }}.git</code>
+        <code>cd mi-manga-dinamita && npm i && npm start</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="download__features">
+    <h2 class="download__features-title">{{ t().download.whyDownload }}</h2>
+    <div class="download__features-grid">
+      <div class="download__feature">
+        <span class="download__feature-icon">&#9889;</span>
+        <h3>{{ t().download.featureFast }}</h3>
+        <p>{{ t().download.featureFastDesc }}</p>
+      </div>
+      <div class="download__feature">
+        <span class="download__feature-icon">&#128268;</span>
+        <h3>{{ t().download.featureOffline }}</h3>
+        <p>{{ t().download.featureOfflineDesc }}</p>
+      </div>
+      <div class="download__feature">
+        <span class="download__feature-icon">&#127760;</span>
+        <h3>{{ t().download.featureNoProxy }}</h3>
+        <p>{{ t().download.featureNoProxyDesc }}</p>
+      </div>
+    </div>
+  </div>
+</div>

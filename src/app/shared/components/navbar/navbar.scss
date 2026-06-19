@@ -112,18 +112,17 @@
     }
   }
 
-  &__install-btn {
-    padding: 6px 14px;
-    border-radius: var(--radius-sm);
+  &__link--download {
     background: var(--accent);
-    color: white;
-    font-size: 0.8rem;
-    font-weight: 600;
-    transition: background 0.2s ease;
-    white-space: nowrap;
+    color: white !important;
 
     &:hover {
       background: var(--accent-hover);
+    }
+
+    &.active {
+      background: var(--accent-hover);
+      color: white !important;
     }
   }
 

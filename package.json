@@ -1,12 +1,16 @@
 {
-  "name": "manga-tracker",
-  "version": "0.0.0",
+  "name": "mi-manga-dinamita",
+  "version": "1.0.0",
+  "description": "Lector de manga gratuito con tracking, biblioteca y descargas offline",
+  "main": "electron/main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "electron": "ng build && electron .",
+    "electron:build": "ng build && electron-builder --win portable"
   },
   "private": true,
   "packageManager": "npm@11.13.0",
@@ -25,7 +29,25 @@
     "@angular/build": "^22.0.3",
     "@angular/cli": "^22.0.3",
     "@angular/compiler-cli": "^22.0.0",
+    "electron": "^42.4.1",
+    "electron-builder": "^26.15.3",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2"
+  },
+  "build": {
+    "appId": "com.mimangadinamita.app",
+    "productName": "Mi Manga Dinamita",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/manga-tracker/browser/**/*",
+      "electron/**/*",
+      "public/icons/**/*"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "public/icons/icon-512x512.png"
+    }
   }
 }

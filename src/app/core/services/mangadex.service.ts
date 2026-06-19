@@ -21,8 +21,14 @@ const CHAPTER_CACHE_TTL = 24 * 60 * 60 * 1000;
 export class MangaDexService {
   private readonly http = inject(HttpClient);
   private readonly db = inject(IndexedDbService);
-  private readonly isDev = isDevMode();
+  private readonly needsProxy = this.detectProxy();
   private readonly apiBase = 'https://api.mangadex.org';
+
+  private detectProxy(): boolean {
+    if (isDevMode()) return false;
+    if (typeof window === 'undefined') return false;
+    return window.location.hostname.endsWith('netlify.app');
+  }
 
   private getUrl(path: string, params: Record<string, string | string[]> = {}): string {
     const fullUrl = new URL(this.apiBase + path);
@@ -36,7 +42,7 @@ export class MangaDexService {
       }
     }
 
-    if (this.isDev) {
+    if (!this.needsProxy) {
       return fullUrl.toString();
     }
     const b64 = btoa(fullUrl.toString()).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

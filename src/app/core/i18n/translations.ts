@@ -8,7 +8,7 @@ export const translations = {
       library: 'Biblioteca',
       extensions: 'Extensiones',
       favorites: 'Favoritos',
-      install: 'Instalar App',
+      download: 'Descargar',
       filterBy: 'Filtrar por',
       sfw: 'SFW',
       all: 'Todo',
@@ -23,6 +23,32 @@ export const translations = {
       readers: 'Lectores',
       sources: 'Fuentes',
       trackers: 'Trackers',
+    },
+    download: {
+      tagline: 'Lector de manga gratuito. Sin anuncios. Open source.',
+      alreadyInstalled: 'Ya tenés la app instalada',
+      windowsDesc: 'Descargá el .exe portable. Sin instalación, abrí y listo.',
+      downloadExe: 'Descargar para Windows',
+      androidDesc: 'Instalá la app directo en tu celular. Icono propio, pantalla completa.',
+      installNow: 'Descargar para Android',
+      installed: 'Instalada',
+      androidSteps: 'Desde Chrome en tu celular:',
+      androidStep1: 'Tocá el menú (tres puntos arriba a la derecha)',
+      androidStep2: 'Seleccioná "Instalar aplicación" o "Agregar a pantalla de inicio"',
+      androidStep3: 'Listo, la app aparece como cualquier otra app',
+      iosDesc: 'Instalá la app desde Safari.',
+      iosStep1: 'Abrí esta página en Safari',
+      iosStep2: 'Tocá el botón de compartir (cuadrado con flecha)',
+      iosStep3: 'Seleccioná "Agregar a pantalla de inicio"',
+      linuxDesc: 'Cloná el repo y corré local. Conexión directa a MangaDex = velocidad máxima.',
+      viewSource: 'Ver en GitHub',
+      whyDownload: 'Por qué descargar la app?',
+      featureFast: 'Ultra rápido',
+      featureFastDesc: 'Conexión directa a MangaDex sin proxy. Capítulos al instante.',
+      featureOffline: 'Funciona offline',
+      featureOfflineDesc: 'Descargá capítulos y leé sin internet.',
+      featureNoProxy: 'Sin intermediarios',
+      featureNoProxyDesc: 'Tu app, tus datos. Open source, sin tracking, sin anuncios.',
     },
     rankings: {
       topScored: 'Mejor Puntuados',
@@ -169,7 +195,7 @@ export const translations = {
       library: 'Library',
       extensions: 'Extensions',
       favorites: 'Favorites',
-      install: 'Install App',
+      download: 'Download',
       filterBy: 'Filter by',
       sfw: 'SFW',
       all: 'All',
@@ -184,6 +210,32 @@ export const translations = {
       readers: 'Readers',
       sources: 'Sources',
       trackers: 'Trackers',
+    },
+    download: {
+      tagline: 'Free manga reader. No ads. Open source.',
+      alreadyInstalled: 'App is already installed',
+      windowsDesc: 'Download the portable .exe. No installation needed.',
+      downloadExe: 'Download for Windows',
+      androidDesc: 'Install the app on your phone. Own icon, fullscreen.',
+      installNow: 'Download for Android',
+      installed: 'Installed',
+      androidSteps: 'From Chrome on your phone:',
+      androidStep1: 'Tap the menu (three dots, top right)',
+      androidStep2: 'Select "Install app" or "Add to Home screen"',
+      androidStep3: 'Done! The app appears like any other app',
+      iosDesc: 'Install the app from Safari.',
+      iosStep1: 'Open this page in Safari',
+      iosStep2: 'Tap the share button (square with arrow)',
+      iosStep3: 'Select "Add to Home Screen"',
+      linuxDesc: 'Clone the repo and run locally. Direct MangaDex connection = max speed.',
+      viewSource: 'View on GitHub',
+      whyDownload: 'Why download the app?',
+      featureFast: 'Ultra fast',
+      featureFastDesc: 'Direct MangaDex connection without proxy. Instant chapters.',
+      featureOffline: 'Works offline',
+      featureOfflineDesc: 'Download chapters and read without internet.',
+      featureNoProxy: 'No middleman',
+      featureNoProxyDesc: 'Your app, your data. Open source, no tracking, no ads.',
     },
     rankings: {
       topScored: 'Top Scored',
@@ -332,7 +384,7 @@ export interface Translations {
     library: string;
     extensions: string;
     favorites: string;
-    install: string;
+    download: string;
     filterBy: string;
     sfw: string;
     all: string;
@@ -347,6 +399,32 @@ export interface Translations {
     readers: string;
     sources: string;
     trackers: string;
+  };
+  download: {
+    tagline: string;
+    alreadyInstalled: string;
+    windowsDesc: string;
+    downloadExe: string;
+    androidDesc: string;
+    installNow: string;
+    installed: string;
+    androidSteps: string;
+    androidStep1: string;
+    androidStep2: string;
+    androidStep3: string;
+    iosDesc: string;
+    iosStep1: string;
+    iosStep2: string;
+    iosStep3: string;
+    linuxDesc: string;
+    viewSource: string;
+    whyDownload: string;
+    featureFast: string;
+    featureFastDesc: string;
+    featureOffline: string;
+    featureOfflineDesc: string;
+    featureNoProxy: string;
+    featureNoProxyDesc: string;
   };
   rankings: {
     topScored: string;
