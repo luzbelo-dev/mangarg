@@ -1,0 +1,77 @@
+<div class="search-page">
+  <div class="search-page__header">
+    <h1 class="search-page__title">{{ t().search.title }}</h1>
+    <p class="search-page__subtitle">{{ t().search.subtitle }}</p>
+  </div>
+
+  <mt-search-bar (searchResults)="onSearchResults($event)" />
+
+  <!-- Search results -->
+  @if (results().length > 0) {
+    <div class="search-page__grid">
+      @for (manga of results(); track manga.mal_id) {
+        <mt-manga-card
+          [manga]="manga"
+          [isFavorite]="isInLibrary(manga.mal_id)"
+          (favoriteToggled)="onFavoriteToggle($event)"
+          (cardClicked)="onCardClick($event)"
+        />
+      }
+    </div>
+  } @else if (hasSearched()) {
+    <div class="search-page__empty">
+      <span class="search-page__empty-icon"></span>
+      <p>{{ t().search.noResults }}</p>
+      <p class="search-page__empty-hint">{{ t().search.noResultsHint }}</p>
+    </div>
+  }
+
+  <!-- Rankings (shown when not searching) -->
+  @if (!hasSearched() || results().length === 0) {
+    @if (rankingsLoading()) {
+      <div class="search-page__rankings-loading">
+        <mt-loading-spinner size="md" />
+      </div>
+    } @else {
+      <!-- Top Scored -->
+      @if (topScored().length > 0) {
+        <section class="search-page__ranking">
+          <h2 class="search-page__ranking-title">{{ t().rankings.topScored }}</h2>
+          <div class="search-page__carousel">
+            @for (manga of topScored(); track manga.mal_id; let i = $index) {
+              <div class="search-page__ranked-card" (click)="onCardClick(manga.mal_id)">
+                <span class="search-page__rank">#{{ i + 1 }}</span>
+                <img [src]="manga.images.jpg.image_url" [alt]="manga.title" loading="lazy" />
+                <div class="search-page__ranked-info">
+                  <h3>{{ manga.title_english ?? manga.title }}</h3>
+                  @if (manga.score) {
+                    <span class="search-page__ranked-score">{{ manga.score }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Most Popular -->
+      @if (topPopular().length > 0) {
+        <section class="search-page__ranking">
+          <h2 class="search-page__ranking-title">{{ t().rankings.mostPopular }}</h2>
+          <div class="search-page__carousel">
+            @for (manga of topPopular(); track manga.mal_id; let i = $index) {
+              <div class="search-page__ranked-card" (click)="onCardClick(manga.mal_id)">
+                <span class="search-page__rank">#{{ i + 1 }}</span>
+                <img [src]="manga.images.jpg.image_url" [alt]="manga.title" loading="lazy" />
+                <div class="search-page__ranked-info">
+                  <h3>{{ manga.title_english ?? manga.title }}</h3>
+                  <span class="search-page__ranked-members">{{ manga.members | number }} members</span>
+                </div>
+              </div>
+            }
+          </div>
+        </section>
+      }
+    }
+  }
+</div>

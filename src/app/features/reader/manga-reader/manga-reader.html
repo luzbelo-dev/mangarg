@@ -1,0 +1,164 @@
+<div class="reader" (mousemove)="onMouseMove()">
+  @if (loading()) {
+    <div class="reader__loading">
+      <mt-loading-spinner size="lg" />
+    </div>
+  } @else if (error()) {
+    <div class="reader__error">
+      <p>{{ error() }}</p>
+      <button (click)="close()">{{ t().reader.close }}</button>
+    </div>
+  } @else if (images()) {
+    <!-- Toolbar -->
+    <div class="reader__toolbar" [class.visible]="showToolbar()">
+      <button class="reader__toolbar-btn" (click)="close()">X</button>
+      <span class="reader__toolbar-info">
+        {{ t().reader.page }} {{ currentPage() + 1 }} {{ t().reader.of }} {{ totalPages() }}
+      </span>
+      <div class="reader__toolbar-actions">
+        <button class="reader__toolbar-btn" (click)="zoomOut()" [attr.aria-label]="t().reader.zoomOut">−</button>
+        <span class="reader__toolbar-zoom">{{ settings().zoom }}%</span>
+        <button class="reader__toolbar-btn" (click)="zoomIn()" [attr.aria-label]="t().reader.zoomIn">+</button>
+        <button class="reader__toolbar-btn" (click)="toggleSettings()">Settings</button>
+        <button class="reader__toolbar-btn" (click)="toggleFullscreen()">[ ]</button>
+      </div>
+    </div>
+
+    <!-- Settings panel -->
+    @if (showSettings()) {
+      <div class="reader__settings">
+        <div class="reader__setting">
+          <label>{{ t().reader.mode }}</label>
+          <div class="reader__setting-options">
+            <button [class.active]="settings().mode === 'page'" (click)="setMode('page')">
+              {{ t().reader.pageMode }}
+            </button>
+            <button [class.active]="settings().mode === 'longstrip'" (click)="setMode('longstrip')">
+              {{ t().reader.longStrip }}
+            </button>
+          </div>
+        </div>
+        <div class="reader__setting">
+          <label>{{ t().reader.quality }}</label>
+          <div class="reader__setting-options">
+            <button [class.active]="settings().quality === 'dataSaver'" (click)="setQuality('dataSaver')">
+              {{ t().reader.dataSaver }}
+            </button>
+            <button [class.active]="settings().quality === 'full'" (click)="setQuality('full')">
+              {{ t().reader.fullQuality }}
+            </button>
+          </div>
+        </div>
+        <div class="reader__setting">
+          <label>{{ t().reader.fitMode }}</label>
+          <div class="reader__setting-options">
+            <button [class.active]="settings().fitMode === 'width'" (click)="setFitMode('width')">
+              {{ t().reader.fitWidth }}
+            </button>
+            <button [class.active]="settings().fitMode === 'height'" (click)="setFitMode('height')">
+              {{ t().reader.fitHeight }}
+            </button>
+            <button [class.active]="settings().fitMode === 'original'" (click)="setFitMode('original')">
+              {{ t().reader.original }}
+            </button>
+          </div>
+        </div>
+        <div class="reader__setting">
+          <label>{{ t().reader.zoom }}</label>
+          <div class="reader__setting-zoom">
+            <button (click)="zoomOut()">−</button>
+            <select [value]="settings().zoom" (change)="setZoom($event)">
+              @for (level of readerSettings.zoomLevels; track level) {
+                <option [value]="level">{{ level }}%</option>
+              }
+            </select>
+            <button (click)="zoomIn()">+</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Page mode -->
+    @if (settings().mode === 'page') {
+      <div
+        class="reader__viewport"
+        [class.fit-width]="settings().fitMode === 'width'"
+        [class.fit-height]="settings().fitMode === 'height'"
+        (click)="onPageClick($event)"
+        (wheel)="onPageWheel($event)"
+      >
+        <img
+          [src]="getPageUrl(currentPage())"
+          [alt]="t().reader.page + ' ' + (currentPage() + 1)"
+          class="reader__page-image"
+          [style.transform]="'scale(' + settings().zoom / 100 + ')'"
+          draggable="false"
+        />
+      </div>
+    }
+
+    <!-- Long strip mode -->
+    @if (settings().mode === 'longstrip') {
+      <div
+        #longstripContainer
+        class="reader__longstrip"
+        [class.fit-width]="settings().fitMode === 'width'"
+        (click)="onLongstripClick($event)"
+      >
+        @for (url of allPageUrls; track url; let i = $index) {
+          <img
+            [src]="url"
+            [alt]="t().reader.page + ' ' + (i + 1)"
+            class="reader__strip-image"
+            [style.transform]="'scale(' + settings().zoom / 100 + ')'"
+            [style.transform-origin]="'top center'"
+            loading="lazy"
+            draggable="false"
+          />
+        }
+      </div>
+    }
+
+    <!-- Next chapter popup -->
+    @if (isLastPage() && nextChapter()) {
+      <div class="reader__next-chapter">
+        <button class="reader__next-chapter-btn" (click)="goToNextChapter()">
+          {{ t().reader.nextChapter }}:
+          {{ t().chapters.chapter }} {{ nextChapter()!.attributes.chapter ?? '?' }}
+          @if (nextChapter()!.attributes.title) {
+            — {{ nextChapter()!.attributes.title }}
+          }
+          →
+        </button>
+      </div>
+    }
+
+    <!-- Bottom bar -->
+    <div class="reader__bottom" [class.visible]="showToolbar() || isLastPage()">
+      @if (prevChapterData()) {
+        <button class="reader__chapter-nav" (click)="goToPrevChapter()">
+          ← {{ t().reader.prevChapter }}
+        </button>
+      }
+      <button class="reader__nav-btn" (click)="nextPage()" [disabled]="currentPage() >= totalPages() - 1">
+        ←
+      </button>
+      <input
+        type="range"
+        class="reader__slider"
+        [min]="0"
+        [max]="totalPages() - 1"
+        [value]="currentPage()"
+        (input)="onSliderChange($event)"
+      />
+      <button class="reader__nav-btn" (click)="prevPage()" [disabled]="currentPage() === 0">
+        →
+      </button>
+      @if (nextChapter()) {
+        <button class="reader__chapter-nav" (click)="goToNextChapter()">
+          {{ t().reader.nextChapter }} →
+        </button>
+      }
+    </div>
+  }
+</div>

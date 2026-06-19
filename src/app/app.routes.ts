@@ -1,3 +1,43 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  {
+    path: '',
+    redirectTo: 'search',
+    pathMatch: 'full',
+  },
+  {
+    path: 'search',
+    loadChildren: () =>
+      import('./features/search/search.routes').then(m => m.SEARCH_ROUTES),
+  },
+  {
+    path: 'manga',
+    loadChildren: () =>
+      import('./features/detail/detail.routes').then(m => m.DETAIL_ROUTES),
+  },
+  {
+    path: 'explore',
+    loadChildren: () =>
+      import('./features/explore/explore.routes').then(m => m.EXPLORE_ROUTES),
+  },
+  {
+    path: 'library',
+    loadChildren: () =>
+      import('./features/library/library.routes').then(m => m.LIBRARY_ROUTES),
+  },
+  {
+    path: 'reader',
+    loadChildren: () =>
+      import('./features/reader/reader.routes').then(m => m.READER_ROUTES),
+  },
+  {
+    path: 'favorites',
+    redirectTo: 'library',
+    pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: 'search',
+  },
+];
