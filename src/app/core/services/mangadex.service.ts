@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, isDevMode } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, of, expand, reduce, EMPTY } from 'rxjs';
 import {
@@ -11,7 +11,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class MangaDexService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'https://api.mangadex.org';
+  private readonly baseUrl = isDevMode() ? 'https://api.mangadex.org' : '/mdx';
 
   findMangaByTitle(title: string): Observable<MangaDexManga | null> {
     return this.http.get<MangaDexResponse<MangaDexManga>>(
