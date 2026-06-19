@@ -1,0 +1,44 @@
+<div class="chapters">
+  <div class="chapters__header">
+    <h3 class="chapters__title">{{ t().chapters.title }}</h3>
+    @if (chapters().length > 0) {
+      <button class="chapters__resume" (click)="resumeReading()">
+        {{ t().chapters.resume }}
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="chapters__loading">
+      <mt-loading-spinner size="md" />
+    </div>
+  } @else if (chapters().length === 0) {
+    <p class="chapters__empty">{{ t().chapters.noChapters }}</p>
+  } @else {
+    <div class="chapters__list">
+      @for (ch of chapters(); track ch.id) {
+        <button
+          class="chapters__item"
+          [class.read]="isRead(ch.id)"
+          (click)="openChapter(ch)"
+        >
+          <div class="chapters__item-main">
+            <span class="chapters__item-number">
+              {{ t().chapters.chapter }} {{ ch.attributes.chapter ?? '—' }}
+            </span>
+            @if (ch.attributes.title) {
+              <span class="chapters__item-title">{{ ch.attributes.title }}</span>
+            }
+          </div>
+          <div class="chapters__item-meta">
+            <span class="chapters__item-group">{{ getGroupName(ch) }}</span>
+            <span class="chapters__item-date">{{ formatDate(ch.attributes.publishAt) }}</span>
+            @if (isRead(ch.id)) {
+              <span class="chapters__item-read-badge">{{ t().chapters.read }}</span>
+            }
+          </div>
+        </button>
+      }
+    </div>
+  }
+</div>

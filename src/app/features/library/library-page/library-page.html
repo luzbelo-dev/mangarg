@@ -1,0 +1,53 @@
+<div class="library">
+  <div class="library__header">
+    <h1 class="library__title">{{ t().library.title }}</h1>
+    <div class="library__controls">
+      <select class="library__sort" (change)="setSortBy($event)">
+        <option value="last_read">{{ t().library.sortLastRead }}</option>
+        <option value="title">{{ t().library.sortTitle }}</option>
+        <option value="date_added">{{ t().library.sortDateAdded }}</option>
+      </select>
+      <button class="library__view-toggle" (click)="toggleView()">
+        @if (viewMode() === 'grid') {
+          =
+        } @else {
+          #
+        }
+      </button>
+    </div>
+  </div>
+
+  <div class="library__tabs">
+    @for (cat of categories; track cat) {
+      <button
+        class="library__tab"
+        [class.active]="activeCategory() === cat"
+        (click)="setCategory(cat)"
+      >
+        {{ categoryLabel(cat) }}
+      </button>
+    }
+  </div>
+
+  @if (filteredEntries().length > 0) {
+    <div class="library__grid" [class.list-mode]="viewMode() === 'list'">
+      @for (entry of filteredEntries(); track entry.mal_id) {
+        <mt-library-card
+          [entry]="entry"
+          [viewMode]="viewMode()"
+          (cardClicked)="onCardClick($event)"
+          (categoryChanged)="onCategoryChange($event)"
+          (removed)="onRemove($event)"
+        />
+      }
+    </div>
+  } @else {
+    <div class="library__empty">
+      <span class="library__empty-icon"></span>
+      <p>{{ t().library.empty }}</p>
+      <button class="library__cta" (click)="goToSearch()">
+        {{ t().library.addManga }}
+      </button>
+    </div>
+  }
+</div>

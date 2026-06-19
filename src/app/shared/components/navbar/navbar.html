@@ -1,0 +1,46 @@
+<nav class="navbar">
+  <div class="navbar__inner">
+    <a routerLink="/search" class="navbar__logo">
+      <span class="navbar__logo-text">Mi Manga Dinamita</span>
+    </a>
+
+    <div class="navbar__links">
+      <a routerLink="/search" routerLinkActive="active" class="navbar__link">
+        {{ t().nav.search }}
+      </a>
+      <a routerLink="/explore" routerLinkActive="active" class="navbar__link">
+        {{ t().nav.explore }}
+      </a>
+      <a routerLink="/library" routerLinkActive="active" class="navbar__link">
+        {{ t().nav.library }}
+        @if (libraryCount() > 0) {
+          <span class="navbar__badge">{{ libraryCount() }}</span>
+        }
+      </a>
+    </div>
+
+    <div class="navbar__controls">
+      <select
+        class="navbar__lang-select"
+        [value]="lang()"
+        (change)="onLangChange($event)"
+        aria-label="Language"
+      >
+        <option value="es">ES</option>
+        <option value="en">EN</option>
+      </select>
+
+      <button
+        class="navbar__theme-toggle"
+        (click)="toggleTheme()"
+        [attr.aria-label]="isDark() ? t().nav.lightMode : t().nav.darkMode"
+      >
+        @if (isDark()) {
+          Light
+        } @else {
+          Dark
+        }
+      </button>
+    </div>
+  </div>
+</nav>

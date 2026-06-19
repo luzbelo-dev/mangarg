@@ -1,0 +1,38 @@
+<article class="card" (click)="onCardClick()">
+  <div class="card__image">
+    <img [src]="coverUrl()" [alt]="displayTitle()" loading="lazy" />
+    <button
+      class="card__fav"
+      [class.active]="isFavorite()"
+      (click)="onFavoriteClick($event)"
+      [attr.aria-label]="isFavorite() ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+    >
+      @if (isFavorite()) {
+        -
+      } @else {
+        +
+      }
+    </button>
+  </div>
+
+  <div class="card__body">
+    <div class="card__header">
+      <h3 class="card__title">{{ displayTitle() }}</h3>
+      @if (manga().score) {
+        <mt-score-badge [score]="manga().score!" />
+      }
+    </div>
+
+    <p class="card__status">{{ manga().status }}</p>
+
+    @if (manga().synopsis) {
+      <p class="card__synopsis">{{ manga().synopsis | truncate:120 }}</p>
+    }
+
+    <div class="card__genres">
+      @for (genre of displayGenres(); track genre.mal_id) {
+        <span class="card__genre">{{ genre.name }}</span>
+      }
+    </div>
+  </div>
+</article>

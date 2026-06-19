@@ -1,0 +1,72 @@
+<div class="explore">
+  <div class="explore__header">
+    <h1 class="explore__title">{{ t().explore.title }}</h1>
+    <p class="explore__subtitle">{{ t().explore.subtitle }}</p>
+  </div>
+
+  <!-- Controls -->
+  <div class="explore__controls">
+    <div class="explore__control">
+      <label>{{ t().explore.orderBy }}</label>
+      <select (change)="setOrderBy($event)" [value]="orderBy()">
+        <option value="score">{{ t().explore.byScore }}</option>
+        <option value="popularity">{{ t().explore.byPopularity }}</option>
+        <option value="title">{{ t().explore.byTitle }}</option>
+      </select>
+    </div>
+    <button
+      class="explore__sfw-toggle"
+      [class.active]="!sfw()"
+      (click)="toggleSfw()"
+    >
+      {{ sfw() ? 'SFW' : '+18' }}
+    </button>
+    @if (selectedGenres().size > 0) {
+      <button class="explore__clear" (click)="clearAll()">
+        {{ t().explore.clearFilters }}
+      </button>
+    }
+  </div>
+
+  <!-- Genre chips -->
+  <div class="explore__genres">
+    @for (genre of genres; track genre.id) {
+      <button
+        class="explore__genre-chip"
+        [class.selected]="isSelected(genre.id)"
+        (click)="toggleGenre(genre.id)"
+      >
+        {{ genreName(genre) }}
+      </button>
+    }
+  </div>
+
+  <!-- Results -->
+  @if (loading()) {
+    <div class="explore__loading">
+      <mt-loading-spinner size="lg" />
+    </div>
+  } @else if (results().length > 0) {
+    <p class="explore__count">{{ results().length }} {{ t().explore.results }}</p>
+    <div class="explore__grid">
+      @for (manga of results(); track manga.mal_id) {
+        <mt-manga-card
+          [manga]="manga"
+          [isFavorite]="isInLibrary(manga.mal_id)"
+          (favoriteToggled)="onFavoriteToggle($event)"
+          (cardClicked)="onCardClick($event)"
+        />
+      }
+    </div>
+  } @else if (hasSearched()) {
+    <div class="explore__empty">
+      <span></span>
+      <p>{{ t().explore.noResults }}</p>
+    </div>
+  } @else {
+    <div class="explore__hint">
+      <span></span>
+      <p>{{ t().explore.selectGenres }}</p>
+    </div>
+  }
+</div>
