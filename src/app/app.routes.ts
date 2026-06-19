@@ -22,6 +22,11 @@ export const routes: Routes = [
       import('./features/explore/explore.routes').then(m => m.EXPLORE_ROUTES),
   },
   {
+    path: 'extensions',
+    loadChildren: () =>
+      import('./features/extensions/extensions.routes').then(m => m.EXTENSIONS_ROUTES),
+  },
+  {
     path: 'library',
     loadChildren: () =>
       import('./features/library/library.routes').then(m => m.LIBRARY_ROUTES),

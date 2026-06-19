@@ -6,13 +6,23 @@ export const translations = {
       search: 'Buscar',
       explore: 'Explorar',
       library: 'Biblioteca',
+      extensions: 'Extensiones',
       favorites: 'Favoritos',
+      install: 'Instalar App',
       filterBy: 'Filtrar por',
       sfw: 'SFW',
       all: 'Todo',
       nsfw: '+18',
       lightMode: 'Cambiar a modo claro',
       darkMode: 'Cambiar a modo oscuro',
+    },
+    extensions: {
+      title: 'Extensiones',
+      subtitle: 'Apps y fuentes para leer manga en cualquier dispositivo',
+      all: 'Todos',
+      readers: 'Lectores',
+      sources: 'Fuentes',
+      trackers: 'Trackers',
     },
     rankings: {
       topScored: 'Mejor Puntuados',
@@ -157,13 +167,23 @@ export const translations = {
       search: 'Search',
       explore: 'Explore',
       library: 'Library',
+      extensions: 'Extensions',
       favorites: 'Favorites',
+      install: 'Install App',
       filterBy: 'Filter by',
       sfw: 'SFW',
       all: 'All',
       nsfw: '+18',
       lightMode: 'Switch to light mode',
       darkMode: 'Switch to dark mode',
+    },
+    extensions: {
+      title: 'Extensions',
+      subtitle: 'Apps and sources to read manga on any device',
+      all: 'All',
+      readers: 'Readers',
+      sources: 'Sources',
+      trackers: 'Trackers',
     },
     rankings: {
       topScored: 'Top Scored',
@@ -310,13 +330,23 @@ export interface Translations {
     search: string;
     explore: string;
     library: string;
+    extensions: string;
     favorites: string;
+    install: string;
     filterBy: string;
     sfw: string;
     all: string;
     nsfw: string;
     lightMode: string;
     darkMode: string;
+  };
+  extensions: {
+    title: string;
+    subtitle: string;
+    all: string;
+    readers: string;
+    sources: string;
+    trackers: string;
   };
   rankings: {
     topScored: string;
