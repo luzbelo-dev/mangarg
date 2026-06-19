@@ -88,7 +88,7 @@
       <div class="landing__download-card landing__download-card--large">
         <span>&#128187;</span>
         <strong>Windows</strong>
-        <a [href]="githubReleasesUrl" target="_blank" rel="noopener noreferrer" class="landing__download-btn">
+        <a [href]="exeUrl" class="landing__download-btn">
           {{ t().landing.downloadExe }}
         </a>
         <div class="landing__download-info">
@@ -101,7 +101,7 @@
       <div class="landing__download-card landing__download-card--large">
         <span>&#128241;</span>
         <strong>Android</strong>
-        <a [href]="githubReleasesUrl" target="_blank" rel="noopener noreferrer" class="landing__download-btn">
+        <a [href]="apkUrl" class="landing__download-btn">
           {{ t().landing.downloadApk }}
         </a>
         <div class="landing__download-info">
@@ -116,7 +116,7 @@
         <small>{{ t().landing.iosInstructions }}</small>
       </a>
 
-      <a routerLink="/download" class="landing__download-card">
+      <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer" class="landing__download-card">
         <span>&#128421;</span>
         <strong>Linux / Mac</strong>
         <small>{{ t().landing.cloneRepo }}</small>
