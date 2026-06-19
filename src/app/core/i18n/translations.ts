@@ -3,6 +3,7 @@ export type Lang = 'es' | 'en';
 export const translations = {
   es: {
     nav: {
+      home: 'Inicio',
       search: 'Buscar',
       explore: 'Explorar',
       library: 'Biblioteca',
@@ -49,6 +50,43 @@ export const translations = {
       featureOfflineDesc: 'Descargá capítulos y leé sin internet.',
       featureNoProxy: 'Sin intermediarios',
       featureNoProxyDesc: 'Tu app, tus datos. Open source, sin tracking, sin anuncios.',
+    },
+    landing: {
+      subtitle: 'Tu lector de manga gratuito, open source, sin anuncios. Buscá, leé y organizá tu manga favorito.',
+      startReading: 'Empezar a leer',
+      download: 'Descargar app',
+      howTitle: 'Cómo funciona',
+      step1Title: 'Buscá tu manga',
+      step1Desc: 'Escribí el nombre y encontrá cualquier manga entre miles de títulos.',
+      step2Title: 'Leé los capítulos',
+      step2Desc: 'Lector integrado con modo página y scroll vertical. Calidad original o ahorro de datos.',
+      step3Title: 'Armá tu biblioteca',
+      step3Desc: 'Organizá por categorías: leyendo, planificado, completado, en espera, dropeado.',
+      step4Title: 'Descargá offline',
+      step4Desc: 'Guardá capítulos en tu dispositivo y leé sin internet.',
+      featuresTitle: 'Features',
+      feat1: 'Búsqueda',
+      feat1Desc: 'Buscá manga por nombre entre miles de títulos.',
+      feat2: 'Lector',
+      feat2Desc: 'Modo página o scroll. Zoom, fullscreen, atajos de teclado.',
+      feat3: 'Biblioteca',
+      feat3Desc: '5 categorías. Seguí tu progreso de lectura.',
+      feat4: 'Offline',
+      feat4Desc: 'Descargá capítulos y leé sin conexión.',
+      feat5: 'Explorar',
+      feat5Desc: 'Navegá por 25 géneros, filtrá y ordená.',
+      feat6: 'Dark mode',
+      feat6Desc: 'Modo oscuro y claro. Español e inglés.',
+      downloadTitle: 'Descargá la app',
+      downloadDesc: 'Descargá Mi Manga Dinamita en tu dispositivo. Funciona más rápido que la web.',
+      downloadExe: 'Descargar .exe portable',
+      tapToInstall: 'Tocar para instalar',
+      androidInstructions: 'Menú de Chrome > Instalar aplicación',
+      iosInstructions: 'Safari > Compartir > Agregar a inicio',
+      cloneRepo: 'Clonar repo + npm start',
+      extensionsTitle: 'Extensiones recomendadas',
+      extensionsDesc: 'Apps y fuentes para complementar tu experiencia de manga.',
+      seeAllExtensions: 'Ver todas las extensiones',
     },
     rankings: {
       topScored: 'Mejor Puntuados',
@@ -190,6 +228,7 @@ export const translations = {
   },
   en: {
     nav: {
+      home: 'Home',
       search: 'Search',
       explore: 'Explore',
       library: 'Library',
@@ -236,6 +275,43 @@ export const translations = {
       featureOfflineDesc: 'Download chapters and read without internet.',
       featureNoProxy: 'No middleman',
       featureNoProxyDesc: 'Your app, your data. Open source, no tracking, no ads.',
+    },
+    landing: {
+      subtitle: 'Your free, open source manga reader. No ads. Search, read and organize your favorite manga.',
+      startReading: 'Start reading',
+      download: 'Download app',
+      howTitle: 'How it works',
+      step1Title: 'Search your manga',
+      step1Desc: 'Type a name and find any manga among thousands of titles.',
+      step2Title: 'Read chapters',
+      step2Desc: 'Built-in reader with page mode and vertical scroll. Full quality or data saver.',
+      step3Title: 'Build your library',
+      step3Desc: 'Organize by category: reading, plan to read, completed, on hold, dropped.',
+      step4Title: 'Download offline',
+      step4Desc: 'Save chapters to your device and read without internet.',
+      featuresTitle: 'Features',
+      feat1: 'Search',
+      feat1Desc: 'Search manga by name among thousands of titles.',
+      feat2: 'Reader',
+      feat2Desc: 'Page or scroll mode. Zoom, fullscreen, keyboard shortcuts.',
+      feat3: 'Library',
+      feat3Desc: '5 categories. Track your reading progress.',
+      feat4: 'Offline',
+      feat4Desc: 'Download chapters and read without connection.',
+      feat5: 'Explore',
+      feat5Desc: 'Browse 25 genres, filter and sort.',
+      feat6: 'Dark mode',
+      feat6Desc: 'Dark and light mode. English and Spanish.',
+      downloadTitle: 'Download the app',
+      downloadDesc: 'Download Mi Manga Dinamita to your device. Faster than the web.',
+      downloadExe: 'Download portable .exe',
+      tapToInstall: 'Tap to install',
+      androidInstructions: 'Chrome menu > Install app',
+      iosInstructions: 'Safari > Share > Add to Home Screen',
+      cloneRepo: 'Clone repo + npm start',
+      extensionsTitle: 'Recommended extensions',
+      extensionsDesc: 'Apps and sources to complement your manga experience.',
+      seeAllExtensions: 'See all extensions',
     },
     rankings: {
       topScored: 'Top Scored',
@@ -379,6 +455,7 @@ export const translations = {
 
 export interface Translations {
   nav: {
+    home: string;
     search: string;
     explore: string;
     library: string;
@@ -399,6 +476,43 @@ export interface Translations {
     readers: string;
     sources: string;
     trackers: string;
+  };
+  landing: {
+    subtitle: string;
+    startReading: string;
+    download: string;
+    howTitle: string;
+    step1Title: string;
+    step1Desc: string;
+    step2Title: string;
+    step2Desc: string;
+    step3Title: string;
+    step3Desc: string;
+    step4Title: string;
+    step4Desc: string;
+    featuresTitle: string;
+    feat1: string;
+    feat1Desc: string;
+    feat2: string;
+    feat2Desc: string;
+    feat3: string;
+    feat3Desc: string;
+    feat4: string;
+    feat4Desc: string;
+    feat5: string;
+    feat5Desc: string;
+    feat6: string;
+    feat6Desc: string;
+    downloadTitle: string;
+    downloadDesc: string;
+    downloadExe: string;
+    tapToInstall: string;
+    androidInstructions: string;
+    iosInstructions: string;
+    cloneRepo: string;
+    extensionsTitle: string;
+    extensionsDesc: string;
+    seeAllExtensions: string;
   };
   download: {
     tagline: string;

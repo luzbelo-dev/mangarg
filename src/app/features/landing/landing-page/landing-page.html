@@ -1,0 +1,136 @@
+<div class="landing">
+
+  <!-- Hero -->
+  <section class="landing__hero">
+    <h1 class="landing__title">Mi Manga Dinamita</h1>
+    <p class="landing__subtitle">{{ t().landing.subtitle }}</p>
+    <div class="landing__hero-actions">
+      <a routerLink="/search" class="landing__btn landing__btn--primary">
+        {{ t().landing.startReading }}
+      </a>
+      <a routerLink="/download" class="landing__btn landing__btn--secondary">
+        {{ t().landing.download }}
+      </a>
+    </div>
+  </section>
+
+  <!-- Como funciona -->
+  <section class="landing__section">
+    <h2 class="landing__section-title">{{ t().landing.howTitle }}</h2>
+    <div class="landing__steps">
+      <div class="landing__step">
+        <span class="landing__step-number">1</span>
+        <h3>{{ t().landing.step1Title }}</h3>
+        <p>{{ t().landing.step1Desc }}</p>
+      </div>
+      <div class="landing__step">
+        <span class="landing__step-number">2</span>
+        <h3>{{ t().landing.step2Title }}</h3>
+        <p>{{ t().landing.step2Desc }}</p>
+      </div>
+      <div class="landing__step">
+        <span class="landing__step-number">3</span>
+        <h3>{{ t().landing.step3Title }}</h3>
+        <p>{{ t().landing.step3Desc }}</p>
+      </div>
+      <div class="landing__step">
+        <span class="landing__step-number">4</span>
+        <h3>{{ t().landing.step4Title }}</h3>
+        <p>{{ t().landing.step4Desc }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="landing__section">
+    <h2 class="landing__section-title">{{ t().landing.featuresTitle }}</h2>
+    <div class="landing__features">
+      <div class="landing__feature-card">
+        <span>&#128269;</span>
+        <h3>{{ t().landing.feat1 }}</h3>
+        <p>{{ t().landing.feat1Desc }}</p>
+      </div>
+      <div class="landing__feature-card">
+        <span>&#128214;</span>
+        <h3>{{ t().landing.feat2 }}</h3>
+        <p>{{ t().landing.feat2Desc }}</p>
+      </div>
+      <div class="landing__feature-card">
+        <span>&#128218;</span>
+        <h3>{{ t().landing.feat3 }}</h3>
+        <p>{{ t().landing.feat3Desc }}</p>
+      </div>
+      <div class="landing__feature-card">
+        <span>&#128268;</span>
+        <h3>{{ t().landing.feat4 }}</h3>
+        <p>{{ t().landing.feat4Desc }}</p>
+      </div>
+      <div class="landing__feature-card">
+        <span>&#127760;</span>
+        <h3>{{ t().landing.feat5 }}</h3>
+        <p>{{ t().landing.feat5Desc }}</p>
+      </div>
+      <div class="landing__feature-card">
+        <span>&#127769;</span>
+        <h3>{{ t().landing.feat6 }}</h3>
+        <p>{{ t().landing.feat6Desc }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Descargar -->
+  <section class="landing__section landing__section--highlight">
+    <h2 class="landing__section-title">{{ t().landing.downloadTitle }}</h2>
+    <p class="landing__section-desc">{{ t().landing.downloadDesc }}</p>
+    <div class="landing__download-grid">
+      <a [href]="githubReleasesUrl" target="_blank" rel="noopener noreferrer" class="landing__download-card">
+        <span>&#128187;</span>
+        <strong>Windows</strong>
+        <small>{{ t().landing.downloadExe }}</small>
+      </a>
+      <div class="landing__download-card" [class.landing__download-card--clickable]="canInstallPwa()" (click)="canInstallPwa() ? installPwa() : null">
+        <span>&#128241;</span>
+        <strong>Android</strong>
+        <small>{{ canInstallPwa() ? t().landing.tapToInstall : t().landing.androidInstructions }}</small>
+      </div>
+      <div class="landing__download-card">
+        <span>&#127822;</span>
+        <strong>iPhone</strong>
+        <small>{{ t().landing.iosInstructions }}</small>
+      </div>
+      <a routerLink="/download" class="landing__download-card">
+        <span>&#128421;</span>
+        <strong>Linux / Mac</strong>
+        <small>{{ t().landing.cloneRepo }}</small>
+      </a>
+    </div>
+  </section>
+
+  <!-- Extensiones -->
+  <section class="landing__section">
+    <h2 class="landing__section-title">{{ t().landing.extensionsTitle }}</h2>
+    <p class="landing__section-desc">{{ t().landing.extensionsDesc }}</p>
+    <div class="landing__extensions">
+      @for (ext of extensions; track ext.name) {
+        <a [href]="ext.url" target="_blank" rel="noopener noreferrer" class="landing__ext-card">
+          <strong>{{ ext.name }}</strong>
+          <span class="landing__ext-platform">{{ ext.platform }}</span>
+        </a>
+      }
+    </div>
+    <div class="landing__extensions-more">
+      <a routerLink="/extensions" class="landing__btn landing__btn--secondary">
+        {{ t().landing.seeAllExtensions }}
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="landing__footer">
+    <p>
+      Open source &mdash;
+      <a href="https://github.com/alearenass090/mi-manga-dinamita" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </p>
+  </footer>
+
+</div>
