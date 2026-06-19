@@ -43,7 +43,7 @@ export class MangaDexImageService {
     if (isDevMode()) {
       return rawUrl;
     }
-    return `/.netlify/functions/mangadex-image?url=${encodeURIComponent(rawUrl)}`;
+    return `/api/image/?url=${encodeURIComponent(rawUrl)}`;
   }
 
   reportImageLoad(url: string, success: boolean, bytes: number, duration: number, cached: boolean): void {

@@ -3,6 +3,19 @@
   publish = "dist/manga-tracker/browser"
   functions = "netlify/functions"
 
+[dev]
+  port = 4200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+[[redirects]]
+  from = "/api/image/*"
+  to = "/.netlify/functions/mangadex-image"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
