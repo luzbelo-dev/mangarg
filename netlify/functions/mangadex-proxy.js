@@ -15,7 +15,8 @@ exports.handler = async function(event) {
 
   var targetUrl;
   try {
-    targetUrl = Buffer.from(q, "base64").toString("utf8");
+    var standard = q.replace(/-/g, "+").replace(/_/g, "/");
+    targetUrl = Buffer.from(standard, "base64").toString("utf8");
   } catch(e) {
     return {
       statusCode: 200,

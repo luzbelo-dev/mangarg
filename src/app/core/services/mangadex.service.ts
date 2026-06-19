@@ -29,7 +29,7 @@ export class MangaDexService {
     if (this.isDev) {
       return fullUrl.toString();
     }
-    const b64 = btoa(fullUrl.toString());
+    const b64 = btoa(fullUrl.toString()).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return `/.netlify/functions/mangadex-proxy?q=${b64}`;
   }
 
