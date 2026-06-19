@@ -92,6 +92,8 @@
           [alt]="t().reader.page + ' ' + (currentPage() + 1)"
           class="reader__page-image"
           [style.transform]="'scale(' + settings().zoom / 100 + ')'"
+          referrerpolicy="no-referrer"
+          crossorigin="anonymous"
           draggable="false"
         />
       </div>
@@ -112,6 +114,8 @@
             [alt]="t().reader.page + ' ' + (i + 1)"
             class="reader__strip-image"
             [style.transform]="'scale(' + settings().zoom / 100 + ')'"
+            referrerpolicy="no-referrer"
+            crossorigin="anonymous"
             [style.transform-origin]="'top center'"
             loading="lazy"
             draggable="false"
