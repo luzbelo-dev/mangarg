@@ -1,5 +1,4 @@
 const https = require("https");
-const url = require("url");
 
 exports.handler = async function (event) {
   if (event.httpMethod === "OPTIONS") {
@@ -14,15 +13,23 @@ exports.handler = async function (event) {
     };
   }
 
-  var apiPath = (event.queryStringParameters || {}).path;
-  if (!apiPath) {
-    return { statusCode: 400, body: "Missing path parameter" };
+  var targetUrl = (event.queryStringParameters || {}).url;
+
+  if (!targetUrl) {
+    return {
+      statusCode: 400,
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ error: "Missing url parameter" }),
+    };
   }
 
-  var params = Object.assign({}, event.queryStringParameters);
-  delete params.path;
-  var qs = new url.URLSearchParams(params).toString();
-  var targetUrl = "https://api.mangadex.org" + apiPath + (qs ? "?" + qs : "");
+  if (targetUrl.indexOf("https://api.mangadex.org") !== 0) {
+    return {
+      statusCode: 403,
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ error: "Only api.mangadex.org allowed" }),
+    };
+  }
 
   return new Promise(function (resolve) {
     https
@@ -38,7 +45,7 @@ exports.handler = async function (event) {
           resolve({
             statusCode: response.statusCode,
             headers: {
-              "Content-Type": "application/json",
+              "Content-Type": response.headers["content-type"] || "application/json",
               "Access-Control-Allow-Origin": "*",
               "Cache-Control": "public, max-age=300",
             },
@@ -47,11 +54,19 @@ exports.handler = async function (event) {
         });
 
         response.on("error", function () {
-          resolve({ statusCode: 502, body: "Stream error" });
+          resolve({
+            statusCode: 502,
+            headers: { "Access-Control-Allow-Origin": "*" },
+            body: JSON.stringify({ error: "Stream error" }),
+          });
         });
       })
       .on("error", function (err) {
-        resolve({ statusCode: 502, body: "Fetch failed: " + err.message });
+        resolve({
+          statusCode: 502,
+          headers: { "Access-Control-Allow-Origin": "*" },
+          body: JSON.stringify({ error: "Fetch failed: " + err.message }),
+        });
       });
   });
 };
