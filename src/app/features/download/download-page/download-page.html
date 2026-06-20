@@ -10,7 +10,7 @@
       <div class="download__card-icon">&#128187;</div>
       <h2 class="download__card-title">Windows</h2>
       <p class="download__card-desc">{{ t().download.windowsDesc }}</p>
-      <a [href]="exeUrl" class="download__card-btn">
+      <a [href]="exeUrl" download="Mi.Manga.Dinamita.1.0.0.exe" class="download__card-btn">
         {{ t().download.downloadExe }}
       </a>
       <div class="download__card-steps">
@@ -25,7 +25,7 @@
       <div class="download__card-icon">&#128241;</div>
       <h2 class="download__card-title">Android</h2>
       <p class="download__card-desc">{{ t().download.androidDesc }}</p>
-      <a [href]="apkUrl" class="download__card-btn download__card-btn--primary">
+      <a [href]="apkUrl" download="mi-manga-dinamita.apk" class="download__card-btn download__card-btn--primary">
         {{ t().download.downloadApk }}
       </a>
       <div class="download__card-steps">

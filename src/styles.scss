@@ -81,6 +81,15 @@ button {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+select, input {
+  -webkit-tap-highlight-color: transparent;
 }
 
 img {

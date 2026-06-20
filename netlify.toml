@@ -15,6 +15,18 @@
   force = true
 
 [[redirects]]
+  from = "/download/mi-manga-dinamita.apk"
+  to = "https://github.com/alearenass090/mi-manga-dinamita/releases/latest/download/mi-manga-dinamita.apk"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/download/Mi.Manga.Dinamita.1.0.0.exe"
+  to = "https://github.com/alearenass090/mi-manga-dinamita/releases/latest/download/Mi.Manga.Dinamita.1.0.0.exe"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

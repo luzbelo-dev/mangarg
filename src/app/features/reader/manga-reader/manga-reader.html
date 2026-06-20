@@ -1,4 +1,4 @@
-<div class="reader" (mousemove)="onMouseMove()">
+<div class="reader" (mousemove)="onMouseMove()" (touchstart)="onMouseMove()">
   @if (loading()) {
     <div class="reader__loading">
       <mt-loading-spinner size="lg" />
@@ -86,6 +86,8 @@
         [class.fit-height]="settings().fitMode === 'height'"
         (click)="onPageClick($event)"
         (wheel)="onPageWheel($event)"
+        (touchstart)="onViewportTouchStart($event)"
+        (touchend)="onViewportTouchEnd($event)"
       >
         @if (isPageFailed(currentPage())) {
           <div class="reader__page-error">
@@ -114,6 +116,9 @@
         [class.fit-width]="settings().fitMode === 'width'"
         (click)="onLongstripClick($event)"
         (scroll)="onLongstripScroll($event)"
+        (touchstart)="onLongstripTouchStart($event)"
+        (touchmove)="onLongstripTouchMove()"
+        (touchend)="onLongstripTouchEnd()"
       >
         @for (url of allPageUrls; track url; let i = $index) {
           @if (isPageFailed(i)) {
