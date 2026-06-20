@@ -23,17 +23,18 @@
     flex-wrap: wrap;
 
     label {
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       color: var(--text-muted);
     }
 
     select {
-      padding: 6px 10px;
+      padding: 10px 14px;
+      min-height: 44px;
       border-radius: 6px;
       border: 1px solid var(--border-color);
       background: var(--bg-input);
       color: var(--text-primary);
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       font-family: inherit;
       cursor: pointer;
       outline: none;
@@ -49,26 +50,30 @@
   }
 
   &__sfw-toggle {
-    padding: 6px 14px;
+    padding: 10px 18px;
+    min-height: 44px;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     font-weight: 600;
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
     transition: all 0.2s ease;
 
     &:hover { border-color: var(--accent); color: var(--accent); }
+    &:active { border-color: var(--accent); color: var(--accent); }
     &.active { background: #e74c3c; color: white; border-color: #e74c3c; }
   }
 
   &__clear {
-    padding: 6px 14px;
+    padding: 10px 18px;
+    min-height: 44px;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     color: var(--text-muted);
     transition: color 0.2s ease;
 
     &:hover { color: var(--favorite); }
+    &:active { color: var(--favorite); }
   }
 
   &__genres {
@@ -79,15 +84,24 @@
   }
 
   &__genre-chip {
-    padding: 8px 18px;
+    padding: 10px 18px;
+    min-height: 44px;
     border-radius: 24px;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 500;
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
 
     &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    &:active {
       border-color: var(--accent);
       color: var(--accent);
       background: var(--accent-light);
@@ -107,14 +121,14 @@
   }
 
   &__count {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     color: var(--text-muted);
     margin-bottom: 16px;
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
     gap: 20px;
   }
 
@@ -141,7 +155,7 @@
   }
 
   .explore__genre-chip {
-    padding: 6px 14px;
-    font-size: 0.8rem;
+    padding: 8px 14px;
+    font-size: 0.85rem;
   }
 }

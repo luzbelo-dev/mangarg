@@ -57,6 +57,11 @@ export class MangaReaderComponent implements OnInit {
   private retryCounts = new Map<number, number>();
   private preloadedPages = new Set<number>();
 
+  private touchStartX = 0;
+  private touchStartY = 0;
+  private touchStartTime = 0;
+  private isTouchScrolling = false;
+
   ngOnInit(): void {
     this.historyService.loadHistory().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
 
@@ -310,6 +315,67 @@ export class MangaReaderComponent implements OnInit {
     } else if (x > width * 0.65) {
       this.prevPage();
     } else {
+      this.toggleToolbar();
+    }
+  }
+
+  onViewportTouchStart(event: TouchEvent): void {
+    const touch = event.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+    this.touchStartTime = Date.now();
+  }
+
+  onViewportTouchEnd(event: TouchEvent): void {
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - this.touchStartX;
+    const deltaY = touch.clientY - this.touchStartY;
+    const elapsed = Date.now() - this.touchStartTime;
+    const absDx = Math.abs(deltaX);
+    const absDy = Math.abs(deltaY);
+
+    event.preventDefault();
+
+    if (elapsed < 400 && absDx > 40 && absDx > absDy * 1.5) {
+      if (deltaX < 0) {
+        this.nextPage();
+      } else {
+        this.prevPage();
+      }
+      return;
+    }
+
+    if (elapsed < 300 && absDx < 15 && absDy < 15) {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const width = rect.width;
+
+      if (x < width * 0.35) {
+        this.nextPage();
+      } else if (x > width * 0.65) {
+        this.prevPage();
+      } else {
+        this.toggleToolbar();
+      }
+    }
+  }
+
+  onLongstripTouchStart(event: TouchEvent): void {
+    const touch = event.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+    this.touchStartTime = Date.now();
+    this.isTouchScrolling = false;
+  }
+
+  onLongstripTouchMove(): void {
+    this.isTouchScrolling = true;
+  }
+
+  onLongstripTouchEnd(): void {
+    if (this.isTouchScrolling) return;
+    const elapsed = Date.now() - this.touchStartTime;
+    if (elapsed < 300) {
       this.toggleToolbar();
     }
   }
