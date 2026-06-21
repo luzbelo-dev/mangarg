@@ -1,72 +1,402 @@
 <div class="explore">
-  <div class="explore__header">
-    <h1 class="explore__title">{{ t().explore.title }}</h1>
-    <p class="explore__subtitle">{{ t().explore.subtitle }}</p>
-  </div>
-
-  <!-- Controls -->
-  <div class="explore__controls">
-    <div class="explore__control">
-      <label>{{ t().explore.orderBy }}</label>
-      <select (change)="setOrderBy($event)" [value]="orderBy()">
-        <option value="score">{{ t().explore.byScore }}</option>
-        <option value="popularity">{{ t().explore.byPopularity }}</option>
-        <option value="title">{{ t().explore.byTitle }}</option>
-      </select>
-    </div>
+  <!-- Tab bar -->
+  <div class="explore__tabs">
     <button
-      class="explore__sfw-toggle"
-      [class.active]="!sfw()"
-      (click)="toggleSfw()"
+      class="explore__tab"
+      [class.active]="activeTab() === 'popular'"
+      (click)="setTab('popular')"
     >
-      {{ sfw() ? 'SFW' : '+18' }}
+      {{ t().explore.popular }}
     </button>
-    @if (selectedGenres().size > 0) {
-      <button class="explore__clear" (click)="clearAll()">
-        {{ t().explore.clearFilters }}
-      </button>
-    }
+    <button
+      class="explore__tab"
+      [class.active]="activeTab() === 'top'"
+      (click)="setTab('top')"
+    >
+      {{ t().explore.topRated }}
+    </button>
+    <button
+      class="explore__tab"
+      [class.active]="activeTab() === 'genres'"
+      (click)="setTab('genres')"
+    >
+      {{ t().explore.genres }}
+    </button>
+    <button
+      class="explore__tab"
+      [class.active]="activeTab() === 'sources'"
+      (click)="setTab('sources')"
+    >
+      {{ t().extensions.title }}
+    </button>
   </div>
 
-  <!-- Genre chips -->
-  <div class="explore__genres">
-    @for (genre of genres; track genre.id) {
+  <!-- Popular Tab -->
+  @if (activeTab() === 'popular') {
+    @if (popularLoading()) {
+      <div class="explore__loading">
+        <mt-loading-spinner size="lg" />
+      </div>
+    } @else if (popularResults().length > 0) {
+      <!-- Mobile list view -->
+      <div class="explore__list">
+        @for (manga of popularResults(); track manga.mal_id) {
+          <div class="explore__list-item" (click)="onCardClick(manga.mal_id)">
+            <img
+              class="explore__list-cover"
+              [src]="manga.images.jpg.small_image_url"
+              [alt]="manga.title"
+              loading="lazy"
+            />
+            <div class="explore__list-info">
+              <span class="explore__list-title">{{ manga.title }}</span>
+              <span class="explore__list-meta">
+                {{ manga.type || 'Manga' }}
+                @if (manga.status) {
+                  <span class="explore__list-dot"></span>
+                  {{ manga.status }}
+                }
+              </span>
+            </div>
+            @if (manga.score) {
+              <span class="explore__list-score">{{ manga.score }}</span>
+            }
+          </div>
+        }
+      </div>
+      <!-- Desktop grid view -->
+      <div class="explore__grid">
+        @for (manga of popularResults(); track manga.mal_id) {
+          <mt-manga-card
+            [manga]="manga"
+            [isFavorite]="isInLibrary(manga.mal_id)"
+            (favoriteToggled)="onFavoriteToggle($event)"
+            (cardClicked)="onCardClick($event)"
+          />
+        }
+      </div>
+    }
+  }
+
+  <!-- Top Rated Tab -->
+  @if (activeTab() === 'top') {
+    @if (topLoading()) {
+      <div class="explore__loading">
+        <mt-loading-spinner size="lg" />
+      </div>
+    } @else if (topResults().length > 0) {
+      <!-- Mobile list view -->
+      <div class="explore__list">
+        @for (manga of topResults(); track manga.mal_id) {
+          <div class="explore__list-item" (click)="onCardClick(manga.mal_id)">
+            <img
+              class="explore__list-cover"
+              [src]="manga.images.jpg.small_image_url"
+              [alt]="manga.title"
+              loading="lazy"
+            />
+            <div class="explore__list-info">
+              <span class="explore__list-title">{{ manga.title }}</span>
+              <span class="explore__list-meta">
+                {{ manga.type || 'Manga' }}
+                @if (manga.status) {
+                  <span class="explore__list-dot"></span>
+                  {{ manga.status }}
+                }
+              </span>
+            </div>
+            @if (manga.score) {
+              <span class="explore__list-score">{{ manga.score }}</span>
+            }
+          </div>
+        }
+      </div>
+      <!-- Desktop grid view -->
+      <div class="explore__grid">
+        @for (manga of topResults(); track manga.mal_id) {
+          <mt-manga-card
+            [manga]="manga"
+            [isFavorite]="isInLibrary(manga.mal_id)"
+            (favoriteToggled)="onFavoriteToggle($event)"
+            (cardClicked)="onCardClick($event)"
+          />
+        }
+      </div>
+    }
+  }
+
+  <!-- Genres Tab -->
+  @if (activeTab() === 'genres') {
+    <!-- Controls -->
+    <div class="explore__controls">
+      <div class="explore__control">
+        <label>{{ t().explore.orderBy }}</label>
+        <select (change)="setOrderBy($event)" [value]="orderBy()">
+          <option value="score">{{ t().explore.byScore }}</option>
+          <option value="popularity">{{ t().explore.byPopularity }}</option>
+          <option value="title">{{ t().explore.byTitle }}</option>
+        </select>
+      </div>
       <button
-        class="explore__genre-chip"
-        [class.selected]="isSelected(genre.id)"
-        (click)="toggleGenre(genre.id)"
+        class="explore__sfw-toggle"
+        [class.active]="!sfw()"
+        (click)="toggleSfw()"
       >
-        {{ genreName(genre) }}
+        {{ sfw() ? 'SFW' : '+18' }}
       </button>
-    }
-  </div>
-
-  <!-- Results -->
-  @if (loading()) {
-    <div class="explore__loading">
-      <mt-loading-spinner size="lg" />
-    </div>
-  } @else if (results().length > 0) {
-    <p class="explore__count">{{ results().length }} {{ t().explore.results }}</p>
-    <div class="explore__grid">
-      @for (manga of results(); track manga.mal_id) {
-        <mt-manga-card
-          [manga]="manga"
-          [isFavorite]="isInLibrary(manga.mal_id)"
-          (favoriteToggled)="onFavoriteToggle($event)"
-          (cardClicked)="onCardClick($event)"
-        />
+      @if (selectedGenres().size > 0) {
+        <button class="explore__clear" (click)="clearAll()">
+          {{ t().explore.clearFilters }}
+        </button>
       }
     </div>
-  } @else if (hasSearched()) {
-    <div class="explore__empty">
-      <span></span>
-      <p>{{ t().explore.noResults }}</p>
+
+    <!-- Genre chips (horizontal scroll) -->
+    <div class="explore__genres">
+      @for (genre of genres; track genre.id) {
+        <button
+          class="explore__genre-chip"
+          [class.selected]="isSelected(genre.id)"
+          (click)="toggleGenre(genre.id)"
+        >
+          {{ genreName(genre) }}
+        </button>
+      }
     </div>
-  } @else {
-    <div class="explore__hint">
-      <span></span>
-      <p>{{ t().explore.selectGenres }}</p>
+
+    <!-- Results -->
+    @if (loading()) {
+      <div class="explore__loading">
+        <mt-loading-spinner size="lg" />
+      </div>
+    } @else if (results().length > 0) {
+      <p class="explore__count">{{ results().length }} {{ t().explore.results }}</p>
+      <!-- Mobile list view -->
+      <div class="explore__list">
+        @for (manga of results(); track manga.mal_id) {
+          <div class="explore__list-item" (click)="onCardClick(manga.mal_id)">
+            <img
+              class="explore__list-cover"
+              [src]="manga.images.jpg.small_image_url"
+              [alt]="manga.title"
+              loading="lazy"
+            />
+            <div class="explore__list-info">
+              <span class="explore__list-title">{{ manga.title }}</span>
+              <span class="explore__list-meta">
+                {{ manga.type || 'Manga' }}
+                @if (manga.status) {
+                  <span class="explore__list-dot"></span>
+                  {{ manga.status }}
+                }
+              </span>
+            </div>
+            @if (manga.score) {
+              <span class="explore__list-score">{{ manga.score }}</span>
+            }
+          </div>
+        }
+      </div>
+      <!-- Desktop grid view -->
+      <div class="explore__grid">
+        @for (manga of results(); track manga.mal_id) {
+          <mt-manga-card
+            [manga]="manga"
+            [isFavorite]="isInLibrary(manga.mal_id)"
+            (favoriteToggled)="onFavoriteToggle($event)"
+            (cardClicked)="onCardClick($event)"
+          />
+        }
+      </div>
+    } @else if (hasSearched()) {
+      <div class="explore__empty">
+        <span></span>
+        <p>{{ t().explore.noResults }}</p>
+      </div>
+    } @else {
+      <div class="explore__hint">
+        <span></span>
+        <p>{{ t().explore.selectGenres }}</p>
+      </div>
+    }
+  }
+
+  <!-- Sources Tab -->
+  @if (activeTab() === 'sources') {
+    <div class="sources">
+      <!-- Source browse view (inline) -->
+      @if (browseSource()) {
+        <div class="sources__browse">
+          <div class="sources__browse-header">
+            <button class="sources__browse-back" (click)="closeBrowse()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            <div class="sources__browse-title-row">
+              <div class="sources__card-icon" [style.background-color]="browseSource()!.iconColor">
+                <span>{{ browseSource()!.icon }}</span>
+              </div>
+              <h2 class="sources__browse-title">{{ browseSource()!.name }}</h2>
+            </div>
+          </div>
+
+          @if (browseLoading()) {
+            <div class="explore__loading">
+              <mt-loading-spinner size="lg" />
+            </div>
+          } @else if (browseResults().length > 0) {
+            <div class="sources__browse-list">
+              @for (manga of browseResults(); track manga.slug) {
+                <div class="sources__browse-item" (click)="onBrowseCardClick(manga)">
+                  @if (manga.coverUrl) {
+                    <img class="sources__browse-cover" [src]="manga.coverUrl" [alt]="manga.title" loading="lazy" />
+                  } @else {
+                    <div class="sources__browse-cover sources__browse-cover--placeholder">
+                      <span>{{ browseSource()!.icon }}</span>
+                    </div>
+                  }
+                  <div class="sources__browse-info">
+                    <span class="sources__browse-name">{{ manga.title }}</span>
+                    @if (manga.score) {
+                      <span class="sources__browse-score">{{ manga.score }}</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="sources__empty">
+              <p>{{ lang() === 'es' ? 'No se encontraron resultados' : 'No results found' }}</p>
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Sub-tabs: Installed / Available -->
+        <div class="sources__subtabs">
+          <button
+            class="sources__subtab"
+            [class.active]="sourceSubTab() === 'installed'"
+            (click)="setSourceSubTab('installed')"
+          >
+            {{ t().extensions.installed }}
+            <span class="sources__subtab-count" [class.active]="sourceSubTab() === 'installed'">{{ installedCount() }}</span>
+          </button>
+          <button
+            class="sources__subtab"
+            [class.active]="sourceSubTab() === 'available'"
+            (click)="setSourceSubTab('available')"
+          >
+            {{ t().extensions.available }}
+            <span class="sources__subtab-count" [class.active]="sourceSubTab() === 'available'">{{ availableCount() }}</span>
+          </button>
+        </div>
+
+        <!-- Search -->
+        <div class="sources__search">
+          <svg class="sources__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input
+            class="sources__search-input"
+            type="text"
+            [placeholder]="t().extensions.searchPlaceholder"
+            [value]="sourceSearch()"
+            (input)="onSourceSearch($event)"
+          />
+        </div>
+
+        <!-- Language filter -->
+        <div class="sources__lang-filters">
+          @for (lf of langFilters; track lf) {
+            <button
+              class="sources__lang-chip"
+              [class.active]="sourceLang() === lf"
+              (click)="setSourceLang(lf)"
+            >
+              {{ lf === 'All' ? t().extensions.allLangs : lf }}
+            </button>
+          }
+        </div>
+
+        <!-- Installed sources -->
+        @if (sourceSubTab() === 'installed') {
+          <div class="sources__list">
+            @for (group of groupedInstalled(); track group.lang) {
+              <div class="sources__group-header">
+                <span class="sources__group-label">{{ group.label }}</span>
+                <span class="sources__group-count">({{ group.sources.length }})</span>
+              </div>
+              @for (source of group.sources; track source.id) {
+                <div
+                  class="sources__card sources__card--tappable"
+                  [class.sources__card--animating]="animatingSourceId() === source.id"
+                  (click)="onSourceTap(source)"
+                >
+                  <div class="sources__card-icon" [style.background-color]="source.iconColor">
+                    <span>{{ source.icon }}</span>
+                  </div>
+                  <div class="sources__card-info">
+                    <div class="sources__card-title-row">
+                      <h3 class="sources__card-name">{{ source.name }}</h3>
+                      @if (source.nsfw) {
+                        <span class="sources__nsfw">18+</span>
+                      }
+                    </div>
+                    <p class="sources__card-meta">{{ source.lang }} · v{{ source.version }}</p>
+                  </div>
+                  <button class="sources__btn sources__btn--uninstall" (click)="uninstallSource(source); $event.stopPropagation()">
+                    {{ t().extensions.uninstall }}
+                  </button>
+                </div>
+              }
+            } @empty {
+              <div class="sources__empty">
+                <p>{{ lang() === 'es' ? 'No hay fuentes instaladas' : 'No sources installed' }}</p>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Available sources -->
+        @if (sourceSubTab() === 'available') {
+          <div class="sources__list">
+            @for (group of groupedAvailable(); track group.lang) {
+              <div class="sources__group-header">
+                <span class="sources__group-label">{{ group.label }}</span>
+                <span class="sources__group-count">({{ group.sources.length }})</span>
+              </div>
+              @for (source of group.sources; track source.id) {
+                <div
+                  class="sources__card"
+                  [class.sources__card--animating]="animatingSourceId() === source.id"
+                >
+                  <div class="sources__card-icon" [style.background-color]="source.iconColor">
+                    <span>{{ source.icon }}</span>
+                  </div>
+                  <div class="sources__card-info">
+                    <div class="sources__card-title-row">
+                      <h3 class="sources__card-name">{{ source.name }}</h3>
+                      @if (source.nsfw) {
+                        <span class="sources__nsfw">18+</span>
+                      }
+                    </div>
+                    <p class="sources__card-meta">{{ source.lang }} · v{{ source.version }}</p>
+                  </div>
+                  <button class="sources__btn sources__btn--install" (click)="installSource(source)">
+                    {{ t().extensions.install }}
+                  </button>
+                </div>
+              }
+            } @empty {
+              <div class="sources__empty">
+                <p>{{ lang() === 'es' ? 'Todas las fuentes instaladas' : 'All sources installed' }}</p>
+              </div>
+            }
+          </div>
+        }
+      }
     </div>
   }
 </div>

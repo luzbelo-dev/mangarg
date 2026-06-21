@@ -4,60 +4,138 @@
     <p class="extensions__subtitle">{{ t().extensions.subtitle }}</p>
   </div>
 
-  <div class="extensions__filters">
+  <div class="extensions__tabs">
     <button
-      class="extensions__filter-btn"
-      [class.active]="activeFilter() === 'all'"
-      (click)="setFilter('all')"
+      class="extensions__tab"
+      [class.active]="activeTab() === 'installed'"
+      (click)="setTab('installed')"
     >
-      {{ t().extensions.all }}
+      {{ t().extensions.installed }}
+      <span class="extensions__tab-count">{{ installedCount() }}</span>
     </button>
     <button
-      class="extensions__filter-btn"
-      [class.active]="activeFilter() === 'reader'"
-      (click)="setFilter('reader')"
+      class="extensions__tab"
+      [class.active]="activeTab() === 'available'"
+      (click)="setTab('available')"
     >
-      {{ t().extensions.readers }}
-    </button>
-    <button
-      class="extensions__filter-btn"
-      [class.active]="activeFilter() === 'source'"
-      (click)="setFilter('source')"
-    >
-      {{ t().extensions.sources }}
-    </button>
-    <button
-      class="extensions__filter-btn"
-      [class.active]="activeFilter() === 'tracker'"
-      (click)="setFilter('tracker')"
-    >
-      {{ t().extensions.trackers }}
+      {{ t().extensions.available }}
+      <span class="extensions__tab-count">{{ availableCount() }}</span>
     </button>
   </div>
 
-  <div class="extensions__grid">
-    @for (ext of filteredExtensions; track ext.name) {
-      <a [href]="ext.url" target="_blank" rel="noopener noreferrer" class="extensions__card">
-        <div class="extensions__card-header">
-          <h3 class="extensions__card-name">{{ ext.name }}</h3>
-          <span class="extensions__card-category" [attr.data-category]="ext.category">
-            {{ getCategoryLabel(ext.category) }}
-          </span>
-        </div>
-        <p class="extensions__card-desc">{{ getDescription(ext) }}</p>
-        <div class="extensions__card-footer">
-          <div class="extensions__card-platforms">
-            @for (platform of ext.platforms; track platform) {
-              <span class="extensions__card-platform">{{ platform }}</span>
-            }
-          </div>
-          <div class="extensions__card-features">
-            @for (feature of ext.features; track feature) {
-              <span class="extensions__card-feature">{{ feature }}</span>
-            }
-          </div>
-        </div>
-      </a>
+  <!-- Search bar -->
+  <div class="extensions__search">
+    <svg class="extensions__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/>
+      <path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input
+      class="extensions__search-input"
+      type="text"
+      [placeholder]="t().extensions.searchPlaceholder"
+      [value]="searchQuery()"
+      (input)="onSearchInput($event)"
+    />
+  </div>
+
+  <!-- Language filter chips -->
+  <div class="extensions__lang-filters">
+    @for (lang of langFilters; track lang) {
+      <button
+        class="extensions__lang-chip"
+        [class.active]="activeLang() === lang"
+        (click)="setLangFilter(lang)"
+      >
+        {{ lang === 'All' ? t().extensions.allLangs : lang }}
+      </button>
     }
   </div>
+
+  @if (activeTab() === 'installed') {
+    <div class="extensions__list">
+      @for (group of groupedInstalled(); track group.lang) {
+        <div class="extensions__group-header">
+          <span class="extensions__group-label">{{ group.label }}</span>
+          <span class="extensions__group-count">({{ group.sources.length }})</span>
+        </div>
+        @for (source of group.sources; track source.id) {
+          <div class="extensions__card">
+            <div class="extensions__card-left">
+              <div class="source-icon" [style.background-color]="source.iconColor">
+                <span class="source-icon__text">{{ source.icon }}</span>
+              </div>
+              <div class="extensions__card-info">
+                <div class="extensions__card-title-row">
+                  <h3 class="extensions__card-name">{{ source.name }}</h3>
+                  @if (source.nsfw) {
+                    <span class="extensions__nsfw-badge">18+</span>
+                  }
+                </div>
+                <p class="extensions__card-meta">{{ source.lang }} · {{ t().extensions.version }}{{ source.version }}</p>
+                <p class="extensions__card-desc">{{ getDescription(source) }}</p>
+                <div class="extensions__card-features">
+                  @for (feature of source.features; track feature) {
+                    <span class="extensions__chip">{{ feature }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="extensions__card-actions">
+              <button class="extensions__btn extensions__btn--uninstall" (click)="uninstall(source)">
+                {{ t().extensions.uninstall }}
+              </button>
+            </div>
+          </div>
+        }
+      } @empty {
+        <div class="extensions__empty">
+          <p>{{ lang() === 'es' ? 'No hay fuentes instaladas' : 'No sources installed' }}</p>
+        </div>
+      }
+    </div>
+  }
+
+  @if (activeTab() === 'available') {
+    <div class="extensions__list">
+      @for (group of groupedAvailable(); track group.lang) {
+        <div class="extensions__group-header">
+          <span class="extensions__group-label">{{ group.label }}</span>
+          <span class="extensions__group-count">({{ group.sources.length }})</span>
+        </div>
+        @for (source of group.sources; track source.id) {
+          <div class="extensions__card">
+            <div class="extensions__card-left">
+              <div class="source-icon" [style.background-color]="source.iconColor">
+                <span class="source-icon__text">{{ source.icon }}</span>
+              </div>
+              <div class="extensions__card-info">
+                <div class="extensions__card-title-row">
+                  <h3 class="extensions__card-name">{{ source.name }}</h3>
+                  @if (source.nsfw) {
+                    <span class="extensions__nsfw-badge">18+</span>
+                  }
+                </div>
+                <p class="extensions__card-meta">{{ source.lang }} · {{ t().extensions.version }}{{ source.version }}</p>
+                <p class="extensions__card-desc">{{ getDescription(source) }}</p>
+                <div class="extensions__card-features">
+                  @for (feature of source.features; track feature) {
+                    <span class="extensions__chip">{{ feature }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="extensions__card-actions">
+              <button class="extensions__btn extensions__btn--install" (click)="install(source)">
+                {{ t().extensions.install }}
+              </button>
+            </div>
+          </div>
+        }
+      } @empty {
+        <div class="extensions__empty">
+          <p>{{ lang() === 'es' ? 'Todas las fuentes están instaladas' : 'All sources are installed' }}</p>
+        </div>
+      }
+    </div>
+  }
 </div>

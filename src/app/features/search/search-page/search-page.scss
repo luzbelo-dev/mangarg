@@ -1,7 +1,13 @@
 .search-page {
+  // Header: hidden on mobile, visible on desktop
   &__header {
     text-align: center;
     margin-bottom: 32px;
+    display: none;
+
+    @media (min-width: 768px) {
+      display: block;
+    }
   }
 
   &__title {
@@ -15,12 +21,291 @@
     font-size: 0.95rem;
   }
 
+  // Source search status indicators
+  &__source-status {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+  }
+
+  &__source-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+
+    &--loading {
+      color: var(--text-muted);
+    }
+  }
+
+  &__source-icon {
+    font-size: 0.9rem;
+    width: 18px;
+    text-align: center;
+
+    &--done {
+      color: var(--score-high);
+    }
+
+    &--spin {
+      color: var(--accent);
+      display: inline-block;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  &__source-name {
+    font-weight: 600;
+  }
+
+  &__source-count {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+  }
+
+  // No sources installed hint
+  &__no-sources {
+    text-align: center;
+    padding: 24px 20px;
+    margin-bottom: 20px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    border: 1px dashed var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.875rem;
+
+    &-icon {
+      font-size: 1.5rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    p {
+      max-width: 320px;
+      margin: 0 auto;
+      line-height: 1.4;
+    }
+  }
+
+  // Source tabs
+  &__tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    &--active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+
+      &:hover {
+        color: white;
+        background: var(--accent-hover);
+        border-color: var(--accent-hover);
+      }
+    }
+
+    &--jikan {
+      &.search-page__tab--active {
+        background: #2e51a2;
+        border-color: #2e51a2;
+      }
+    }
+
+    &--comick {
+      &.search-page__tab--active {
+        background: #5c6bc0;
+        border-color: #5c6bc0;
+      }
+    }
+  }
+
+  // Desktop grid view (hidden on mobile)
   &__grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
     gap: 20px;
+    margin-bottom: 24px;
+
+    @media (max-width: 767px) {
+      display: none;
+    }
   }
 
+  &__card-wrapper {
+    position: relative;
+    cursor: pointer;
+  }
+
+  // Source card (ComicK cards styled like manga cards in grid)
+  &__source-card {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  &__source-card-img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    display: block;
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #5c6bc0;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+  }
+
+  &__source-card-body {
+    padding: 10px 12px;
+  }
+
+  &__source-card-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  &__source-card-score {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--score-high);
+  }
+
+  // Mobile list view (hidden on desktop)
+  &__list {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+
+    @media (max-width: 767px) {
+      display: flex;
+    }
+  }
+
+  &__list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+    position: relative;
+
+    &:hover {
+      border-color: var(--accent);
+    }
+
+    &:active {
+      transform: translateX(2px);
+    }
+  }
+
+  &__list-cover {
+    width: 48px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #5c6bc0;
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+  }
+
+  &__list-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__list-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__list-score {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  &__list-status {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  // Empty state
   &__empty {
     text-align: center;
     padding: 60px 20px;
@@ -32,7 +317,9 @@
       margin-bottom: 16px;
     }
 
-    p { font-size: 1rem; }
+    p {
+      font-size: 1rem;
+    }
 
     &-hint {
       font-size: 0.875rem !important;
@@ -40,6 +327,7 @@
     }
   }
 
+  // Rankings
   &__rankings-loading {
     display: flex;
     justify-content: center;
@@ -64,9 +352,18 @@
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
 
-    &::-webkit-scrollbar { height: 4px; }
-    &::-webkit-scrollbar-track { background: transparent; }
-    &::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+    &::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 2px;
+    }
   }
 
   &__ranked-card {
@@ -136,15 +433,78 @@
   }
 }
 
-@media (max-width: 640px) {
+// Source badges
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  &--jikan {
+    background: #2e51a2;
+  }
+
+  &--comick {
+    background: #5c6bc0;
+  }
+
+  &--mangadex {
+    background: #ff6740;
+  }
+
+  // Badge positioned at top-right corner of card (desktop grid)
+  &--corner {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    z-index: 2;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  // Badge as a pill in list items (mobile)
+  &--pill {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    flex-shrink: 0;
+  }
+}
+
+// Animations
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Mobile adjustments
+@media (max-width: 767px) {
   .search-page {
-    &__grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+    &__tabs {
+      gap: 6px;
+    }
+
+    &__tab {
+      padding: 5px 10px;
+      font-size: 0.75rem;
     }
 
     &__ranked-card {
       width: 130px;
+    }
+
+    &__source-status {
+      padding: 10px 12px;
+      margin-bottom: 12px;
     }
   }
 }

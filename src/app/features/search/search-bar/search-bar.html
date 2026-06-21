@@ -1,6 +1,6 @@
 <div class="search-bar">
   <div class="search-bar__input-wrapper">
-    <span class="search-bar__icon"></span>
+    <span class="search-bar__icon">&#x1F50D;</span>
     <input
       [formControl]="searchControl"
       type="text"
@@ -10,7 +10,7 @@
     />
     @if (searchControl.value) {
       <button class="search-bar__clear" (click)="clearSearch()" [attr.aria-label]="t().search.clear">
-        X
+        &#x2715;
       </button>
     }
     @if (loading()) {

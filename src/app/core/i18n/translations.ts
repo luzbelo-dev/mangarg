@@ -10,6 +10,8 @@ export const translations = {
       extensions: 'Extensiones',
 
       download: 'Descargar',
+      more: 'Mas',
+      close: 'Cerrar',
       filterBy: 'Filtrar por',
       sfw: 'SFW',
       all: 'Todo',
@@ -24,6 +26,14 @@ export const translations = {
       readers: 'Lectores',
       sources: 'Fuentes',
       trackers: 'Trackers',
+      installed: 'Instaladas',
+      available: 'Disponibles',
+      install: 'Instalar',
+      uninstall: 'Desinstalar',
+      installedBadge: 'Instalado',
+      version: 'v',
+      searchPlaceholder: 'Buscar extensiones...',
+      allLangs: 'Todos',
     },
     download: {
       tagline: 'Lector de manga gratuito. Sin anuncios. Open source.',
@@ -95,6 +105,9 @@ export const translations = {
     explore: {
       title: 'Explorar',
       subtitle: 'Descubrí manga por género',
+      popular: 'Popular',
+      topRated: 'Top',
+      genres: 'Géneros',
       orderBy: 'Ordenar por',
       byScore: 'Puntuación',
       byPopularity: 'Popularidad',
@@ -225,6 +238,8 @@ export const translations = {
       extensions: 'Extensions',
 
       download: 'Download',
+      more: 'More',
+      close: 'Close',
       filterBy: 'Filter by',
       sfw: 'SFW',
       all: 'All',
@@ -239,6 +254,14 @@ export const translations = {
       readers: 'Readers',
       sources: 'Sources',
       trackers: 'Trackers',
+      installed: 'Installed',
+      available: 'Available',
+      install: 'Install',
+      uninstall: 'Uninstall',
+      installedBadge: 'Installed',
+      version: 'v',
+      searchPlaceholder: 'Search extensions...',
+      allLangs: 'All',
     },
     download: {
       tagline: 'Free manga reader. No ads. Open source.',
@@ -310,6 +333,9 @@ export const translations = {
     explore: {
       title: 'Explore',
       subtitle: 'Discover manga by genre',
+      popular: 'Popular',
+      topRated: 'Top',
+      genres: 'Genres',
       orderBy: 'Order by',
       byScore: 'Score',
       byPopularity: 'Popularity',
@@ -441,6 +467,8 @@ export interface Translations {
     library: string;
     extensions: string;
     download: string;
+    more: string;
+    close: string;
     filterBy: string;
     sfw: string;
     all: string;
@@ -455,6 +483,14 @@ export interface Translations {
     readers: string;
     sources: string;
     trackers: string;
+    installed: string;
+    available: string;
+    install: string;
+    uninstall: string;
+    installedBadge: string;
+    version: string;
+    searchPlaceholder: string;
+    allLangs: string;
   };
   landing: {
     inDevelopment: string;
@@ -526,6 +562,9 @@ export interface Translations {
   explore: {
     title: string;
     subtitle: string;
+    popular: string;
+    topRated: string;
+    genres: string;
     orderBy: string;
     byScore: string;
     byPopularity: string;

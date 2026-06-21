@@ -3,105 +3,26 @@
   <!-- Hero -->
   <section class="landing__hero">
     <h1 class="landing__title">Mi Manga Dinamita</h1>
-    <p class="landing__badge">{{ t().landing.inDevelopment }}</p>
-    <p class="landing__subtitle">{{ t().landing.subtitle }}</p>
-    <div class="landing__hero-actions">
-      <a routerLink="/search" class="landing__btn landing__btn--primary">
-        {{ t().landing.startReading }}
-      </a>
-      <a routerLink="/download" class="landing__btn landing__btn--secondary">
-        {{ t().landing.download }}
-      </a>
-    </div>
+    <p class="landing__subtitle">{{ lang() === 'es' ? 'El sucesor open source de Tachiyomi. Multiplataforma.' : 'The open source successor to Tachiyomi. Cross-platform.' }}</p>
   </section>
 
-  <!-- Como funciona -->
+  <!-- Download -->
   <section class="landing__section">
-    <h2 class="landing__section-title">{{ t().landing.howTitle }}</h2>
-    <div class="landing__steps">
-      <div class="landing__step">
-        <span class="landing__step-number">1</span>
-        <h3>{{ t().landing.step1Title }}</h3>
-        <p>{{ t().landing.step1Desc }}</p>
-      </div>
-      <div class="landing__step">
-        <span class="landing__step-number">2</span>
-        <h3>{{ t().landing.step2Title }}</h3>
-        <p>{{ t().landing.step2Desc }}</p>
-      </div>
-      <div class="landing__step">
-        <span class="landing__step-number">3</span>
-        <h3>{{ t().landing.step3Title }}</h3>
-        <p>{{ t().landing.step3Desc }}</p>
-      </div>
-      <div class="landing__step">
-        <span class="landing__step-number">4</span>
-        <h3>{{ t().landing.step4Title }}</h3>
-        <p>{{ t().landing.step4Desc }}</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section class="landing__section">
-    <h2 class="landing__section-title">{{ t().landing.featuresTitle }}</h2>
-    <div class="landing__features">
-      <div class="landing__feature-card">
-        <span>&#128269;</span>
-        <h3>{{ t().landing.feat1 }}</h3>
-        <p>{{ t().landing.feat1Desc }}</p>
-      </div>
-      <div class="landing__feature-card">
-        <span>&#128214;</span>
-        <h3>{{ t().landing.feat2 }}</h3>
-        <p>{{ t().landing.feat2Desc }}</p>
-      </div>
-      <div class="landing__feature-card">
-        <span>&#128218;</span>
-        <h3>{{ t().landing.feat3 }}</h3>
-        <p>{{ t().landing.feat3Desc }}</p>
-      </div>
-      <div class="landing__feature-card">
-        <span>&#128268;</span>
-        <h3>{{ t().landing.feat4 }}</h3>
-        <p>{{ t().landing.feat4Desc }}</p>
-      </div>
-      <div class="landing__feature-card">
-        <span>&#127760;</span>
-        <h3>{{ t().landing.feat5 }}</h3>
-        <p>{{ t().landing.feat5Desc }}</p>
-      </div>
-      <div class="landing__feature-card">
-        <span>&#127769;</span>
-        <h3>{{ t().landing.feat6 }}</h3>
-        <p>{{ t().landing.feat6Desc }}</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Descargar -->
-  <section class="landing__section landing__section--highlight">
     <h2 class="landing__section-title">{{ t().landing.downloadTitle }}</h2>
     <p class="landing__section-desc">{{ t().landing.downloadDesc }}</p>
+
     <div class="landing__download-grid">
 
-      <div class="landing__download-card landing__download-card--large">
-        <span>&#128187;</span>
-        <strong>Windows</strong>
-        <a [href]="exeUrl" download="Mi.Manga.Dinamita.1.0.0.exe" class="landing__download-btn">
-          {{ t().landing.downloadExe }}
-        </a>
-        <div class="landing__download-info">
-          <p>{{ t().landing.windowsHow1 }}</p>
-          <p>{{ t().landing.windowsHow2 }}</p>
-          <p>{{ t().landing.windowsHow3 }}</p>
+      <div class="landing__download-card landing__download-card--primary">
+        <div class="landing__download-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
         </div>
-      </div>
-
-      <div class="landing__download-card landing__download-card--large">
-        <span>&#128241;</span>
         <strong>Android</strong>
-        <a [href]="apkUrl" download="mi-manga-dinamita.apk" class="landing__download-btn">
+        <p class="landing__download-size">v1.1 · APK</p>
+        <a [href]="apkUrl" class="landing__download-btn landing__download-btn--accent" download="mi-manga-dinamita.apk">
           {{ t().landing.downloadApk }}
         </a>
         <div class="landing__download-info">
@@ -110,37 +31,85 @@
         </div>
       </div>
 
-      <a routerLink="/download" class="landing__download-card">
-        <span>&#127822;</span>
-        <strong>iPhone</strong>
-        <small>{{ t().landing.iosInstructions }}</small>
-      </a>
+      <div class="landing__download-card landing__download-card--primary">
+        <div class="landing__download-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <strong>Windows</strong>
+        <p class="landing__download-size">.exe portable · ~91 MB</p>
+        <a [href]="exeUrl" class="landing__download-btn landing__download-btn--accent">
+          {{ t().landing.downloadExe }}
+        </a>
+        <div class="landing__download-info">
+          <p>{{ t().landing.windowsHow1 }}</p>
+          <p>{{ t().landing.windowsHow2 }}</p>
+        </div>
+      </div>
 
-      <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer" class="landing__download-card">
-        <span>&#128421;</span>
+    </div>
+
+    <div class="landing__download-alt">
+      <div class="landing__download-card landing__download-card--small">
+        <strong>iPhone / iPad</strong>
+        <small>{{ t().landing.iosInstructions }}</small>
+      </div>
+      <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer" class="landing__download-card landing__download-card--small">
         <strong>Linux / Mac</strong>
         <small>{{ t().landing.cloneRepo }}</small>
       </a>
-
     </div>
   </section>
 
-  <!-- Extensiones -->
+  <!-- Features (compact) -->
   <section class="landing__section">
-    <h2 class="landing__section-title">{{ t().landing.extensionsTitle }}</h2>
-    <p class="landing__section-desc">{{ t().landing.extensionsDesc }}</p>
-    <div class="landing__extensions">
-      @for (ext of extensions; track ext.name) {
-        <a [href]="ext.url" target="_blank" rel="noopener noreferrer" class="landing__ext-card">
-          <strong>{{ ext.name }}</strong>
-          <span class="landing__ext-platform">{{ ext.platforms[0] }}</span>
-        </a>
-      }
-    </div>
-    <div class="landing__extensions-more">
-      <a routerLink="/extensions" class="landing__btn landing__btn--secondary">
-        {{ t().landing.seeAllExtensions }}
-      </a>
+    <h2 class="landing__section-title">{{ t().landing.featuresTitle }}</h2>
+    <div class="landing__features">
+      <div class="landing__feature-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div>
+          <strong>{{ t().landing.feat1 }}</strong>
+          <p>{{ t().landing.feat1Desc }}</p>
+        </div>
+      </div>
+      <div class="landing__feature-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <div>
+          <strong>{{ t().landing.feat2 }}</strong>
+          <p>{{ t().landing.feat2Desc }}</p>
+        </div>
+      </div>
+      <div class="landing__feature-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        <div>
+          <strong>48+ {{ t().nav.extensions }}</strong>
+          <p>{{ lang() === 'es' ? 'ComicK, Kitsu, AniList, MangaUpdates y más. Sistema de extensiones como Tachiyomi.' : 'ComicK, Kitsu, AniList, MangaUpdates and more. Tachiyomi-style extension system.' }}</p>
+        </div>
+      </div>
+      <div class="landing__feature-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <div>
+          <strong>{{ t().landing.feat4 }}</strong>
+          <p>{{ t().landing.feat4Desc }}</p>
+        </div>
+      </div>
+      <div class="landing__feature-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <div>
+          <strong>{{ t().landing.feat3 }}</strong>
+          <p>{{ t().landing.feat3Desc }}</p>
+        </div>
+      </div>
+      <div class="landing__feature-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v6M12 17v6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M1 12h6M17 12h6M4.93 19.07l4.24-4.24M14.83 9.17l4.24-4.24"/></svg>
+        <div>
+          <strong>Open Source</strong>
+          <p>{{ lang() === 'es' ? 'Código abierto. Sin anuncios, sin tracking, sin costo.' : 'Open source. No ads, no tracking, no cost.' }}</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -148,7 +117,7 @@
   <footer class="landing__footer">
     <p>
       Open source &mdash;
-      <a href="https://github.com/alearenass090/mi-manga-dinamita" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a [href]="githubRepoUrl" target="_blank" rel="noopener noreferrer">GitHub</a>
     </p>
   </footer>
 

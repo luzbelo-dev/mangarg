@@ -3,25 +3,55 @@ import { RouterOutlet, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { NavbarComponent } from './shared/components/navbar/navbar';
+import { MobileHeaderComponent } from './shared/components/mobile-header/mobile-header';
+import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile-tab-bar';
 
 @Component({
   selector: 'mt-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent],
+  imports: [RouterOutlet, NavbarComponent, MobileHeaderComponent, MobileTabBarComponent],
   template: `
     @if (!isReaderRoute()) {
-      <mt-navbar />
+      <mt-navbar class="desktop-only" />
+      <mt-mobile-header class="mobile-only" />
     }
-    <main [class.main-content]="!isReaderRoute()">
+    <main [class.main-content]="!isReaderRoute()" [class.main-content--mobile]="!isReaderRoute()">
       <router-outlet />
     </main>
+    @if (!isReaderRoute()) {
+      <mt-mobile-tab-bar class="mobile-only" />
+    }
   `,
   styles: `
+    .desktop-only {
+      display: block;
+    }
+
+    .mobile-only {
+      display: none;
+    }
+
     .main-content {
       max-width: 1200px;
       margin: 0 auto;
       padding: 24px;
       min-height: calc(100vh - 60px);
+    }
+
+    @media (max-width: 768px) {
+      .desktop-only {
+        display: none;
+      }
+
+      .mobile-only {
+        display: block;
+      }
+
+      .main-content--mobile {
+        padding-top: calc(48px + env(safe-area-inset-top, 0px) + 16px);
+        padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
+        min-height: 100vh;
+      }
     }
   `,
 })

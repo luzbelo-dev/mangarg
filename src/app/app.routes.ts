@@ -1,4 +1,14 @@
 import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+
+const mobileRedirectGuard = () => {
+  const router = inject(Router);
+  if (window.innerWidth <= 768 || navigator.userAgent.includes('Capacitor')) {
+    return router.createUrlTree(['/search']);
+  }
+  return true;
+};
 
 export const routes: Routes = [
   {
@@ -6,6 +16,7 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/landing/landing.routes').then(m => m.LANDING_ROUTES),
     pathMatch: 'full',
+    canActivate: [mobileRedirectGuard],
   },
   {
     path: 'search',
