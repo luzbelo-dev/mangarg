@@ -28,6 +28,8 @@ export class SearchBarComponent implements OnInit {
   t = this.i18n.t;
 
   searchResults = output<JikanManga[]>();
+  queryChanged = output<string>();
+  searchStarted = output<void>();
 
   ngOnInit(): void {
     if (this.searchState.query) {
@@ -40,14 +42,17 @@ export class SearchBarComponent implements OnInit {
       tap(query => {
         if (query.length < 3) {
           this.searchResults.emit([]);
+          this.queryChanged.emit('');
           this.searchState.save('', []);
           this.loading.set(false);
         }
       }),
       filter(query => query.length >= 3),
-      tap(() => {
+      tap(query => {
         this.loading.set(true);
         this.error.set(null);
+        this.searchStarted.emit();
+        this.queryChanged.emit(query);
       }),
       switchMap(query =>
         this.jikanService.searchManga(query).pipe(
@@ -68,6 +73,7 @@ export class SearchBarComponent implements OnInit {
   clearSearch(): void {
     this.searchControl.setValue('');
     this.searchResults.emit([]);
+    this.queryChanged.emit('');
     this.searchState.clear();
     this.error.set(null);
   }

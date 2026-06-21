@@ -1,24 +1,178 @@
 <div class="search-page">
+  <!-- Header: only visible on desktop -->
   <div class="search-page__header">
     <h1 class="search-page__title">{{ t().search.title }}</h1>
     <p class="search-page__subtitle">{{ t().search.subtitle }}</p>
   </div>
 
-  <mt-search-bar (searchResults)="onSearchResults($event)" />
+  <mt-search-bar
+    (searchResults)="onSearchResults($event)"
+    (queryChanged)="onQueryChanged($event)"
+    (searchStarted)="onSearchStarted()"
+  />
 
-  <!-- Search results -->
-  @if (results().length > 0) {
-    <div class="search-page__grid">
-      @for (manga of results(); track manga.mal_id) {
-        <mt-manga-card
-          [manga]="manga"
-          [isFavorite]="isInLibrary(manga.mal_id)"
-          (favoriteToggled)="onFavoriteToggle($event)"
-          (cardClicked)="onCardClick($event)"
-        />
+  <!-- Source search status indicators -->
+  @if (isSearching() || (hasSearched() && hasAnyResults)) {
+    <div class="search-page__source-status">
+      @for (source of sourceStatuses(); track source.id) {
+        <div class="search-page__source-item" [class.search-page__source-item--loading]="source.loading">
+          @if (source.loading) {
+            <span class="search-page__source-icon search-page__source-icon--spin">&#10227;</span>
+          } @else {
+            <span class="search-page__source-icon search-page__source-icon--done">&#10003;</span>
+          }
+          <span class="search-page__source-name">{{ source.name }}</span>
+          <span class="search-page__source-count">
+            @if (source.loading) {
+              {{ t().nav.home === 'Home' ? 'searching...' : 'buscando...' }}
+            } @else {
+              &mdash; {{ source.count }} {{ t().nav.home === 'Home' ? 'results' : 'resultados' }}
+            }
+          </span>
+        </div>
       }
     </div>
-  } @else if (hasSearched()) {
+  }
+
+  <!-- No sources installed hint -->
+  @if (noSourcesInstalled() && !hasSearched()) {
+    <div class="search-page__no-sources">
+      <span class="search-page__no-sources-icon">&#x1F50C;</span>
+      <p>{{ t().nav.home === 'Home' ? 'Install sources like ComicK or Kitsu in Explore > Extensions to search across multiple libraries' : 'Instala fuentes como ComicK o Kitsu en Explorar > Extensiones para buscar en multiples bibliotecas' }}</p>
+    </div>
+  }
+
+  <!-- Source tabs -->
+  @if (showResults) {
+    <div class="search-page__tabs">
+      <button
+        class="search-page__tab"
+        [class.search-page__tab--active]="activeTab() === 'all'"
+        (click)="setActiveTab('all')"
+      >
+        {{ t().nav.home === 'Home' ? 'All' : 'Todos' }} ({{ totalCount() }})
+      </button>
+      @if (results().length > 0) {
+        <button
+          class="search-page__tab search-page__tab--jikan"
+          [class.search-page__tab--active]="activeTab() === 'jikan'"
+          (click)="setActiveTab('jikan')"
+        >
+          MAL ({{ results().length }})
+        </button>
+      }
+      @if (comickResults().length > 0) {
+        <button
+          class="search-page__tab search-page__tab--comick"
+          [class.search-page__tab--active]="activeTab() === 'comick'"
+          (click)="setActiveTab('comick')"
+        >
+          CK ({{ comickResults().length }})
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Results: Desktop grid / Mobile list -->
+  @if (showResults) {
+    <!-- Jikan results (shown in "all" or "jikan" tab) -->
+    @if (activeTab() === 'all' || activeTab() === 'jikan') {
+      @if (results().length > 0) {
+        <!-- Desktop grid view -->
+        <div class="search-page__grid">
+          @for (manga of results(); track manga.mal_id) {
+            <div class="search-page__card-wrapper">
+              <mt-manga-card
+                [manga]="manga"
+                [isFavorite]="isInLibrary(manga.mal_id)"
+                (favoriteToggled)="onFavoriteToggle($event)"
+                (cardClicked)="onCardClick($event)"
+              />
+              <span class="source-badge source-badge--jikan source-badge--corner">MAL</span>
+            </div>
+          }
+        </div>
+
+        <!-- Mobile list view -->
+        <div class="search-page__list">
+          @for (manga of results(); track manga.mal_id) {
+            <div class="search-page__list-item" (click)="onCardClick(manga.mal_id)">
+              <img
+                class="search-page__list-cover"
+                [src]="manga.images.jpg.image_url"
+                [alt]="manga.title"
+                loading="lazy"
+              />
+              <div class="search-page__list-info">
+                <h3 class="search-page__list-title">{{ manga.title_english ?? manga.title }}</h3>
+                @if (manga.score) {
+                  <span class="search-page__list-score">{{ manga.score }}</span>
+                }
+                @if (manga.status) {
+                  <span class="search-page__list-status">{{ manga.status }}</span>
+                }
+              </div>
+              <span class="source-badge source-badge--jikan source-badge--pill">MAL</span>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ComicK results (shown in "all" or "comick" tab) -->
+    @if (activeTab() === 'all' || activeTab() === 'comick') {
+      @if (comickResults().length > 0) {
+        <!-- Desktop grid view -->
+        <div class="search-page__grid search-page__grid--comick">
+          @for (manga of comickResults(); track manga.slug) {
+            <div class="search-page__card-wrapper" (click)="onComickCardClick(manga)">
+              <div class="search-page__source-card">
+                @if (manga.coverUrl) {
+                  <img class="search-page__source-card-img" [src]="manga.coverUrl" [alt]="manga.title" loading="lazy" />
+                } @else {
+                  <div class="search-page__source-card-img search-page__source-card-img--placeholder">
+                    <span>CK</span>
+                  </div>
+                }
+                <div class="search-page__source-card-body">
+                  <h3 class="search-page__source-card-title">{{ manga.title }}</h3>
+                  @if (manga.score) {
+                    <span class="search-page__source-card-score">{{ manga.score }}</span>
+                  }
+                </div>
+              </div>
+              <span class="source-badge source-badge--comick source-badge--corner">CK</span>
+            </div>
+          }
+        </div>
+
+        <!-- Mobile list view -->
+        <div class="search-page__list search-page__list--comick">
+          @for (manga of comickResults(); track manga.slug) {
+            <div class="search-page__list-item" (click)="onComickCardClick(manga)">
+              @if (manga.coverUrl) {
+                <img class="search-page__list-cover" [src]="manga.coverUrl" [alt]="manga.title" loading="lazy" />
+              } @else {
+                <div class="search-page__list-cover search-page__list-cover--placeholder">
+                  <span>CK</span>
+                </div>
+              }
+              <div class="search-page__list-info">
+                <h3 class="search-page__list-title">{{ manga.title }}</h3>
+                @if (manga.score) {
+                  <span class="search-page__list-score">{{ manga.score }}</span>
+                }
+              </div>
+              <span class="source-badge source-badge--comick source-badge--pill">CK</span>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+
+  <!-- No results state -->
+  @if (hasSearched() && !hasAnyResults && !isSearching()) {
     <div class="search-page__empty">
       <span class="search-page__empty-icon"></span>
       <p>{{ t().search.noResults }}</p>
@@ -26,8 +180,8 @@
     </div>
   }
 
-  <!-- Rankings (shown when not searching) -->
-  @if (!hasSearched() || results().length === 0) {
+  <!-- Rankings (shown ONLY when not searching) -->
+  @if (!hasSearched()) {
     @if (rankingsLoading()) {
       <div class="search-page__rankings-loading">
         <mt-loading-spinner size="md" />

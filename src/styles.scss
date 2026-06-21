@@ -112,3 +112,16 @@ img {
   background-color: var(--accent);
   color: white;
 }
+
+/* Mobile safe area support */
+@supports (padding: env(safe-area-inset-bottom)) {
+  html {
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding: 0; /* Reset - components handle their own safe areas */
+  }
+}
+
+/* Prevent body scroll when mobile overlay is open */
+body.no-scroll {
+  overflow: hidden;
+}

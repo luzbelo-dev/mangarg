@@ -188,9 +188,8 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .navbar {
-    &__links { display: none; }
-    &__inner { padding: 0 16px; }
+    display: none;
   }
 }

@@ -1,5 +1,5 @@
 .search-bar {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 
   &__input-wrapper {
     display: flex;
@@ -9,17 +9,24 @@
     border: 2px solid var(--border-color);
     border-radius: var(--radius);
     padding: 14px 18px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.3s ease;
 
     &:focus-within {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-light);
+      box-shadow: 0 0 0 4px var(--accent-light), 0 0 16px rgba(108, 92, 231, 0.15);
     }
   }
 
   &__icon {
     font-size: 1.1rem;
     flex-shrink: 0;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+  }
+
+  // When focused, make icon more prominent
+  &__input-wrapper:focus-within &__icon {
+    opacity: 1;
   }
 
   &__input {
@@ -37,25 +44,26 @@
   }
 
   &__clear {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    transition: background 0.2s ease, color 0.2s ease;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    background: var(--border-color);
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
     flex-shrink: 0;
 
     &:hover {
-      background: var(--border-color);
-      color: var(--text-primary);
+      background: var(--accent);
+      color: white;
+      transform: scale(1.1);
     }
 
     &:active {
-      background: var(--border-color);
-      color: var(--text-primary);
+      transform: scale(0.95);
     }
   }
 
@@ -67,5 +75,24 @@
     border-radius: var(--radius-sm);
     color: var(--score-low);
     font-size: 0.875rem;
+  }
+}
+
+// Mobile: full-width, no extra padding, prominent
+@media (max-width: 767px) {
+  .search-bar {
+    margin-bottom: 16px;
+    margin-left: -4px;
+    margin-right: -4px;
+
+    &__input-wrapper {
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      gap: 10px;
+    }
+
+    &__input {
+      font-size: 1rem;
+    }
   }
 }
