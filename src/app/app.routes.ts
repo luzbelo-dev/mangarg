@@ -2,9 +2,10 @@ import { Routes } from '@angular/router';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 
-const capacitorRedirectGuard = () => {
+const appRedirectGuard = () => {
   const router = inject(Router);
-  if (navigator.userAgent.includes('Capacitor')) {
+  const isWebsite = window.location.hostname.includes('netlify.app');
+  if (!isWebsite) {
     return router.createUrlTree(['/search']);
   }
   return true;
@@ -16,7 +17,7 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./features/landing/landing.routes').then(m => m.LANDING_ROUTES),
     pathMatch: 'full',
-    canActivate: [capacitorRedirectGuard],
+    canActivate: [appRedirectGuard],
   },
   {
     path: 'search',
