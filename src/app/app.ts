@@ -11,14 +11,14 @@ import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, MobileHeaderComponent, MobileTabBarComponent],
   template: `
-    @if (!isReaderRoute()) {
+    @if (!hideAppShell()) {
       <mt-navbar class="desktop-only" />
       <mt-mobile-header class="mobile-only" />
     }
-    <main [class.main-content]="!isReaderRoute()" [class.main-content--mobile]="!isReaderRoute()">
+    <main [class.main-content]="!hideAppShell()" [class.main-content--mobile]="!hideAppShell()">
       <router-outlet />
     </main>
-    @if (!isReaderRoute()) {
+    @if (!hideAppShell()) {
       <mt-mobile-tab-bar class="mobile-only" />
     }
   `,
@@ -64,4 +64,6 @@ export class App {
   );
 
   isReaderRoute = computed(() => this.url().startsWith('/reader'));
+  isLandingRoute = computed(() => this.url() === '/' || this.url() === '');
+  hideAppShell = computed(() => this.isReaderRoute() || this.isLandingRoute());
 }
