@@ -103,6 +103,9 @@
               </div>
             </div>
             <div class="extensions__card-actions">
+              <button class="extensions__btn extensions__btn--install" (click)="browseSource(adapter)">
+                {{ lang() === 'es' ? 'Explorar' : 'Browse' }}
+              </button>
               <button class="extensions__btn extensions__btn--uninstall" (click)="uninstall(adapter)">
                 {{ t().extensions.uninstall }}
               </button>

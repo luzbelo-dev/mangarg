@@ -1,0 +1,63 @@
+@if (showHeader()) {
+  <div class="reader__header">
+    <button class="reader__header-back" (click)="goBack()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <span class="reader__header-info">
+      Ch. {{ chapterNumber() }}
+      @if (pages().length > 0) {
+        — {{ currentPage() + 1 }}/{{ pages().length }}
+      }
+    </span>
+  </div>
+}
+
+<div class="reader__pages" (click)="toggleHeader()" (scroll)="onScroll($event)">
+  @if (loading()) {
+    <div class="reader__loading">
+      <mt-loading-spinner size="lg" />
+      <p>Loading pages...</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="reader__error">
+      <p>{{ error() }}</p>
+      <button class="reader__error-btn" (click)="goBack()">Go back</button>
+    </div>
+  }
+
+  @for (page of pages(); track page.index) {
+    <div class="reader__page">
+      @if (isPageFailed(page.index)) {
+        <div class="reader__page-error">
+          <p>Failed to load</p>
+          <button (click)="retryPage(page)">Retry</button>
+        </div>
+      } @else {
+        <img
+          [src]="page.url"
+          [alt]="'Page ' + (page.index + 1)"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+          (load)="onPageLoad(page.index)"
+          (error)="onPageError($event, page)"
+        />
+      }
+    </div>
+  }
+
+  @if (!loading() && !error() && pages().length === 0) {
+    <div class="reader__empty">
+      <p>No pages found for this chapter.</p>
+      <button class="reader__error-btn" (click)="goBack()">Go back</button>
+    </div>
+  }
+
+  @if (!loading() && pages().length > 0) {
+    <div class="reader__end">
+      <p>End of chapter</p>
+      <button class="reader__error-btn" (click)="goBack()">Back to manga</button>
+    </div>
+  }
+</div>

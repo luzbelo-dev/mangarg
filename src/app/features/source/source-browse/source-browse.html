@@ -1,0 +1,169 @@
+<div class="source-browse">
+  <!-- Header -->
+  <div class="source-browse__header">
+    <button class="source-browse__back" (click)="goBack()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+
+    @if (adapter()) {
+      <div class="source-browse__source-info">
+        <div class="source-browse__icon" [style.background-color]="adapter()!.iconColor">
+          <span>{{ adapter()!.icon }}</span>
+        </div>
+        <h1 class="source-browse__title">{{ adapter()!.name }}</h1>
+      </div>
+    }
+  </div>
+
+  <!-- Tabs -->
+  @if (adapter()) {
+    <div class="source-browse__tabs">
+      <button
+        class="source-browse__tab"
+        [class.active]="activeTab() === 'popular'"
+        (click)="setTab('popular')"
+      >
+        {{ lang() === 'es' ? 'Popular' : 'Popular' }}
+      </button>
+      @if (hasLatest) {
+        <button
+          class="source-browse__tab"
+          [class.active]="activeTab() === 'latest'"
+          (click)="setTab('latest')"
+        >
+          {{ lang() === 'es' ? 'Últimos' : 'Latest' }}
+        </button>
+      }
+      <button
+        class="source-browse__tab"
+        [class.active]="activeTab() === 'search'"
+        (click)="setTab('search')"
+      >
+        {{ lang() === 'es' ? 'Buscar' : 'Search' }}
+      </button>
+    </div>
+
+    <!-- Search input (visible only on search tab) -->
+    @if (activeTab() === 'search') {
+      <div class="source-browse__search">
+        <svg class="source-browse__search-icon" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input
+          class="source-browse__search-input"
+          type="text"
+          [placeholder]="lang() === 'es' ? 'Buscar manga...' : 'Search manga...'"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
+          (keydown)="onSearchKeydown($event)"
+        />
+        <button class="source-browse__search-btn" (click)="onSearch()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (loading()) {
+      <div class="source-browse__loading">
+        <mt-loading-spinner size="lg" />
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error() && !loading()) {
+      <div class="source-browse__error">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p>{{ error() }}</p>
+      </div>
+    }
+
+    <!-- Results grid -->
+    @if (!loading() && !error() && results().length > 0) {
+      <div class="source-browse__grid">
+        @for (manga of results(); track manga.slug) {
+          <div class="source-browse__card" (click)="onMangaClick(manga)">
+            <div class="source-browse__card-cover">
+              @if (manga.coverUrl) {
+                <img
+                  [src]="manga.coverUrl"
+                  [alt]="manga.title"
+                  loading="lazy"
+                  (error)="onImgError($event)"
+                />
+              }
+              <div class="source-browse__card-placeholder">
+                <span>{{ adapter()!.icon }}</span>
+              </div>
+              @if (manga.score) {
+                <span class="source-browse__card-score">{{ manga.score }}</span>
+              }
+            </div>
+            <div class="source-browse__card-info">
+              <span class="source-browse__card-title">{{ manga.title }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Empty state -->
+    @if (!loading() && !error() && results().length === 0) {
+      <div class="source-browse__empty">
+        @if (activeTab() === 'search' && !searchQuery()) {
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <p>{{ lang() === 'es' ? 'Escribí un nombre para buscar manga' : 'Type a name to search manga' }}</p>
+        } @else if (activeTab() === 'search') {
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <p>{{ lang() === 'es' ? 'No se encontraron resultados' : 'No results found' }}</p>
+        } @else {
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="9" y1="21" x2="9" y2="9"/>
+          </svg>
+          <p>{{ lang() === 'es' ? 'No hay manga disponible' : 'No manga available' }}</p>
+        }
+      </div>
+    }
+  }
+
+  <!-- Adapter not found (no tabs shown) -->
+  @if (!adapter() && error()) {
+    <div class="source-browse__error">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      <p>{{ error() }}</p>
+      <button class="source-browse__error-btn" (click)="goBack()">
+        {{ lang() === 'es' ? 'Volver a extensiones' : 'Back to extensions' }}
+      </button>
+    </div>
+  }
+</div>

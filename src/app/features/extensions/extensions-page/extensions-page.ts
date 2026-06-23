@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { TranslateService } from '../../../core/i18n/translate.service';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
 import { InstalledAdapter, MangaAdapterManifest } from '../../../core/models/adapter.model';
@@ -11,6 +12,7 @@ import { InstalledAdapter, MangaAdapterManifest } from '../../../core/models/ada
   styleUrl: './extensions-page.scss',
 })
 export class ExtensionsPageComponent implements OnInit {
+  private readonly router = inject(Router);
   protected readonly i18n = inject(TranslateService);
   protected readonly loader = inject(AdapterLoaderService);
 
@@ -75,6 +77,10 @@ export class ExtensionsPageComponent implements OnInit {
 
   async uninstall(adapter: InstalledAdapter): Promise<void> {
     await this.loader.uninstallAdapter(adapter.id);
+  }
+
+  browseSource(adapter: InstalledAdapter): void {
+    this.router.navigate(['/source', adapter.id]);
   }
 
   onRepoUrlInput(event: Event): void {

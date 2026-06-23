@@ -1,0 +1,127 @@
+:host { display: block; }
+
+.reader {
+  &__header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    color: white;
+    animation: slideDown 0.2s ease;
+  }
+
+  &__header-back {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    border: none;
+    background: none;
+    &:hover { background: rgba(255,255,255,0.1); }
+  }
+
+  &__header-info {
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  &__pages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #000;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+
+  &__loading, &__error, &__empty, &__end {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 80px 20px;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    min-height: 60vh;
+  }
+
+  &__error-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: var(--accent, #6c5ce7);
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    &:hover { opacity: 0.9; }
+  }
+
+  &__page {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    justify-content: center;
+    min-height: 200px;
+
+    img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+    }
+  }
+
+  &__page-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    aspect-ratio: 2/3;
+    background: #1a1a2e;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.85rem;
+
+    button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: var(--accent, #6c5ce7);
+      color: white;
+      border: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+  }
+
+  &__end {
+    padding: 40px 20px 100px;
+    color: rgba(255,255,255,0.4);
+    font-size: 0.9rem;
+  }
+}
+
+body.source-reader-active {
+  overflow: hidden;
+  mt-navbar, mt-mobile-header, mt-mobile-tab-bar {
+    display: none !important;
+  }
+  .main-content { padding: 0 !important; max-width: none !important; min-height: auto !important; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}

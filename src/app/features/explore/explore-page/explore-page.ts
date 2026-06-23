@@ -230,26 +230,7 @@ export class ExplorePageComponent implements OnInit {
 
   // Source browsing methods
   onSourceTap(source: MangaSource): void {
-    if (source.id === 'jikan' || source.id === 'mangadex') {
-      // Switch to Popular tab which already shows Jikan data
-      this.setTab('popular');
-      return;
-    }
-
-    if (source.id === 'comick') {
-      this.browseSource.set(source);
-      this.browseLoading.set(true);
-      this.comickService.getPopular(20).pipe(
-        takeUntilDestroyed(this.destroyRef),
-      ).subscribe(results => {
-        this.browseResults.set(results);
-        this.browseLoading.set(false);
-      });
-      return;
-    }
-
-    // Other sources: open externally
-    window.open(source.baseUrl, '_blank');
+    this.router.navigate(['/source', source.id]);
   }
 
   closeBrowse(): void {

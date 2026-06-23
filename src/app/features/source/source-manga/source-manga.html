@@ -1,0 +1,142 @@
+@if (loading()) {
+  <div class="source-manga__loading">
+    <mt-loading-spinner size="lg" />
+  </div>
+} @else if (error()) {
+  <div class="source-manga__error">
+    <p>{{ error() }}</p>
+    <button class="source-manga__back-btn" (click)="goBack()">
+      ← {{ lang() === 'es' ? 'Volver' : 'Go back' }}
+    </button>
+  </div>
+} @else {
+  <div class="source-manga">
+    <!-- Top bar -->
+    <div class="source-manga__topbar">
+      <button class="source-manga__back-btn" (click)="goBack()">
+        ← {{ lang() === 'es' ? 'Volver' : 'Back' }}
+      </button>
+      @if (sourceName) {
+        <span class="source-manga__source-name">{{ sourceName }}</span>
+      }
+    </div>
+
+    <!-- Hero section -->
+    <div class="source-manga__hero">
+      <div class="source-manga__cover">
+        @if (manga()?.coverUrl) {
+          <img
+            [src]="manga()!.coverUrl"
+            [alt]="manga()!.title"
+            class="source-manga__cover-img"
+            (error)="onCoverError($event)"
+          />
+        } @else {
+          <div class="source-manga__cover-placeholder">
+            <span>{{ lang() === 'es' ? 'Sin portada' : 'No cover' }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="source-manga__info">
+        <h1 class="source-manga__title">{{ manga()?.title ?? '' }}</h1>
+
+        @if (manga()?.author) {
+          <p class="source-manga__author">{{ manga()!.author }}</p>
+        }
+
+        @if (manga()?.artist && manga()!.artist !== manga()!.author) {
+          <p class="source-manga__artist">
+            {{ lang() === 'es' ? 'Artista' : 'Artist' }}: {{ manga()!.artist }}
+          </p>
+        }
+
+        <div class="source-manga__meta">
+          @if (manga()?.status) {
+            <span class="source-manga__status" [class]="'source-manga__status--' + statusClass">
+              {{ statusLabel }}
+            </span>
+          }
+
+          @if (manga()?.score) {
+            <span class="source-manga__score">
+              ★ {{ manga()!.score }}
+            </span>
+          }
+
+          @if (manga()?.totalChapters) {
+            <span class="source-manga__meta-item">
+              {{ manga()!.totalChapters }} {{ lang() === 'es' ? 'capítulos' : 'chapters' }}
+            </span>
+          }
+        </div>
+
+        @if (manga()?.description) {
+          <div class="source-manga__description">
+            <p class="source-manga__description-text">{{ truncatedDescription }}</p>
+            @if (isDescriptionLong) {
+              <button class="source-manga__expand-btn" (click)="toggleDescription()">
+                @if (descriptionExpanded()) {
+                  {{ lang() === 'es' ? 'Ver menos' : 'Show less' }}
+                } @else {
+                  {{ lang() === 'es' ? 'Ver más' : 'Show more' }}
+                }
+              </button>
+            }
+          </div>
+        }
+
+        @if (manga()?.genres && manga()!.genres!.length > 0) {
+          <div class="source-manga__genres">
+            @for (genre of manga()!.genres!; track genre) {
+              <span class="source-manga__genre-pill">{{ genre }}</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Chapters section -->
+    <div class="source-manga__chapters">
+      <h2 class="source-manga__chapters-header">
+        {{ lang() === 'es' ? 'Capítulos' : 'Chapters' }}
+        @if (!loadingChapters()) {
+          ({{ chapters().length }})
+        }
+      </h2>
+
+      @if (loadingChapters()) {
+        <div class="source-manga__chapters-loading">
+          <mt-loading-spinner size="md" />
+        </div>
+      } @else {
+        <div class="source-manga__chapter-list">
+          @for (chapter of chapters(); track chapter.id) {
+            <button class="source-manga__chapter-item" (click)="onChapterClick(chapter)">
+              <div class="source-manga__chapter-main">
+                <span class="source-manga__chapter-number">
+                  {{ lang() === 'es' ? 'Cap.' : 'Ch.' }} {{ chapter.chapterNumber }}
+                </span>
+                @if (chapter.title) {
+                  <span class="source-manga__chapter-title">{{ chapter.title }}</span>
+                }
+              </div>
+              <div class="source-manga__chapter-meta">
+                @if (chapter.groupName) {
+                  <span class="source-manga__chapter-group">{{ chapter.groupName }}</span>
+                }
+                @if (chapter.publishDate) {
+                  <span class="source-manga__chapter-date">{{ formatDate(chapter.publishDate) }}</span>
+                }
+              </div>
+            </button>
+          } @empty {
+            <div class="source-manga__no-chapters">
+              <p>{{ lang() === 'es' ? 'No se encontraron capítulos' : 'No chapters found' }}</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

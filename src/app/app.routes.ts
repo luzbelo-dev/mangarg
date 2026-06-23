@@ -55,6 +55,11 @@ export const routes: Routes = [
       import('./features/reader/reader.routes').then(m => m.READER_ROUTES),
   },
   {
+    path: 'source',
+    loadChildren: () =>
+      import('./features/source/source.routes').then(m => m.SOURCE_ROUTES),
+  },
+  {
     path: '**',
     redirectTo: '',
   },
