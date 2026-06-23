@@ -11,7 +11,7 @@
   @media (hover: hover) {
     &:hover {
       transform: translateY(-4px);
-      box-shadow: var(--shadow-lg);
+      box-shadow: var(--shadow-lg), var(--glow-card);
       border-color: var(--accent);
     }
   }

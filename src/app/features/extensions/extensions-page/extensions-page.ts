@@ -1,13 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } from '@angular/core';
 import { TranslateService } from '../../../core/i18n/translate.service';
-import { SourceRegistryService } from '../../../core/services/source-registry.service';
-import { MangaSource } from '../../../core/models/source.model';
-
-interface LangGroup {
-  lang: string;
-  label: string;
-  sources: MangaSource[];
-}
+import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
+import { InstalledAdapter, MangaAdapterManifest } from '../../../core/models/adapter.model';
 
 @Component({
   selector: 'mt-extensions-page',
@@ -16,53 +10,47 @@ interface LangGroup {
   templateUrl: './extensions-page.html',
   styleUrl: './extensions-page.scss',
 })
-export class ExtensionsPageComponent {
+export class ExtensionsPageComponent implements OnInit {
   protected readonly i18n = inject(TranslateService);
-  protected readonly registry = inject(SourceRegistryService);
+  protected readonly loader = inject(AdapterLoaderService);
 
   t = this.i18n.t;
   lang = this.i18n.lang;
 
-  activeTab = signal<'installed' | 'available'>('installed');
+  activeTab = signal<'installed' | 'available' | 'repos'>('installed');
   searchQuery = signal('');
   activeLang = signal('All');
+  installingId = signal<string | null>(null);
+  repoUrlInput = signal('');
 
   readonly langFilters = ['All', 'Multi', 'EN', 'ES', 'JP', 'KO', 'ZH', 'FR', 'PT', 'ID'];
 
   private readonly langLabels: Record<string, string> = {
-    Multi: 'Multi',
-    EN: 'English',
-    ES: 'Spanish',
-    JP: 'Japanese',
-    KO: 'Korean',
-    ZH: 'Chinese',
-    FR: 'French',
-    PT: 'Portuguese',
-    ID: 'Indonesian',
+    Multi: 'Multi', EN: 'English', ES: 'Spanish', JP: 'Japanese',
+    KO: 'Korean', ZH: 'Chinese', FR: 'French', PT: 'Portuguese', ID: 'Indonesian',
   };
 
   readonly filteredInstalled = computed(() => {
-    return this.filterSources(this.registry.installed());
+    return this.filterItems(this.loader.installedAdapters(), 'installed');
   });
 
   readonly filteredAvailable = computed(() => {
-    return this.filterSources(this.registry.notInstalled());
-  });
-
-  readonly groupedAvailable = computed(() => {
-    const sources = this.filteredAvailable();
-    return this.groupByLang(sources);
+    return this.filterItems(this.loader.availableAdapters(), 'available');
   });
 
   readonly groupedInstalled = computed(() => {
-    const sources = this.filteredInstalled();
-    return this.groupByLang(sources);
+    return this.groupByLang(this.filteredInstalled());
   });
 
-  readonly installedCount = computed(() => this.filteredInstalled().length);
-  readonly availableCount = computed(() => this.filteredAvailable().length);
+  readonly groupedAvailable = computed(() => {
+    return this.groupByLang(this.filteredAvailable());
+  });
 
-  setTab(tab: 'installed' | 'available'): void {
+  ngOnInit(): void {
+    this.loader.refreshRepos();
+  }
+
+  setTab(tab: 'installed' | 'available' | 'repos'): void {
     this.activeTab.set(tab);
   }
 
@@ -71,60 +59,64 @@ export class ExtensionsPageComponent {
   }
 
   onSearchInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.searchQuery.set(input.value);
+    this.searchQuery.set((event.target as HTMLInputElement).value);
   }
 
-  getDescription(source: MangaSource): string {
-    return this.lang() === 'es' ? source.descriptionEs : source.description;
+  getDescription(item: InstalledAdapter | MangaAdapterManifest): string {
+    return this.lang() === 'es' ? item.descriptionEs : item.description;
   }
 
-  install(source: MangaSource): void {
-    this.registry.install(source.id);
+  async install(adapter: MangaAdapterManifest): Promise<void> {
+    this.installingId.set(adapter.id);
+    const repo = this.loader.repos()[0];
+    await this.loader.installAdapter(adapter, repo?.id ?? 'default');
+    this.installingId.set(null);
   }
 
-  uninstall(source: MangaSource): void {
-    this.registry.uninstall(source.id);
+  async uninstall(adapter: InstalledAdapter): Promise<void> {
+    await this.loader.uninstallAdapter(adapter.id);
   }
 
-  private filterSources(sources: MangaSource[]): MangaSource[] {
+  onRepoUrlInput(event: Event): void {
+    this.repoUrlInput.set((event.target as HTMLInputElement).value);
+  }
+
+  addRepo(): void {
+    const url = this.repoUrlInput().trim();
+    if (!url) return;
+    this.loader.addRepo(url);
+    this.repoUrlInput.set('');
+  }
+
+  removeRepo(repoId: string): void {
+    this.loader.removeRepo(repoId);
+  }
+
+  refreshRepos(): void {
+    this.loader.refreshRepos();
+  }
+
+  private filterItems<T extends { name: string; lang: string }>(items: T[], _type: string): T[] {
     const query = this.searchQuery().toLowerCase().trim();
     const lang = this.activeLang();
-
-    return sources.filter(s => {
-      const matchesLang = lang === 'All' || s.lang === lang;
+    return items.filter(s => {
+      const matchesLang = lang === 'All' || s.lang.toUpperCase() === lang;
       const matchesSearch = !query || s.name.toLowerCase().includes(query);
       return matchesLang && matchesSearch;
     });
   }
 
-  private groupByLang(sources: MangaSource[]): LangGroup[] {
+  private groupByLang<T extends { name: string; lang: string }>(items: T[]): { lang: string; label: string; items: T[] }[] {
     const langOrder = ['Multi', 'EN', 'ES', 'JP', 'KO', 'ZH', 'FR', 'PT', 'ID'];
-    const groups: Map<string, MangaSource[]> = new Map();
-
-    for (const source of sources) {
-      const existing = groups.get(source.lang) || [];
-      existing.push(source);
-      groups.set(source.lang, existing);
+    const groups = new Map<string, T[]>();
+    for (const item of items) {
+      const key = item.lang.length <= 3 ? item.lang : 'Multi';
+      const list = groups.get(key) || [];
+      list.push(item);
+      groups.set(key, list);
     }
-
-    // Sort within groups alphabetically
-    for (const [, list] of groups) {
-      list.sort((a, b) => a.name.localeCompare(b.name));
-    }
-
-    const result: LangGroup[] = [];
-    for (const lang of langOrder) {
-      const list = groups.get(lang);
-      if (list && list.length > 0) {
-        result.push({
-          lang,
-          label: this.langLabels[lang] || lang,
-          sources: list,
-        });
-      }
-    }
-
-    return result;
+    return langOrder
+      .filter(l => groups.has(l) && groups.get(l)!.length > 0)
+      .map(l => ({ lang: l, label: this.langLabels[l] || l, items: groups.get(l)! }));
   }
 }

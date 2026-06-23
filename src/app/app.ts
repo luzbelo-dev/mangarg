@@ -5,11 +5,12 @@ import { map } from 'rxjs';
 import { NavbarComponent } from './shared/components/navbar/navbar';
 import { MobileHeaderComponent } from './shared/components/mobile-header/mobile-header';
 import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile-tab-bar';
+import { ToastContainerComponent } from './shared/components/toast-container/toast-container';
 
 @Component({
   selector: 'mt-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, MobileHeaderComponent, MobileTabBarComponent],
+  imports: [RouterOutlet, NavbarComponent, MobileHeaderComponent, MobileTabBarComponent, ToastContainerComponent],
   template: `
     @if (!hideAppShell()) {
       <mt-navbar class="desktop-only" />
@@ -21,6 +22,7 @@ import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile
     @if (!hideAppShell()) {
       <mt-mobile-tab-bar class="mobile-only" />
     }
+    <mt-toast-container />
   `,
   styles: `
     .desktop-only {
