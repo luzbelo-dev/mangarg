@@ -45,19 +45,25 @@ export class AdapterLoaderService {
 
   async init(): Promise<void> {
     if (this.loaded) return;
-    const adapters = await firstValueFrom(this.db.getAll<InstalledAdapter>('installed-adapters'));
-    this.installedAdapters.set(adapters);
-    for (const adapter of adapters) {
-      try {
-        const instance = this.runtime.execute(adapter.code, adapter.config);
-        this.loadedAdapters.set(adapter.id, instance);
-      } catch (e) {
-        console.error(`Failed to load adapter ${adapter.id}:`, e);
+    try {
+      const adapters = await firstValueFrom(this.db.getAll<InstalledAdapter>('installed-adapters'));
+      this.installedAdapters.set(adapters);
+      for (const adapter of adapters) {
+        try {
+          const instance = this.runtime.execute(adapter.code, adapter.config);
+          this.loadedAdapters.set(adapter.id, instance);
+        } catch (e) {
+          console.error(`Failed to load adapter ${adapter.id}:`, e);
+        }
       }
+    } catch (e) {
+      console.error('Failed to load adapters from DB:', e);
     }
     this.loaded = true;
     if (this.repos().length === 0) {
-      this.addRepo(getDefaultRepoUrl());
+      await this.addRepo(getDefaultRepoUrl());
+    } else {
+      await this.refreshRepos();
     }
   }
 
@@ -188,7 +194,7 @@ export class AdapterLoaderService {
     return this.installAdapter(available, repoId);
   }
 
-  addRepo(url: string): void {
+  async addRepo(url: string): Promise<void> {
     const cleanUrl = url.trim().replace(/\/$/, '');
     if (this.repos().some(r => r.url === cleanUrl)) return;
 
@@ -200,7 +206,7 @@ export class AdapterLoaderService {
     };
     this.repos.update(list => [...list, repo]);
     this.saveRepos();
-    this.refreshRepos();
+    await this.refreshRepos();
   }
 
   removeRepo(repoId: string): void {

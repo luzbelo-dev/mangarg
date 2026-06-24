@@ -10,21 +10,29 @@ export class AdapterRuntimeService {
 
   createApi(): AdapterApi {
     return {
-      get: <T>(url: string, params?: Record<string, string | number>): Promise<T> => {
+      get: <T>(url: string, params?: Record<string, any>): Promise<T> => {
         const fullUrl = new URL(url);
         if (params) {
           for (const [k, v] of Object.entries(params)) {
-            fullUrl.searchParams.set(k, String(v));
+            if (Array.isArray(v)) {
+              for (const item of v) fullUrl.searchParams.append(k, String(item));
+            } else {
+              fullUrl.searchParams.set(k, String(v));
+            }
           }
         }
         return firstValueFrom(this.http.get<T>(fullUrl.toString()));
       },
 
-      getText: (url: string, params?: Record<string, string | number>): Promise<string> => {
+      getText: (url: string, params?: Record<string, any>): Promise<string> => {
         const fullUrl = new URL(url);
         if (params) {
           for (const [k, v] of Object.entries(params)) {
-            fullUrl.searchParams.set(k, String(v));
+            if (Array.isArray(v)) {
+              for (const item of v) fullUrl.searchParams.append(k, String(item));
+            } else {
+              fullUrl.searchParams.set(k, String(v));
+            }
           }
         }
         return firstValueFrom(this.http.get(fullUrl.toString(), { responseType: 'text' }));
