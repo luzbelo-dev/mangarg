@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 const DB_NAME = 'manga-ale-db';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 @Injectable({ providedIn: 'root' })
 export class IndexedDbService {
@@ -40,6 +40,20 @@ export class IndexedDbService {
 
         if (!db.objectStoreNames.contains('installed-adapters')) {
           db.createObjectStore('installed-adapters', { keyPath: 'id' });
+        }
+
+        if (!db.objectStoreNames.contains('source-library')) {
+          db.createObjectStore('source-library', { keyPath: 'id' });
+        }
+
+        if (!db.objectStoreNames.contains('source-downloaded-chapters')) {
+          const sdcStore = db.createObjectStore('source-downloaded-chapters', { keyPath: 'id' });
+          sdcStore.createIndex('mangaId', 'mangaId', { unique: false });
+        }
+
+        if (!db.objectStoreNames.contains('source-downloaded-pages')) {
+          const sdpStore = db.createObjectStore('source-downloaded-pages', { keyPath: 'id' });
+          sdpStore.createIndex('chapterId', 'chapterId', { unique: false });
         }
       };
 

@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, DestroyRef, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
+import { SourceLibraryService } from '../../../core/services/source-library.service';
+import { SourceDownloadService } from '../../../core/services/source-download.service';
 import { TranslateService } from '../../../core/i18n/translate.service';
 import { MangaAdapterInstance, MangaDetail } from '../../../core/models/adapter.model';
 import { SourceChapter } from '../../../core/models/source.model';
@@ -22,6 +24,8 @@ export class SourceMangaComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly appLocation = inject(Location);
   private readonly adapterLoader = inject(AdapterLoaderService);
+  private readonly sourceLibrary = inject(SourceLibraryService);
+  private readonly sourceDownload = inject(SourceDownloadService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly i18n = inject(TranslateService);
 
@@ -36,10 +40,22 @@ export class SourceMangaComponent implements OnInit {
   error = signal<string | null>(null);
   descriptionExpanded = signal(false);
 
-  private sourceId = '';
-  private slug = '';
+  // Signals for reactivity on download state changes
+  downloadTrigger = signal(0);
+
+  sourceId = '';
+  slug = '';
+
+  isInLibrary = computed(() => {
+    return this.sourceLibrary.allEntries().some(
+      e => e.sourceId === this.sourceId && e.slug === this.slug
+    );
+  });
 
   ngOnInit(): void {
+    this.sourceLibrary.init();
+    this.sourceDownload.init();
+
     this.route.params
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
@@ -57,7 +73,7 @@ export class SourceMangaComponent implements OnInit {
           this.loadingChapters.set(false);
           this.error.set(
             this.lang() === 'es'
-              ? 'Extensión no encontrada o no instalada'
+              ? 'Extension no encontrada o no instalada'
               : 'Extension not found or not installed'
           );
         }
@@ -116,6 +132,56 @@ export class SourceMangaComponent implements OnInit {
 
   toggleDescription(): void {
     this.descriptionExpanded.update(v => !v);
+  }
+
+  async toggleLibrary(): Promise<void> {
+    const m = this.manga();
+    if (!m) return;
+    await this.sourceLibrary.toggle({
+      sourceId: this.sourceId,
+      slug: this.slug,
+      title: m.title,
+      coverUrl: m.coverUrl,
+      description: m.description,
+      author: m.author,
+      status: m.status,
+      genres: m.genres,
+    });
+  }
+
+  isChapterDownloaded(chapterId: string): boolean {
+    this.downloadTrigger(); // subscribe to trigger for reactivity
+    return this.sourceDownload.isDownloaded(chapterId);
+  }
+
+  isChapterDownloading(chapterId: string): boolean {
+    return this.sourceDownload.isDownloading(chapterId);
+  }
+
+  getDownloadProgress(chapterId: string): number {
+    return this.sourceDownload.getProgress(chapterId);
+  }
+
+  async onDownloadChapter(event: Event, chapter: SourceChapter): Promise<void> {
+    event.stopPropagation();
+    const m = this.manga();
+    if (!m) return;
+
+    if (this.sourceDownload.isDownloaded(chapter.id)) return;
+    if (this.sourceDownload.isDownloading(chapter.id)) {
+      this.sourceDownload.cancelDownload(chapter.id);
+      return;
+    }
+
+    await this.sourceDownload.downloadChapter(
+      this.sourceId,
+      this.slug,
+      m.title,
+      chapter.id,
+      chapter.chapterNumber,
+      chapter.title,
+    );
+    this.downloadTrigger.update(v => v + 1);
   }
 
   onChapterClick(chapter: SourceChapter): void {

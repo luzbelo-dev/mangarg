@@ -9,13 +9,7 @@ import { TranslateService } from '../../../core/i18n/translate.service';
   imports: [RouterLink],
   template: `
     <header class="mobile-header">
-      <a routerLink="/search" class="mobile-header__title">Mi Manga Dinamita</a>
-      <a routerLink="/search" class="mobile-header__search-btn" [attr.aria-label]="t().nav.search">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      </a>
+      <span class="mobile-header__title">Mi Manga Dinamita</span>
     </header>
   `,
   styles: `

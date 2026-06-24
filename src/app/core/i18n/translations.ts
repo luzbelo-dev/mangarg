@@ -34,6 +34,9 @@ export const translations = {
       version: 'v',
       searchPlaceholder: 'Buscar extensiones...',
       allLangs: 'Todos',
+      confirmInstall: 'Seguro de instalar esta extension?',
+      confirmCancel: 'Cancelar',
+      confirmLink: 'Si queres conocer mas sobre esta extension, podes verlo desde aca',
     },
     download: {
       tagline: 'Lector de manga gratuito. Sin anuncios. Open source.',
@@ -262,6 +265,9 @@ export const translations = {
       version: 'v',
       searchPlaceholder: 'Search extensions...',
       allLangs: 'All',
+      confirmInstall: 'Are you sure you want to install this extension?',
+      confirmCancel: 'Cancel',
+      confirmLink: 'If you want to learn more about this extension, you can check it out here',
     },
     download: {
       tagline: 'Free manga reader. No ads. Open source.',
@@ -491,6 +497,9 @@ export interface Translations {
     version: string;
     searchPlaceholder: string;
     allLangs: string;
+    confirmInstall: string;
+    confirmCancel: string;
+    confirmLink: string;
   };
   landing: {
     inDevelopment: string;

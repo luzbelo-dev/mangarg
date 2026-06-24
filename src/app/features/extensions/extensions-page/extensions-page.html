@@ -154,7 +154,7 @@
               <button
                 class="extensions__btn extensions__btn--install"
                 [disabled]="installingId() === adapter.id"
-                (click)="install(adapter)"
+                (click)="showInstallConfirm(adapter)"
               >
                 @if (installingId() === adapter.id) {
                   <div class="extensions__btn-spinner"></div>
@@ -219,3 +219,36 @@
     </div>
   }
 </div>
+
+<!-- Install confirmation dialog -->
+@if (confirmAdapter()) {
+  <div class="confirm-overlay" (click)="cancelInstall()">
+    <div class="confirm-dialog" (click)="$event.stopPropagation()">
+      <p class="confirm-dialog__message">
+        {{ lang() === 'es' ? 'Seguro de instalar esta extension?' : 'Are you sure you want to install this extension?' }}
+      </p>
+      <p class="confirm-dialog__name">{{ confirmAdapter()!.name }}</p>
+
+      <div class="confirm-dialog__actions">
+        <button class="confirm-dialog__btn confirm-dialog__btn--cancel" (click)="cancelInstall()">
+          {{ lang() === 'es' ? 'Cancelar' : 'Cancel' }}
+        </button>
+        <button class="confirm-dialog__btn confirm-dialog__btn--confirm" (click)="confirmInstall()">
+          {{ t().extensions.install }}
+        </button>
+      </div>
+
+      <a
+        class="confirm-dialog__link"
+        [href]="confirmAdapter()!.baseUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {{ lang() === 'es'
+          ? 'Si queres conocer mas sobre esta extension, podes verlo desde aca'
+          : 'If you want to learn more about this extension, you can check it out here'
+        }}
+      </a>
+    </div>
+  </div>
+}

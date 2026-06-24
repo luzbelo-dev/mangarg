@@ -12,37 +12,22 @@ import { Lang } from '../../../core/i18n/translations';
   template: `
     <nav class="tab-bar" role="tablist">
       <a
-        routerLink="/search"
+        routerLink="/extensions"
         routerLinkActive="tab-bar__tab--active"
         class="tab-bar__tab"
         role="tab"
       >
         <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
         </svg>
         <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <rect x="9" y="12" width="6" height="10" fill="var(--bg-nav)"/>
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M2 12l10 5 10-5" fill="none" stroke="currentColor" stroke-width="2"/>
         </svg>
-        <span class="tab-bar__label">{{ t().nav.home }}</span>
-      </a>
-
-      <a
-        routerLink="/explore"
-        routerLinkActive="tab-bar__tab--active"
-        class="tab-bar__tab"
-        role="tab"
-      >
-        <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
-        </svg>
-        <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-          <circle cx="12" cy="12" r="10"/>
-          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="var(--bg-nav)"/>
-        </svg>
-        <span class="tab-bar__label">{{ t().nav.explore }}</span>
+        <span class="tab-bar__label">{{ lang() === 'es' ? 'Extensiones' : 'Extensions' }}</span>
       </a>
 
       <a
@@ -58,7 +43,26 @@ import { Lang } from '../../../core/i18n/translations';
         <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
           <path d="M6.5 2C5.12 2 4 3.12 4 4.5v15C4 20.88 5.12 22 6.5 22H20V2H6.5zM4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
         </svg>
-        <span class="tab-bar__label">{{ t().nav.library }}</span>
+        <span class="tab-bar__label">{{ lang() === 'es' ? 'Biblioteca' : 'Library' }}</span>
+      </a>
+
+      <a
+        routerLink="/download"
+        routerLinkActive="tab-bar__tab--active"
+        class="tab-bar__tab"
+        role="tab"
+      >
+        <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4h18z"/>
+          <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <line x1="12" y1="15" x2="12" y2="3" fill="none" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span class="tab-bar__label">{{ lang() === 'es' ? 'Descargas' : 'Downloads' }}</span>
       </a>
 
       <button
@@ -96,17 +100,6 @@ import { Lang } from '../../../core/i18n/translations';
           </div>
 
           <div class="more-sheet__content">
-            <a routerLink="/library" [queryParams]="{tab: 'downloads'}" class="more-sheet__link" (click)="closeMore()">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              <span>{{ t().nav.home === 'Home' ? 'Offline downloads' : 'Descargas offline' }}</span>
-            </a>
-
-            <div class="more-sheet__divider"></div>
-
             <div class="more-sheet__item">
               <span class="more-sheet__item-label">{{ t().nav.home === 'Home' ? 'Language' : 'Idioma' }}</span>
               <select
@@ -140,7 +133,7 @@ import { Lang } from '../../../core/i18n/translations';
             <div class="more-sheet__divider"></div>
 
             <div class="more-sheet__version">
-              Mi Manga Dinamita v1.2.0
+              Mi Manga Dinamita v1.3.0
             </div>
           </div>
         </div>

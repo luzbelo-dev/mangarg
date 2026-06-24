@@ -66,10 +66,25 @@
 
           @if (manga()?.totalChapters) {
             <span class="source-manga__meta-item">
-              {{ manga()!.totalChapters }} {{ lang() === 'es' ? 'capítulos' : 'chapters' }}
+              {{ manga()!.totalChapters }} {{ lang() === 'es' ? 'capitulos' : 'chapters' }}
             </span>
           }
         </div>
+
+        <!-- Library button -->
+        <button class="source-manga__library-btn" [class.in-library]="isInLibrary()" (click)="toggleLibrary()">
+          @if (isInLibrary()) {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            {{ t().detail.removeFromLibrary }}
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            {{ t().detail.addToLibrary }}
+          }
+        </button>
 
         @if (manga()?.description) {
           <div class="source-manga__description">
@@ -79,7 +94,7 @@
                 @if (descriptionExpanded()) {
                   {{ lang() === 'es' ? 'Ver menos' : 'Show less' }}
                 } @else {
-                  {{ lang() === 'es' ? 'Ver más' : 'Show more' }}
+                  {{ lang() === 'es' ? 'Ver mas' : 'Show more' }}
                 }
               </button>
             }
@@ -99,7 +114,7 @@
     <!-- Chapters section -->
     <div class="source-manga__chapters">
       <h2 class="source-manga__chapters-header">
-        {{ lang() === 'es' ? 'Capítulos' : 'Chapters' }}
+        {{ lang() === 'es' ? 'Capitulos' : 'Chapters' }}
         @if (!loadingChapters()) {
           ({{ chapters().length }})
         }
@@ -112,27 +127,49 @@
       } @else {
         <div class="source-manga__chapter-list">
           @for (chapter of chapters(); track chapter.id) {
-            <button class="source-manga__chapter-item" (click)="onChapterClick(chapter)">
-              <div class="source-manga__chapter-main">
-                <span class="source-manga__chapter-number">
-                  {{ lang() === 'es' ? 'Cap.' : 'Ch.' }} {{ chapter.chapterNumber }}
-                </span>
-                @if (chapter.title) {
-                  <span class="source-manga__chapter-title">{{ chapter.title }}</span>
+            <div class="source-manga__chapter-item">
+              <button class="source-manga__chapter-content" (click)="onChapterClick(chapter)">
+                <div class="source-manga__chapter-main">
+                  <span class="source-manga__chapter-number">
+                    {{ lang() === 'es' ? 'Cap.' : 'Ch.' }} {{ chapter.chapterNumber }}
+                  </span>
+                  @if (chapter.title) {
+                    <span class="source-manga__chapter-title">{{ chapter.title }}</span>
+                  }
+                </div>
+                <div class="source-manga__chapter-meta">
+                  @if (chapter.groupName) {
+                    <span class="source-manga__chapter-group">{{ chapter.groupName }}</span>
+                  }
+                  @if (chapter.publishDate) {
+                    <span class="source-manga__chapter-date">{{ formatDate(chapter.publishDate) }}</span>
+                  }
+                </div>
+              </button>
+              <button
+                class="source-manga__download-btn"
+                [class.downloaded]="isChapterDownloaded(chapter.id)"
+                [class.downloading]="isChapterDownloading(chapter.id)"
+                (click)="onDownloadChapter($event, chapter)"
+              >
+                @if (isChapterDownloaded(chapter.id)) {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                } @else if (isChapterDownloading(chapter.id)) {
+                  <div class="source-manga__download-spinner"></div>
+                } @else {
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
                 }
-              </div>
-              <div class="source-manga__chapter-meta">
-                @if (chapter.groupName) {
-                  <span class="source-manga__chapter-group">{{ chapter.groupName }}</span>
-                }
-                @if (chapter.publishDate) {
-                  <span class="source-manga__chapter-date">{{ formatDate(chapter.publishDate) }}</span>
-                }
-              </div>
-            </button>
+              </button>
+            </div>
           } @empty {
             <div class="source-manga__no-chapters">
-              <p>{{ lang() === 'es' ? 'No se encontraron capítulos' : 'No chapters found' }}</p>
+              <p>{{ lang() === 'es' ? 'No se encontraron capitulos' : 'No chapters found' }}</p>
             </div>
           }
         </div>

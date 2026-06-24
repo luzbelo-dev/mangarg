@@ -25,6 +25,9 @@ export class ExtensionsPageComponent implements OnInit {
   installingId = signal<string | null>(null);
   repoUrlInput = signal('');
 
+  // Confirmation dialog
+  confirmAdapter = signal<MangaAdapterManifest | null>(null);
+
   readonly langFilters = ['All', 'Multi', 'EN', 'ES', 'JP', 'KO', 'ZH', 'FR', 'PT', 'ID'];
 
   private readonly langLabels: Record<string, string> = {
@@ -66,6 +69,22 @@ export class ExtensionsPageComponent implements OnInit {
 
   getDescription(item: InstalledAdapter | MangaAdapterManifest): string {
     return this.lang() === 'es' ? item.descriptionEs : item.description;
+  }
+
+  // Show confirmation dialog instead of installing directly
+  showInstallConfirm(adapter: MangaAdapterManifest): void {
+    this.confirmAdapter.set(adapter);
+  }
+
+  cancelInstall(): void {
+    this.confirmAdapter.set(null);
+  }
+
+  async confirmInstall(): Promise<void> {
+    const adapter = this.confirmAdapter();
+    if (!adapter) return;
+    this.confirmAdapter.set(null);
+    await this.install(adapter);
   }
 
   async install(adapter: MangaAdapterManifest): Promise<void> {

@@ -162,6 +162,51 @@
     margin-top: 4px;
   }
 
+  &__library-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    min-height: 44px;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    transition: all 0.2s ease;
+    margin-top: 4px;
+    white-space: nowrap;
+
+    &:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    &:active {
+      background: var(--accent);
+      color: white;
+      transform: scale(0.96);
+    }
+
+    &.in-library {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+
+      &:hover {
+        background: #e74c3c;
+        border-color: #e74c3c;
+      }
+
+      &:active {
+        background: #e74c3c;
+        border-color: #e74c3c;
+      }
+    }
+  }
+
   &__genre-pill {
     padding: 4px 10px;
     border-radius: 20px;
@@ -195,14 +240,20 @@
 
   &__chapter-item {
     display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    min-height: 48px;
+  }
+
+  &__chapter-content {
+    flex: 1;
+    display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 14px 12px;
-    border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     border: none;
     background: none;
-    width: 100%;
     text-align: left;
     min-height: 48px;
     transition: background 0.15s ease;
@@ -210,6 +261,52 @@
     font-family: inherit;
     &:hover { background: var(--accent-light); }
     &:active { background: var(--accent-light); }
+  }
+
+  &__download-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    &:active {
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    &.downloaded {
+      color: #27ae60;
+      cursor: default;
+      &:hover { background: none; }
+    }
+
+    &.downloading {
+      color: var(--accent);
+      cursor: pointer;
+    }
+  }
+
+  &__download-spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: dl-spin 0.8s linear infinite;
   }
 
   &__chapter-main {
@@ -251,6 +348,10 @@
     color: var(--text-muted);
     font-size: 0.9rem;
   }
+}
+
+@keyframes dl-spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 480px) {

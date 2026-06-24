@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
 import { ReaderSettingsService } from '../../../core/services/reader-settings.service';
+import { SourceDownloadService } from '../../../core/services/source-download.service';
 import { SourcePage } from '../../../core/models/source.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 
@@ -23,6 +24,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly location = inject(Location);
   private readonly adapterLoader = inject(AdapterLoaderService);
+  private readonly sourceDownload = inject(SourceDownloadService);
   private readonly destroyRef = inject(DestroyRef);
   readonly readerSettings = inject(ReaderSettingsService);
 
@@ -38,12 +40,14 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   error = signal<string | null>(null);
   chapterNumber = signal('');
   mangaSlug = signal('');
+  isOffline = signal(false);
 
   private sourceId = '';
   private chapterId = '';
   private failedPages = new Set<number>();
   private preloadedPages = new Set<number>();
   private headerTimeout: ReturnType<typeof setTimeout> | null = null;
+  private blobUrls: string[] = [];
 
   private touchStartX = 0;
   private touchStartY = 0;
@@ -67,7 +71,8 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
         this.chapterNumber.set(qp['ch'] || qp['chapterNumber'] || '');
       });
 
-    this.loadPages();
+    // Initialize download service before loading pages so we can check for offline chapters
+    this.sourceDownload.init().then(() => this.loadPages());
     this.startHeaderTimer();
   }
 
@@ -75,6 +80,10 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     document.body.classList.remove(READER_BODY_CLASS);
     if (this.headerTimeout) {
       clearTimeout(this.headerTimeout);
+    }
+    // Clean up blob URLs
+    for (const url of this.blobUrls) {
+      URL.revokeObjectURL(url);
     }
   }
 
@@ -94,7 +103,9 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   onPageLoad(index: number): void {
-    this.preloadAhead(index);
+    if (!this.isOffline()) {
+      this.preloadAhead(index);
+    }
   }
 
   onPageError(event: Event, page: SourcePage): void {
@@ -284,18 +295,39 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadPages(): void {
+  private async loadPages(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    this.failedPages.clear();
+    this.preloadedPages.clear();
+
+    // Check if chapter is downloaded first
+    if (this.sourceDownload.isDownloaded(this.chapterId)) {
+      try {
+        const downloadedPages = await this.sourceDownload.getDownloadedPages(this.chapterId);
+        if (downloadedPages.length > 0) {
+          const pages: SourcePage[] = downloadedPages.map(p => {
+            const blobUrl = URL.createObjectURL(p.blob);
+            this.blobUrls.push(blobUrl);
+            return { url: blobUrl, index: p.pageIndex };
+          });
+          this.pages.set(pages);
+          this.isOffline.set(true);
+          this.loading.set(false);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to load downloaded pages, falling back to online:', err);
+      }
+    }
+
+    // Fall back to online loading
     const adapter = this.adapterLoader.getAdapter(this.sourceId);
     if (!adapter) {
       this.error.set('Source adapter not found or not installed.');
       this.loading.set(false);
       return;
     }
-
-    this.loading.set(true);
-    this.error.set(null);
-    this.failedPages.clear();
-    this.preloadedPages.clear();
 
     from(adapter.getPages(this.chapterId))
       .pipe(takeUntilDestroyed(this.destroyRef))

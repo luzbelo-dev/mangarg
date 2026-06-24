@@ -2,11 +2,13 @@
   <div class="library__header">
     <h1 class="library__title">{{ t().library.title }}</h1>
     <div class="library__controls">
-      <select class="library__sort" (change)="setSortBy($event)">
-        <option value="last_read">{{ t().library.sortLastRead }}</option>
-        <option value="title">{{ t().library.sortTitle }}</option>
-        <option value="date_added">{{ t().library.sortDateAdded }}</option>
-      </select>
+      @if (activeTab() === 'classic') {
+        <select class="library__sort" (change)="setSortBy($event)">
+          <option value="last_read">{{ t().library.sortLastRead }}</option>
+          <option value="title">{{ t().library.sortTitle }}</option>
+          <option value="date_added">{{ t().library.sortDateAdded }}</option>
+        </select>
+      }
       <button class="library__view-toggle" (click)="toggleView()">
         @if (viewMode() === 'grid') {
           =
@@ -17,37 +19,101 @@
     </div>
   </div>
 
-  <div class="library__tabs">
-    @for (cat of categories; track cat) {
-      <button
-        class="library__tab"
-        [class.active]="activeCategory() === cat"
-        (click)="setCategory(cat)"
-      >
-        {{ categoryLabel(cat) }}
-      </button>
-    }
+  <!-- Tab bar: Sources / Classic -->
+  <div class="library__main-tabs">
+    <button
+      class="library__main-tab"
+      [class.active]="activeTab() === 'sources'"
+      (click)="setTab('sources')"
+    >
+      {{ lang() === 'es' ? 'Extensiones' : 'Extensions' }}
+      <span class="library__main-tab-count">{{ sourceEntries().length }}</span>
+    </button>
+    <button
+      class="library__main-tab"
+      [class.active]="activeTab() === 'classic'"
+      (click)="setTab('classic')"
+    >
+      {{ lang() === 'es' ? 'Clasica' : 'Classic' }}
+      <span class="library__main-tab-count">{{ allEntries().length }}</span>
+    </button>
   </div>
 
-  @if (filteredEntries().length > 0) {
-    <div class="library__grid" [class.list-mode]="viewMode() === 'list'">
-      @for (entry of filteredEntries(); track entry.mal_id) {
-        <mt-library-card
-          [entry]="entry"
-          [viewMode]="viewMode()"
-          (cardClicked)="onCardClick($event)"
-          (categoryChanged)="onCategoryChange($event)"
-          (removed)="onRemove($event)"
-        />
+  <!-- Sources tab -->
+  @if (activeTab() === 'sources') {
+    @if (sourceEntries().length > 0) {
+      <div class="library__grid" [class.list-mode]="viewMode() === 'list'">
+        @for (entry of sourceEntries(); track entry.id) {
+          <div class="source-lib-card" [class.list-mode]="viewMode() === 'list'" (click)="onSourceCardClick(entry)">
+            <div class="source-lib-card__image">
+              @if (entry.coverUrl) {
+                <img [src]="entry.coverUrl" [alt]="entry.title" loading="lazy" />
+              } @else {
+                <div class="source-lib-card__placeholder">
+                  {{ entry.title.charAt(0) }}
+                </div>
+              }
+            </div>
+            <div class="source-lib-card__body">
+              <h3 class="source-lib-card__title">{{ entry.title }}</h3>
+              @if (entry.author) {
+                <p class="source-lib-card__meta">{{ entry.author }}</p>
+              }
+              @if (entry.status) {
+                <p class="source-lib-card__meta">{{ entry.status }}</p>
+              }
+              <div class="source-lib-card__actions">
+                <button class="source-lib-card__remove-btn" (click)="onRemoveSource(entry); $event.stopPropagation()">
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="library__empty">
+        <p>{{ lang() === 'es' ? 'No hay manga guardado de extensiones' : 'No manga saved from extensions' }}</p>
+        <button class="library__cta" (click)="goToExtensions()">
+          {{ lang() === 'es' ? 'Ir a extensiones' : 'Go to extensions' }}
+        </button>
+      </div>
+    }
+  }
+
+  <!-- Classic tab -->
+  @if (activeTab() === 'classic') {
+    <div class="library__tabs">
+      @for (cat of categories; track cat) {
+        <button
+          class="library__tab"
+          [class.active]="activeCategory() === cat"
+          (click)="setCategory(cat)"
+        >
+          {{ categoryLabel(cat) }}
+        </button>
       }
     </div>
-  } @else {
-    <div class="library__empty">
-      <span class="library__empty-icon"></span>
-      <p>{{ t().library.empty }}</p>
-      <button class="library__cta" (click)="goToSearch()">
-        {{ t().library.addManga }}
-      </button>
-    </div>
+
+    @if (filteredEntries().length > 0) {
+      <div class="library__grid" [class.list-mode]="viewMode() === 'list'">
+        @for (entry of filteredEntries(); track entry.mal_id) {
+          <mt-library-card
+            [entry]="entry"
+            [viewMode]="viewMode()"
+            (cardClicked)="onCardClick($event)"
+            (categoryChanged)="onCategoryChange($event)"
+            (removed)="onRemove($event)"
+          />
+        }
+      </div>
+    } @else {
+      <div class="library__empty">
+        <p>{{ t().library.empty }}</p>
+        <button class="library__cta" (click)="goToSearch()">
+          {{ t().library.addManga }}
+        </button>
+      </div>
+    }
   }
 </div>
