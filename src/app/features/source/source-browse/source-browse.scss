@@ -355,6 +355,29 @@
     line-height: 1.3;
   }
 
+  // Load more
+  &__load-more {
+    display: flex;
+    justify-content: center;
+    padding: 20px 16px 32px;
+  }
+
+  &__load-more-btn {
+    padding: 12px 32px;
+    border-radius: 8px;
+    background: var(--accent, #6c5ce7);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    min-height: 44px;
+    transition: opacity 0.2s;
+
+    &:hover { opacity: 0.85; }
+    &:active { transform: scale(0.97); }
+  }
+
   // Empty state
   &__empty {
     display: flex;

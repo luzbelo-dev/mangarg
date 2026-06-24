@@ -33,11 +33,15 @@ export class SourceBrowseComponent implements OnInit {
   adapter = signal<MangaAdapterInstance | null>(null);
   results = signal<SourceManga[]>([]);
   loading = signal(false);
+  loadingMore = signal(false);
   searchQuery = signal('');
   activeTab = signal<BrowseTab>('popular');
   error = signal<string | null>(null);
+  hasMore = signal(true);
 
   private sourceId = '';
+  private currentPage = 1;
+  private searchPage = 1;
 
   ngOnInit(): void {
     this.route.params
@@ -62,13 +66,19 @@ export class SourceBrowseComponent implements OnInit {
   setTab(tab: BrowseTab): void {
     this.activeTab.set(tab);
     this.error.set(null);
+    this.currentPage = 1;
+    this.searchPage = 1;
+    this.hasMore.set(true);
 
     if (tab === 'popular') {
+      this.results.set([]);
       this.loadPopular();
     } else if (tab === 'latest') {
+      this.results.set([]);
       this.loadLatest();
+    } else {
+      this.results.set([]);
     }
-    // Search tab doesn't auto-load; user triggers via input
   }
 
   loadPopular(): void {
@@ -77,14 +87,16 @@ export class SourceBrowseComponent implements OnInit {
 
     this.loading.set(true);
     this.error.set(null);
+    this.currentPage = 1;
     this.results.set([]);
 
-    from(instance.getPopular())
+    from(instance.getPopular(1))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.results.set(data);
           this.loading.set(false);
+          this.hasMore.set(data.length >= 5);
         },
         error: (err) => {
           console.error('Failed to load popular manga:', err);
@@ -112,14 +124,16 @@ export class SourceBrowseComponent implements OnInit {
 
     this.loading.set(true);
     this.error.set(null);
+    this.currentPage = 1;
     this.results.set([]);
 
-    from(instance.getLatest())
+    from(instance.getLatest(1))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.results.set(data);
           this.loading.set(false);
+          this.hasMore.set(data.length >= 5);
         },
         error: (err) => {
           console.error('Failed to load latest manga:', err);
@@ -129,6 +143,47 @@ export class SourceBrowseComponent implements OnInit {
               : 'Failed to load latest manga'
           );
           this.loading.set(false);
+        },
+      });
+  }
+
+  loadMore(): void {
+    const instance = this.adapter();
+    if (!instance || this.loadingMore()) return;
+
+    this.loadingMore.set(true);
+    const tab = this.activeTab();
+    let nextPage: number;
+    let request: Promise<SourceManga[]>;
+
+    if (tab === 'search') {
+      this.searchPage++;
+      nextPage = this.searchPage;
+      request = instance.search(this.searchQuery(), nextPage);
+    } else if (tab === 'latest' && instance.getLatest) {
+      this.currentPage++;
+      nextPage = this.currentPage;
+      request = instance.getLatest(nextPage);
+    } else {
+      this.currentPage++;
+      nextPage = this.currentPage;
+      request = instance.getPopular(nextPage);
+    }
+
+    from(request)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          const existing = this.results();
+          const existingSlugs = new Set(existing.map(m => m.slug));
+          const newItems = data.filter(m => !existingSlugs.has(m.slug));
+          this.results.set([...existing, ...newItems]);
+          this.loadingMore.set(false);
+          this.hasMore.set(data.length >= 5);
+        },
+        error: () => {
+          this.loadingMore.set(false);
+          this.hasMore.set(false);
         },
       });
   }
@@ -145,13 +200,16 @@ export class SourceBrowseComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     this.results.set([]);
+    this.searchPage = 1;
+    this.hasMore.set(true);
 
-    from(instance.search(query))
+    from(instance.search(query, 1))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.results.set(data);
           this.loading.set(false);
+          this.hasMore.set(data.length >= 5);
         },
         error: (err) => {
           console.error('Search failed:', err);
@@ -178,7 +236,6 @@ export class SourceBrowseComponent implements OnInit {
   onImgError(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.style.display = 'none';
-    // Show the placeholder that sits behind the image
     const parent = img.parentElement;
     if (parent) {
       parent.classList.add('img-error');

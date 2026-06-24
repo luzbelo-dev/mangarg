@@ -120,6 +120,19 @@
       </div>
     }
 
+    <!-- Load more -->
+    @if (!loading() && !error() && results().length > 0 && hasMore()) {
+      <div class="source-browse__load-more">
+        @if (loadingMore()) {
+          <mt-loading-spinner size="md" />
+        } @else {
+          <button class="source-browse__load-more-btn" (click)="loadMore()">
+            {{ lang() === 'es' ? 'Cargar mas' : 'Load more' }}
+          </button>
+        }
+      </div>
+    }
+
     <!-- Empty state -->
     @if (!loading() && !error() && results().length === 0) {
       <div class="source-browse__empty">

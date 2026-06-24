@@ -3,58 +3,6 @@
   "description": "Repositorio oficial de extensiones",
   "adapters": [
     {
-      "id": "mangadex",
-      "name": "MangaDex",
-      "lang": "Multi",
-      "version": "1.0.0",
-      "icon": "MA",
-      "iconColor": "#FF6740",
-      "baseUrl": "https://mangadex.org",
-      "description": "Read manga in multiple languages on MangaDex",
-      "descriptionEs": "Lee manga en varios idiomas en MangaDex",
-      "features": [
-        "Manga",
-        "Manhwa",
-        "Manhua"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/mangadex.js",
-      "config": {
-        "baseUrl": "https://mangadex.org",
-        "id": "mangadex",
-        "name": "MangaDex",
-        "icon": "MA",
-        "iconColor": "#FF6740",
-        "lang": "multi"
-      }
-    },
-    {
-      "id": "comick",
-      "name": "ComicK",
-      "lang": "Multi",
-      "version": "1.0.0",
-      "icon": "CO",
-      "iconColor": "#7B2FF7",
-      "baseUrl": "https://comick.io",
-      "description": "Browse and read manga, manhwa and manhua on ComicK",
-      "descriptionEs": "Explora y lee manga, manhwa y manhua en ComicK",
-      "features": [
-        "Manga",
-        "Manhwa",
-        "Manhua"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/comick.js",
-      "config": {
-        "baseUrl": "https://comick.io",
-        "id": "comick",
-        "name": "ComicK",
-        "icon": "CO",
-        "iconColor": "#7B2FF7",
-        "lang": "multi"
-      }
-    },
-    {
       "id": "apollcomics",
       "name": "Apoll Comics",
       "lang": "ES",

@@ -23,7 +23,7 @@ export class LandingPageComponent {
   readonly exeUrl = DOWNLOAD_LINKS.exe;
   readonly githubRepoUrl = DOWNLOAD_LINKS.repo;
   readonly version = APP_VERSION;
-  readonly extensionCount = 27;
+  readonly extensionCount = 25;
 
   toggleTheme(): void {
     this.themeService.toggle();

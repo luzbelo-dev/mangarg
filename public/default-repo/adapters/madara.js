@@ -14,6 +14,15 @@
     return BASE + '/' + path;
   }
 
+  function dedup(arr) {
+    var seen = {};
+    return arr.filter(function(m) {
+      if (seen[m.slug]) return false;
+      seen[m.slug] = true;
+      return true;
+    });
+  }
+
   function parseMangaList(html) {
     var doc = parseDoc(html);
     var items = doc.querySelectorAll('.page-item-detail, .manga-item, div.badge-pos-1');
@@ -39,7 +48,7 @@
         });
       }
     });
-    return results;
+    return dedup(results);
   }
 
   return {
@@ -72,7 +81,7 @@
       if (results.length === 0) {
         results = parseMangaList(html);
       }
-      return results;
+      return dedup(results);
     },
 
     getPopular: async function(page) {

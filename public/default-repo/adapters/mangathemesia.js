@@ -14,6 +14,15 @@
     return BASE + '/' + path;
   }
 
+  function dedup(arr) {
+    var seen = {};
+    return arr.filter(function(m) {
+      if (seen[m.slug]) return false;
+      seen[m.slug] = true;
+      return true;
+    });
+  }
+
   function parseMangaGrid(html) {
     var doc = parseDoc(html);
     var items = doc.querySelectorAll('.bs, .bsx, .utao, div.listupd > div');
@@ -58,7 +67,7 @@
       var p = page || 1;
       var url = BASE + '/page/' + p + '/?s=' + encodeURIComponent(query);
       var html = await api.getText(url);
-      return parseMangaGrid(html);
+      return dedup(parseMangaGrid(html));
     },
 
     getPopular: async function(page) {
