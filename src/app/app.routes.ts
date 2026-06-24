@@ -6,7 +6,7 @@ const appRedirectGuard = () => {
   const router = inject(Router);
   const isWebsite = window.location.hostname.includes('netlify.app');
   if (!isWebsite) {
-    return router.createUrlTree(['/search']);
+    return router.createUrlTree(['/extensions']);
   }
   return true;
 };

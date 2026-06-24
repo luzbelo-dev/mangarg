@@ -1,0 +1,10 @@
+{
+  "/.netlify/functions/source-proxy": {
+    "target": "http://localhost:3001",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/.netlify/functions/source-proxy": ""
+    }
+  }
+}

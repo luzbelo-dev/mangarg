@@ -7,9 +7,7 @@ function isCapacitor(): boolean {
   return typeof (window as any)?.Capacitor !== 'undefined';
 }
 
-const CORS_SAFE_DOMAINS = [
-  'localhost',
-];
+const CORS_SAFE_DOMAINS: string[] = [];
 
 function needsProxy(url: string): boolean {
   if (isCapacitor()) return false;
