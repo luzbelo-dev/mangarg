@@ -47,6 +47,80 @@
       />
     </div>
 
+    <!-- Universal search bar -->
+    <div class="extensions__search universal-search">
+      <svg class="extensions__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input
+        class="extensions__search-input"
+        type="text"
+        [placeholder]="lang() === 'es' ? 'Busqueda universal...' : 'Universal search...'"
+        [value]="universalQuery()"
+        (input)="onUniversalInput($event)"
+        (keyup.enter)="onUniversalSearch()"
+      />
+      <button
+        class="universal-search__btn"
+        (click)="onUniversalSearch()"
+        [disabled]="universalSearching() || !universalQuery().trim()"
+      >
+        {{ lang() === 'es' ? 'Buscar' : 'Search' }}
+      </button>
+    </div>
+
+    <!-- Universal search results -->
+    @if (universalSearching()) {
+      <div class="universal-search__loading">
+        <mt-loading-spinner size="md" />
+        <p>{{ lang() === 'es' ? 'Buscando en todas las extensiones...' : 'Searching all extensions...' }}</p>
+      </div>
+    }
+
+    @if (!universalSearching() && universalSearched()) {
+      @if (universalResults().length > 0) {
+        <div class="universal-search__results">
+          @for (group of universalResults(); track group.sourceId) {
+            <div class="universal-search__group">
+              <div class="universal-search__group-header">
+                <div class="source-icon source-icon--sm" [style.background-color]="group.sourceIconColor">
+                  <span class="source-icon__text">{{ group.sourceIcon }}</span>
+                </div>
+                <span class="universal-search__group-name">{{ group.sourceName }}</span>
+                <span class="universal-search__group-count">({{ group.results.length }})</span>
+              </div>
+              <div class="universal-search__grid">
+                @for (manga of group.results; track manga.slug) {
+                  <div class="universal-search__card" (click)="onUniversalResultClick(group.sourceId, manga.slug)">
+                    <div class="universal-search__card-cover">
+                      @if (manga.coverUrl) {
+                        <img
+                          [src]="manga.coverUrl"
+                          [alt]="manga.title"
+                          referrerpolicy="no-referrer"
+                          loading="lazy"
+                          (error)="onUniversalCoverError($event)"
+                        />
+                      }
+                    </div>
+                    <div class="universal-search__card-info">
+                      <p class="universal-search__card-source">{{ group.sourceName }}</p>
+                      <p class="universal-search__card-title">{{ manga.title }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="universal-search__empty">
+          <p>{{ lang() === 'es' ? 'No se encontraron resultados' : 'No results found' }}</p>
+        </div>
+      }
+    }
+
     <!-- Language filter chips -->
     <div class="extensions__lang-filters">
       @for (lang of langFilters; track lang) {

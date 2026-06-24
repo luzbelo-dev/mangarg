@@ -2,12 +2,23 @@ import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } 
 import { Router } from '@angular/router';
 import { TranslateService } from '../../../core/i18n/translate.service';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
-import { InstalledAdapter, MangaAdapterManifest } from '../../../core/models/adapter.model';
+import { InstalledAdapter, MangaAdapterManifest, MangaAdapterInstance } from '../../../core/models/adapter.model';
+import { SourceManga } from '../../../core/models/source.model';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
+
+interface UniversalSearchGroup {
+  sourceId: string;
+  sourceName: string;
+  sourceIcon: string;
+  sourceIconColor: string;
+  results: SourceManga[];
+}
 
 @Component({
   selector: 'mt-extensions-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [LoadingSpinnerComponent],
   templateUrl: './extensions-page.html',
   styleUrl: './extensions-page.scss',
 })
@@ -24,6 +35,12 @@ export class ExtensionsPageComponent implements OnInit {
   activeLang = signal('All');
   installingId = signal<string | null>(null);
   repoUrlInput = signal('');
+
+  // Universal search
+  universalQuery = signal('');
+  universalSearching = signal(false);
+  universalResults = signal<UniversalSearchGroup[]>([]);
+  universalSearched = signal(false);
 
   // Confirmation dialog
   confirmAdapter = signal<MangaAdapterManifest | null>(null);
@@ -119,6 +136,54 @@ export class ExtensionsPageComponent implements OnInit {
 
   refreshRepos(): void {
     this.loader.refreshRepos();
+  }
+
+  onUniversalInput(event: Event): void {
+    this.universalQuery.set((event.target as HTMLInputElement).value);
+  }
+
+  async onUniversalSearch(): Promise<void> {
+    const query = this.universalQuery().trim();
+    if (!query) return;
+
+    const adapters = this.loader.getAllLoadedAdapters();
+    if (adapters.length === 0) return;
+
+    this.universalSearching.set(true);
+    this.universalSearched.set(true);
+    this.universalResults.set([]);
+
+    const results = await Promise.allSettled(
+      adapters.map(async (adapter) => {
+        const mangas = await adapter.search(query);
+        return {
+          sourceId: adapter.id,
+          sourceName: adapter.name,
+          sourceIcon: adapter.icon,
+          sourceIconColor: adapter.iconColor,
+          results: mangas,
+        } as UniversalSearchGroup;
+      })
+    );
+
+    const groups: UniversalSearchGroup[] = [];
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value.results.length > 0) {
+        groups.push(result.value);
+      }
+    }
+
+    this.universalResults.set(groups);
+    this.universalSearching.set(false);
+  }
+
+  onUniversalResultClick(sourceId: string, slug: string): void {
+    this.router.navigate(['/source', sourceId, 'manga', slug]);
+  }
+
+  onUniversalCoverError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
   }
 
   private filterItems<T extends { name: string; lang: string }>(items: T[], _type: string): T[] {

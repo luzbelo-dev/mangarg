@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy, DestroyRef, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -6,7 +6,7 @@ import { from } from 'rxjs';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
 import { ReaderSettingsService } from '../../../core/services/reader-settings.service';
 import { SourceDownloadService } from '../../../core/services/source-download.service';
-import { SourcePage } from '../../../core/models/source.model';
+import { SourcePage, SourceChapter } from '../../../core/models/source.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 
 const READER_BODY_CLASS = 'source-reader-active';
@@ -41,6 +41,22 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   chapterNumber = signal('');
   mangaSlug = signal('');
   isOffline = signal(false);
+  chapters = signal<SourceChapter[]>([]);
+  loadingChapters = signal(false);
+
+  prevChapter = computed(() => {
+    const chs = this.chapters();
+    const currentIdx = chs.findIndex(c => c.id === this.chapterId);
+    if (currentIdx > 0) return chs[currentIdx - 1];
+    return null;
+  });
+
+  nextChapter = computed(() => {
+    const chs = this.chapters();
+    const currentIdx = chs.findIndex(c => c.id === this.chapterId);
+    if (currentIdx >= 0 && currentIdx < chs.length - 1) return chs[currentIdx + 1];
+    return null;
+  });
 
   private sourceId = '';
   private chapterId = '';
@@ -73,6 +89,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
     // Initialize download service before loading pages so we can check for offline chapters
     this.sourceDownload.init().then(() => this.loadPages());
+    this.loadChapterList();
     this.startHeaderTimer();
   }
 
@@ -293,6 +310,44 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
         }
         break;
     }
+  }
+
+  navigateToChapter(chapter: SourceChapter): void {
+    this.router.navigate(
+      ['/source', this.sourceId, 'reader', chapter.id],
+      {
+        queryParams: {
+          manga: this.mangaSlug(),
+          ch: chapter.chapterNumber,
+        },
+      }
+    );
+  }
+
+  private loadChapterList(): void {
+    const slug = this.mangaSlug();
+    if (!slug || !this.sourceId) return;
+
+    const adapter = this.adapterLoader.getAdapter(this.sourceId);
+    if (!adapter) return;
+
+    this.loadingChapters.set(true);
+    from(adapter.getChapters(slug))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (chs) => {
+          const sorted = [...chs].sort((a, b) => {
+            const numA = parseFloat(a.chapterNumber) || 0;
+            const numB = parseFloat(b.chapterNumber) || 0;
+            return numA - numB;
+          });
+          this.chapters.set(sorted);
+          this.loadingChapters.set(false);
+        },
+        error: () => {
+          this.loadingChapters.set(false);
+        },
+      });
   }
 
   private async loadPages(): Promise<void> {

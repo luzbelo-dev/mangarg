@@ -1,8 +1,8 @@
 import { Component, inject, computed, OnInit, OnDestroy, NgZone } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { map, filter } from 'rxjs';
 import { NavbarComponent } from './shared/components/navbar/navbar';
 import { MobileHeaderComponent } from './shared/components/mobile-header/mobile-header';
 import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile-tab-bar';
@@ -77,7 +77,8 @@ export class App implements OnInit, OnDestroy {
   private readonly location = inject(Location);
   private readonly ngZone = inject(NgZone);
 
-  private backButtonHandler: (() => void) | null = null;
+  private backButtonHandler: ((e: Event) => void) | null = null;
+  private historyLength = 0;
 
   private readonly url = toSignal(
     this.router.events.pipe(map(() => this.router.url)),
@@ -91,29 +92,64 @@ export class App implements OnInit, OnDestroy {
   isLandingRoute = computed(() => this.url() === '/' || this.url() === '');
   hideAppShell = computed(() => this.isReaderRoute() || this.isLandingRoute());
 
+  private readonly ROOT_ROUTES = ['/', '/search', '/explore', '/library', '/extensions'];
+
   ngOnInit(): void {
-    // Handle Android hardware back button via document backbutton event (Capacitor)
-    // and popstate for general PWA/WebView back navigation
-    this.backButtonHandler = () => {
+    // Track navigation history length so we know if back navigation is possible
+    this.historyLength = 0;
+    this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => {
+        this.historyLength++;
+      });
+
+    // Handle Android hardware back button.
+    // The 'backbutton' event fires on Capacitor/Cordova Android when the hardware back is pressed.
+    // We also push a dummy history state so popstate fires as a fallback for PWA/WebView.
+    this.backButtonHandler = (e: Event) => {
+      e.preventDefault();
       this.ngZone.run(() => {
-        // If at a root-level route, let the default behavior (exit app) happen
-        const currentUrl = this.router.url;
-        const rootRoutes = ['/', '/search', '/explore', '/library', '/extensions'];
-        if (rootRoutes.includes(currentUrl.split('?')[0])) {
-          // At top-level, allow default back behavior (exit)
+        const currentUrl = this.router.url.split('?')[0];
+        if (this.ROOT_ROUTES.includes(currentUrl)) {
+          // At a root tab: minimize app if possible, otherwise do nothing (don't exit)
+          if ((window as any).navigator?.app?.exitApp) {
+            (window as any).navigator.app.exitApp();
+          }
+          // For PWA: do nothing, prevents exit
           return;
         }
-        // Otherwise navigate back in history
+        // Navigate back
         this.location.back();
       });
     };
 
     document.addEventListener('backbutton', this.backButtonHandler);
+
+    // For PWA / Android WebView without Capacitor plugin:
+    // Push an initial history state so the first back press fires popstate
+    // instead of closing the app
+    if (this.historyLength === 0) {
+      window.history.pushState({ mtInit: true }, '');
+    }
+
+    window.addEventListener('popstate', this.onPopState);
   }
+
+  private onPopState = (e: PopStateEvent): void => {
+    this.ngZone.run(() => {
+      const currentUrl = this.router.url.split('?')[0];
+      if (this.ROOT_ROUTES.includes(currentUrl)) {
+        // Re-push state so the user can't accidentally exit
+        window.history.pushState({ mtInit: true }, '');
+      }
+      // Angular router handles popstate navigation automatically
+    });
+  };
 
   ngOnDestroy(): void {
     if (this.backButtonHandler) {
       document.removeEventListener('backbutton', this.backButtonHandler);
     }
+    window.removeEventListener('popstate', this.onPopState);
   }
 }
