@@ -52,6 +52,7 @@ exports.handler = async function(event) {
   var requester = parsed.protocol === "https:" ? https : http;
 
   return new Promise(function(resolve) {
+    var isApi = parsed.hostname.includes("api.") || parsed.pathname.startsWith("/api/") || parsed.pathname.includes("/v1");
     var options = {
       hostname: parsed.hostname,
       port: parsed.port || (parsed.protocol === "https:" ? 443 : 80),
@@ -59,7 +60,7 @@ exports.handler = async function(event) {
       method: method,
       headers: {
         "User-Agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,application/json,*/*;q=0.8",
+        "Accept": isApi ? "application/json, */*" : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
         "Referer": parsed.origin + "/"
       }
