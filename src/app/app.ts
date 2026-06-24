@@ -12,6 +12,9 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
   selector: 'mt-root',
   standalone: true,
   imports: [RouterOutlet, NavbarComponent, MobileHeaderComponent, MobileTabBarComponent, ToastContainerComponent],
+  host: {
+    '[class.landing-active]': 'isLandingRoute()',
+  },
   template: `
     @if (!hideAppShell()) {
       <mt-navbar class="desktop-only" />
@@ -30,6 +33,10 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
       display: block;
       overflow-x: hidden;
       max-width: 100vw;
+    }
+
+    :host.landing-active {
+      background: #0a0a0a;
     }
 
     .desktop-only {
