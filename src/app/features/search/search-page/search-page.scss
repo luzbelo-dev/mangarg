@@ -1,4 +1,6 @@
 .search-page {
+  overflow-x: hidden;
+
   // Header: hidden on mobile, visible on desktop
   &__header {
     text-align: center;
@@ -111,7 +113,8 @@
   &__tab {
     display: inline-flex;
     align-items: center;
-    padding: 6px 14px;
+    padding: 10px 14px;
+    min-height: 44px;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
@@ -123,6 +126,11 @@
     cursor: pointer;
 
     &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    &:active {
       border-color: var(--accent);
       color: var(--accent);
     }
@@ -494,7 +502,8 @@
     }
 
     &__tab {
-      padding: 5px 10px;
+      padding: 8px 12px;
+      min-height: 44px;
       font-size: 0.75rem;
     }
 

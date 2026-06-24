@@ -245,8 +245,8 @@ import { Lang } from '../../../core/i18n/translations';
     }
 
     .more-sheet__close {
-      width: 36px;
-      height: 36px;
+      width: 44px;
+      height: 44px;
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;

@@ -24,8 +24,8 @@
   }
 
   &__header-back {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -48,8 +48,8 @@
   }
 
   &__header-settings {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -185,6 +185,7 @@
 
   &__error-btn {
     padding: 10px 20px;
+    min-height: 44px;
     border-radius: 8px;
     background: var(--accent, #6c5ce7);
     color: white;
@@ -192,7 +193,11 @@
     font-size: 0.85rem;
     border: none;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     &:hover { opacity: 0.9; }
+    &:active { opacity: 0.85; transform: scale(0.98); }
   }
 
   &__page {

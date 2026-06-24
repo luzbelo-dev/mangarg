@@ -1,4 +1,6 @@
 .detail {
+  overflow-x: hidden;
+
   &__loading,
   &__error {
     display: flex;

@@ -46,8 +46,8 @@ import { TranslateService } from '../../../core/i18n/translate.service';
     }
 
     .mobile-header__search-btn {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: var(--radius-sm);
       display: flex;
       align-items: center;

@@ -27,16 +27,20 @@
   }
 
   &__theme-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
     transition: all 0.2s ease;
+    border: none;
+    background: none;
+    cursor: pointer;
     svg { width: 18px; height: 18px; }
     &:hover { color: var(--accent); background: var(--accent-light); }
+    &:active { color: var(--accent); background: var(--accent-light); }
   }
 
   &__hero {
@@ -270,6 +274,11 @@
       color: var(--text-primary);
     }
 
+    &:active {
+      transform: scale(0.98);
+      border-color: var(--accent);
+    }
+
     &--primary {
       border-color: var(--accent);
       box-shadow: 0 2px 12px rgba(108, 92, 231, 0.12);
@@ -350,7 +359,11 @@
       gap: 6px;
       color: var(--text-muted);
       font-weight: 500;
+      padding: 10px;
+      min-height: 44px;
+      text-decoration: none;
       &:hover { color: var(--accent); }
+      &:active { color: var(--accent); }
     }
   }
 }

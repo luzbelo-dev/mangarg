@@ -1,4 +1,6 @@
 .extensions {
+  overflow-x: hidden;
+
   &__header {
     margin-bottom: 24px;
   }
@@ -38,6 +40,10 @@
     cursor: pointer;
 
     &:hover {
+      color: var(--text-primary);
+    }
+
+    &:active {
       color: var(--text-primary);
     }
 
@@ -119,7 +125,8 @@
   }
 
   &__lang-chip {
-    padding: 6px 14px;
+    padding: 10px 14px;
+    min-height: 44px;
     border-radius: 16px;
     font-size: 0.78rem;
     font-weight: 600;
@@ -130,8 +137,15 @@
     color: var(--text-secondary);
     transition: all 0.2s ease;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
 
     &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    &:active {
       border-color: var(--accent);
       color: var(--accent);
     }
@@ -269,14 +283,17 @@
   }
 
   &__btn {
-    padding: 8px 16px;
-    min-height: 36px;
+    padding: 10px 16px;
+    min-height: 44px;
     border-radius: var(--radius-sm);
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
     &--install {
       color: var(--accent);
@@ -363,6 +380,11 @@
     background: transparent;
 
     &:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    &:active {
       border-color: var(--accent);
       color: var(--accent);
     }
