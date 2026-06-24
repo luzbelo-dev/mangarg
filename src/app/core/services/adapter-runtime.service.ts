@@ -7,13 +7,17 @@ function isCapacitor(): boolean {
   return typeof (window as any)?.Capacitor !== 'undefined';
 }
 
+const CORS_SAFE_DOMAINS = [
+  'localhost',
+];
+
 function needsProxy(url: string): boolean {
   if (isCapacitor()) return false;
   try {
     const parsed = new URL(url);
-    if (parsed.hostname === 'localhost') return false;
-    if (parsed.hostname.includes('netlify.app')) return false;
-    if (parsed.hostname.includes('mangadex.org')) return false;
+    for (const domain of CORS_SAFE_DOMAINS) {
+      if (parsed.hostname === domain || parsed.hostname.endsWith('.' + domain)) return false;
+    }
     return true;
   } catch {
     return false;
