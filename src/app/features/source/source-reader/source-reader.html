@@ -9,55 +9,140 @@
         — {{ currentPage() + 1 }}/{{ pages().length }}
       }
     </span>
+    <button class="reader__header-settings" (click)="toggleSettings()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
   </div>
 }
 
-<div class="reader__pages" (click)="toggleHeader()" (scroll)="onScroll($event)">
-  @if (loading()) {
-    <div class="reader__loading">
-      <mt-loading-spinner size="lg" />
-      <p>Loading pages...</p>
-    </div>
-  }
-
-  @if (error()) {
-    <div class="reader__error">
-      <p>{{ error() }}</p>
-      <button class="reader__error-btn" (click)="goBack()">Go back</button>
-    </div>
-  }
-
-  @for (page of pages(); track page.index) {
-    <div class="reader__page">
-      @if (isPageFailed(page.index)) {
-        <div class="reader__page-error">
-          <p>Failed to load</p>
-          <button (click)="retryPage(page)">Retry</button>
+<!-- Settings panel -->
+@if (showSettings()) {
+  <div class="reader__settings-overlay" (click)="toggleSettings()">
+    <div class="reader__settings" (click)="$event.stopPropagation()">
+      <div class="reader__setting">
+        <label>Reading mode</label>
+        <div class="reader__setting-options">
+          <button [class.active]="settings().mode === 'longstrip'" (click)="setMode('longstrip')">
+            Scroll
+          </button>
+          <button [class.active]="settings().mode === 'page'" (click)="setMode('page')">
+            Page
+          </button>
         </div>
-      } @else {
-        <img
-          [src]="page.url"
-          [alt]="'Page ' + (page.index + 1)"
-          loading="lazy"
-          referrerpolicy="no-referrer"
-          (load)="onPageLoad(page.index)"
-          (error)="onPageError($event, page)"
-        />
-      }
+      </div>
     </div>
-  }
+  </div>
+}
 
-  @if (!loading() && !error() && pages().length === 0) {
-    <div class="reader__empty">
-      <p>No pages found for this chapter.</p>
-      <button class="reader__error-btn" (click)="goBack()">Go back</button>
-    </div>
-  }
+<!-- Page mode -->
+@if (!loading() && !error() && pages().length > 0 && settings().mode === 'page') {
+  <div
+    class="reader__viewport"
+    (click)="onPageClick($event)"
+    (wheel)="onPageWheel($event)"
+    (touchstart)="onViewportTouchStart($event)"
+    (touchend)="onViewportTouchEnd($event)"
+  >
+    @if (isPageFailed(currentPage())) {
+      <div class="reader__page-error">
+        <p>Failed to load</p>
+        <button (click)="retryPage(pages()[currentPage()])">Retry</button>
+      </div>
+    } @else {
+      <img
+        [src]="getPageUrl(currentPage())"
+        [alt]="'Page ' + (currentPage() + 1)"
+        class="reader__page-image"
+        referrerpolicy="no-referrer"
+        draggable="false"
+        (load)="onPageLoad(currentPage())"
+        (error)="onPageError($event, pages()[currentPage()])"
+      />
+    }
+  </div>
+}
 
-  @if (!loading() && pages().length > 0) {
+<!-- Long strip / scroll mode -->
+@if (!loading() && !error() && pages().length > 0 && settings().mode === 'longstrip') {
+  <div
+    #longstripContainer
+    class="reader__pages"
+    (click)="toggleHeader()"
+    (scroll)="onScroll($event)"
+    (touchstart)="onLongstripTouchStart($event)"
+    (touchmove)="onLongstripTouchMove()"
+    (touchend)="onLongstripTouchEnd()"
+  >
+    @for (page of pages(); track page.index) {
+      <div class="reader__page">
+        @if (isPageFailed(page.index)) {
+          <div class="reader__page-error">
+            <p>Failed to load</p>
+            <button (click)="retryPage(page)">Retry</button>
+          </div>
+        } @else {
+          <img
+            [src]="page.url"
+            [alt]="'Page ' + (page.index + 1)"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            (load)="onPageLoad(page.index)"
+            (error)="onPageError($event, page)"
+          />
+        }
+      </div>
+    }
+
     <div class="reader__end">
       <p>End of chapter</p>
       <button class="reader__error-btn" (click)="goBack()">Back to manga</button>
     </div>
-  }
-</div>
+  </div>
+}
+
+<!-- Loading / Error / Empty states -->
+@if (loading()) {
+  <div class="reader__state-container">
+    <div class="reader__loading">
+      <mt-loading-spinner size="lg" />
+      <p>Loading pages...</p>
+    </div>
+  </div>
+}
+
+@if (error()) {
+  <div class="reader__state-container">
+    <div class="reader__error">
+      <p>{{ error() }}</p>
+      <button class="reader__error-btn" (click)="goBack()">Go back</button>
+    </div>
+  </div>
+}
+
+@if (!loading() && !error() && pages().length === 0) {
+  <div class="reader__state-container">
+    <div class="reader__empty">
+      <p>No pages found for this chapter.</p>
+      <button class="reader__error-btn" (click)="goBack()">Go back</button>
+    </div>
+  </div>
+}
+
+<!-- Bottom progress bar -->
+@if (!loading() && pages().length > 0) {
+  <div class="reader__bottom" [class.visible]="showHeader()">
+    <span class="reader__bottom-page">{{ currentPage() + 1 }}</span>
+    <input
+      type="range"
+      class="reader__slider"
+      [min]="0"
+      [max]="pages().length - 1"
+      [value]="currentPage()"
+      (input)="onSliderChange($event)"
+    />
+    <span class="reader__bottom-page">{{ pages().length }}</span>
+  </div>
+}

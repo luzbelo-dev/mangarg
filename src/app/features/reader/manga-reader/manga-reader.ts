@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef, OnInit, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap, tap, catchError, of } from 'rxjs';
 import { MangaDexImageService } from '../../../core/services/mangadex-image.service';
@@ -23,6 +24,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 export class MangaReaderComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly appLocation = inject(Location);
   private readonly imageService = inject(MangaDexImageService);
   private readonly mangaDexService = inject(MangaDexService);
   readonly readerSettings = inject(ReaderSettingsService);
@@ -464,11 +466,7 @@ export class MangaReaderComponent implements OnInit {
 
   close(): void {
     this.saveProgress();
-    if (this.malId) {
-      this.router.navigate(['/manga', this.malId]);
-    } else {
-      this.router.navigate(['/library']);
-    }
+    this.appLocation.back();
   }
 
   @HostListener('window:keydown', ['$event'])

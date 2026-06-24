@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy, DestroyRef, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy, DestroyRef, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
+import { ReaderSettingsService } from '../../../core/services/reader-settings.service';
 import { SourcePage } from '../../../core/models/source.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 
@@ -19,12 +21,19 @@ const READER_BODY_CLASS = 'source-reader-active';
 export class SourceReaderComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly adapterLoader = inject(AdapterLoaderService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly readerSettings = inject(ReaderSettingsService);
+
+  @ViewChild('longstripContainer') longstripContainer?: ElementRef<HTMLDivElement>;
+
+  settings = this.readerSettings.settings;
 
   pages = signal<SourcePage[]>([]);
   loading = signal(true);
   showHeader = signal(true);
+  showSettings = signal(false);
   currentPage = signal(0);
   error = signal<string | null>(null);
   chapterNumber = signal('');
@@ -35,6 +44,11 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private failedPages = new Set<number>();
   private preloadedPages = new Set<number>();
   private headerTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  private touchStartX = 0;
+  private touchStartY = 0;
+  private touchStartTime = 0;
+  private isTouchScrolling = false;
 
   ngOnInit(): void {
     document.body.classList.add(READER_BODY_CLASS);
@@ -71,12 +85,12 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  toggleSettings(): void {
+    this.showSettings.update(v => !v);
+  }
+
   goBack(): void {
-    if (this.mangaSlug()) {
-      this.router.navigate(['/source', this.sourceId, 'manga', this.mangaSlug()]);
-    } else {
-      this.router.navigate(['/source', this.sourceId]);
-    }
+    this.location.back();
   }
 
   onPageLoad(index: number): void {
@@ -95,8 +109,13 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
   retryPage(page: SourcePage): void {
     this.failedPages.delete(page.index);
-    // Force re-render by updating pages signal with same data
     this.pages.update(current => [...current]);
+  }
+
+  getPageUrl(pageIndex: number): string {
+    const allPages = this.pages();
+    if (pageIndex < 0 || pageIndex >= allPages.length) return '';
+    return allPages[pageIndex].url;
   }
 
   onScroll(event: Event): void {
@@ -119,10 +138,149 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.pages().length) {
+      this.currentPage.set(page);
+
+      if (this.settings().mode === 'longstrip' && this.longstripContainer) {
+        const images = this.longstripContainer.nativeElement.querySelectorAll('.reader__page');
+        if (images[page]) {
+          images[page].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }
+    }
+  }
+
+  onSliderChange(event: Event): void {
+    const value = parseInt((event.target as HTMLInputElement).value, 10);
+    this.goToPage(value);
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.pages().length - 1) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage() > 0) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
+  setMode(mode: 'page' | 'longstrip'): void {
+    this.readerSettings.setMode(mode);
+    this.currentPage.set(0);
+  }
+
+  onPageClick(event: MouseEvent): void {
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const width = rect.width;
+
+    if (x < width * 0.35) {
+      this.prevPage();
+    } else if (x > width * 0.65) {
+      this.nextPage();
+    } else {
+      this.toggleHeader();
+    }
+  }
+
+  onViewportTouchStart(event: TouchEvent): void {
+    const touch = event.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+    this.touchStartTime = Date.now();
+  }
+
+  onViewportTouchEnd(event: TouchEvent): void {
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - this.touchStartX;
+    const deltaY = touch.clientY - this.touchStartY;
+    const elapsed = Date.now() - this.touchStartTime;
+    const absDx = Math.abs(deltaX);
+    const absDy = Math.abs(deltaY);
+
+    event.preventDefault();
+
+    if (elapsed < 400 && absDx > 40 && absDx > absDy * 1.5) {
+      if (deltaX < 0) {
+        this.nextPage();
+      } else {
+        this.prevPage();
+      }
+      return;
+    }
+
+    if (elapsed < 300 && absDx < 15 && absDy < 15) {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const width = rect.width;
+
+      if (x < width * 0.35) {
+        this.prevPage();
+      } else if (x > width * 0.65) {
+        this.nextPage();
+      } else {
+        this.toggleHeader();
+      }
+    }
+  }
+
+  onLongstripTouchStart(event: TouchEvent): void {
+    const touch = event.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+    this.touchStartTime = Date.now();
+    this.isTouchScrolling = false;
+  }
+
+  onLongstripTouchMove(): void {
+    this.isTouchScrolling = true;
+  }
+
+  onLongstripTouchEnd(): void {
+    if (this.isTouchScrolling) return;
+    const elapsed = Date.now() - this.touchStartTime;
+    if (elapsed < 300) {
+      this.toggleHeader();
+    }
+  }
+
+  onPageWheel(event: WheelEvent): void {
+    if (this.settings().mode !== 'page') return;
+    event.preventDefault();
+    if (event.deltaY > 0) {
+      this.nextPage();
+    } else if (event.deltaY < 0) {
+      this.prevPage();
+    }
+  }
+
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
-      this.goBack();
+    switch (event.key) {
+      case 'ArrowLeft':
+        event.preventDefault();
+        this.prevPage();
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        this.nextPage();
+        break;
+      case ' ':
+        event.preventDefault();
+        this.nextPage();
+        break;
+      case 'Escape':
+        if (this.showSettings()) {
+          this.showSettings.set(false);
+        } else {
+          this.goBack();
+        }
+        break;
     }
   }
 

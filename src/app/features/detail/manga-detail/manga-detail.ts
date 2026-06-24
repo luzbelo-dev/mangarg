@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal, DestroyRef, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { switchMap, map, tap, catchError, of } from 'rxjs';
 import { DecimalPipe } from '@angular/common';
@@ -23,6 +24,7 @@ import { TranslateService } from '../../../core/i18n/translate.service';
 export class MangaDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly appLocation = inject(Location);
   private readonly jikanService = inject(JikanService);
   private readonly mangaDexService = inject(MangaDexService);
   private readonly libraryService = inject(LibraryService);
@@ -82,7 +84,7 @@ export class MangaDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/search']);
+    this.appLocation.back();
   }
 
   get displayTitle(): string {

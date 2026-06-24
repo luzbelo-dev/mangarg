@@ -1,5 +1,6 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { NavbarComponent } from './shared/components/navbar/navbar';
@@ -25,6 +26,12 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
     <mt-toast-container />
   `,
   styles: `
+    :host {
+      display: block;
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
+
     .desktop-only {
       display: block;
     }
@@ -38,6 +45,7 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
       margin: 0 auto;
       padding: 24px;
       min-height: calc(100vh - 60px);
+      overflow-x: hidden;
     }
 
     @media (max-width: 768px) {
@@ -57,15 +65,48 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
     }
   `,
 })
-export class App {
+export class App implements OnInit, OnDestroy {
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
+  private readonly ngZone = inject(NgZone);
+
+  private backButtonHandler: (() => void) | null = null;
 
   private readonly url = toSignal(
     this.router.events.pipe(map(() => this.router.url)),
     { initialValue: this.router.url }
   );
 
-  isReaderRoute = computed(() => this.url().startsWith('/reader'));
+  isReaderRoute = computed(() => {
+    const u = this.url();
+    return u.startsWith('/reader') || u.match(/^\/source\/[^/]+\/reader\//) !== null;
+  });
   isLandingRoute = computed(() => this.url() === '/' || this.url() === '');
   hideAppShell = computed(() => this.isReaderRoute() || this.isLandingRoute());
+
+  ngOnInit(): void {
+    // Handle Android hardware back button via document backbutton event (Capacitor)
+    // and popstate for general PWA/WebView back navigation
+    this.backButtonHandler = () => {
+      this.ngZone.run(() => {
+        // If at a root-level route, let the default behavior (exit app) happen
+        const currentUrl = this.router.url;
+        const rootRoutes = ['/', '/search', '/explore', '/library', '/extensions'];
+        if (rootRoutes.includes(currentUrl.split('?')[0])) {
+          // At top-level, allow default back behavior (exit)
+          return;
+        }
+        // Otherwise navigate back in history
+        this.location.back();
+      });
+    };
+
+    document.addEventListener('backbutton', this.backButtonHandler);
+  }
+
+  ngOnDestroy(): void {
+    if (this.backButtonHandler) {
+      document.removeEventListener('backbutton', this.backButtonHandler);
+    }
+  }
 }

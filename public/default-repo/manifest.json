@@ -130,31 +130,6 @@
       }
     },
     {
-      "id": "catharsisworld",
-      "name": "Catharsis World",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "CW",
-      "iconColor": "#6A0572",
-      "baseUrl": "https://catharsisworld.dig-it.info",
-      "description": "Read manga and manhwa in Spanish on Catharsis World",
-      "descriptionEs": "Lee manga y manhwa en espanol en Catharsis World",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://catharsisworld.dig-it.info",
-        "id": "catharsisworld",
-        "name": "Catharsis World",
-        "icon": "CW",
-        "iconColor": "#6A0572",
-        "lang": "es"
-      }
-    },
-    {
       "id": "doujinshell",
       "name": "Doujin Shell",
       "lang": "ES",
@@ -232,56 +207,6 @@
       }
     },
     {
-      "id": "hadesnofansub",
-      "name": "Hades No Fansub",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "HA",
-      "iconColor": "#2C3E50",
-      "baseUrl": "https://lectorhades.latamtoon.com",
-      "description": "Read manga and manhwa translated by Hades No Fansub",
-      "descriptionEs": "Lee manga y manhwa traducidos por Hades No Fansub",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://lectorhades.latamtoon.com",
-        "id": "hadesnofansub",
-        "name": "Hades No Fansub",
-        "icon": "HA",
-        "iconColor": "#2C3E50",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "haremdekira",
-      "name": "Harem de Kira",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "HK",
-      "iconColor": "#E91E63",
-      "baseUrl": "https://kiraproject.lat",
-      "description": "Read manga and manhwa in Spanish on Harem de Kira",
-      "descriptionEs": "Lee manga y manhwa en espanol en Harem de Kira",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://kiraproject.lat",
-        "id": "haremdekira",
-        "name": "Harem de Kira",
-        "icon": "HK",
-        "iconColor": "#E91E63",
-        "lang": "es"
-      }
-    },
-    {
       "id": "houseofotakus",
       "name": "House of Otakus",
       "lang": "ES",
@@ -303,56 +228,6 @@
         "name": "House of Otakus",
         "icon": "HO",
         "iconColor": "#9B59B6",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "infrafandub",
-      "name": "Infra Fandub",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "IN",
-      "iconColor": "#00BCD4",
-      "baseUrl": "https://infrafandub.com",
-      "description": "Read manga and manhwa translated by Infra Fandub",
-      "descriptionEs": "Lee manga y manhwa traducidos en Infra Fandub",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://infrafandub.com",
-        "id": "infrafandub",
-        "name": "Infra Fandub",
-        "icon": "IN",
-        "iconColor": "#00BCD4",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "inmortalscan",
-      "name": "Inmortal Scan",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "IS",
-      "iconColor": "#607D8B",
-      "baseUrl": "https://scanimnortal.com",
-      "description": "Read manga and manhwa in Spanish on Inmortal Scan",
-      "descriptionEs": "Lee manga y manhwa en espanol en Inmortal Scan",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://scanimnortal.com",
-        "id": "inmortalscan",
-        "name": "Inmortal Scan",
-        "icon": "IS",
-        "iconColor": "#607D8B",
         "lang": "es"
       }
     },
@@ -428,82 +303,6 @@
         "name": "Manga Crab",
         "icon": "MC",
         "iconColor": "#E74C3C",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "manhuaonline",
-      "name": "Manhua Online",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "MO",
-      "iconColor": "#D35400",
-      "baseUrl": "https://samurai.j5z.xyz",
-      "description": "Read manhua in Spanish on Manhua Online",
-      "descriptionEs": "Lee manhua en espanol en Manhua Online",
-      "features": [
-        "Manga",
-        "Manhwa",
-        "Manhua"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://samurai.j5z.xyz",
-        "id": "manhuaonline",
-        "name": "Manhua Online",
-        "icon": "MO",
-        "iconColor": "#D35400",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "manhwaonline",
-      "name": "Manhwa Online",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "MN",
-      "iconColor": "#2ECC71",
-      "baseUrl": "https://manhwa-online.com",
-      "description": "Read manhwa in Spanish on Manhwa Online",
-      "descriptionEs": "Lee manhwa en espanol gratis en Manhwa Online",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://manhwa-online.com",
-        "id": "manhwaonline",
-        "name": "Manhwa Online",
-        "icon": "MN",
-        "iconColor": "#2ECC71",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "marmota",
-      "name": "Marmota Fansub",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "MF",
-      "iconColor": "#A0522D",
-      "baseUrl": "https://marmota.me",
-      "description": "Read manga and manhwa translated by Marmota Fansub",
-      "descriptionEs": "Lee manga y manhwa traducidos por Marmota Fansub",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://marmota.me",
-        "id": "marmota",
-        "name": "Marmota Fansub",
-        "icon": "MF",
-        "iconColor": "#A0522D",
         "lang": "es"
       }
     },
@@ -584,31 +383,6 @@
       }
     },
     {
-      "id": "ragnarokscanlation",
-      "name": "Ragnarok Scanlation",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "RA",
-      "iconColor": "#4A0E4E",
-      "baseUrl": "https://ragnarokscanlation.org",
-      "description": "Read manga and manhwa translated by Ragnarok Scanlation",
-      "descriptionEs": "Lee manga y manhwa traducidos por Ragnarok Scanlation",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://ragnarokscanlation.org",
-        "id": "ragnarokscanlation",
-        "name": "Ragnarok Scanlation",
-        "icon": "RA",
-        "iconColor": "#4A0E4E",
-        "lang": "es"
-      }
-    },
-    {
       "id": "richtoscan",
       "name": "Richto Scan",
       "lang": "ES",
@@ -659,56 +433,6 @@
       }
     },
     {
-      "id": "templescanesp",
-      "name": "Temple Scan",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "TE",
-      "iconColor": "#DAA520",
-      "baseUrl": "https://aedexnox.akan01.com",
-      "description": "Read manga and manhwa in Spanish on Temple Scan",
-      "descriptionEs": "Lee manga y manhwa en espanol en Temple Scan",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://aedexnox.akan01.com",
-        "id": "templescanesp",
-        "name": "Temple Scan",
-        "icon": "TE",
-        "iconColor": "#DAA520",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "toones",
-      "name": "Toones",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "TO",
-      "iconColor": "#FF8C00",
-      "baseUrl": "https://toon-es.com",
-      "description": "Read manga and manhwa in Spanish on Toones",
-      "descriptionEs": "Lee manga y manhwa en espanol en Toones",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://toon-es.com",
-        "id": "toones",
-        "name": "Toones",
-        "icon": "TO",
-        "iconColor": "#FF8C00",
-        "lang": "es"
-      }
-    },
-    {
       "id": "vermanhwas",
       "name": "Ver Manhwas",
       "lang": "ES",
@@ -730,31 +454,6 @@
         "name": "Ver Manhwas",
         "icon": "VM",
         "iconColor": "#6B8E23",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "yurionline",
-      "name": "Yuri Online",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "YU",
-      "iconColor": "#FF66CC",
-      "baseUrl": "https://yuri-online.com",
-      "description": "Read yuri manga and manhwa in Spanish",
-      "descriptionEs": "Lee manga y manhwa yuri en espanol en Yuri Online",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://yuri-online.com",
-        "id": "yurionline",
-        "name": "Yuri Online",
-        "icon": "YU",
-        "iconColor": "#FF66CC",
         "lang": "es"
       }
     },
@@ -859,31 +558,6 @@
       }
     },
     {
-      "id": "cerberusseries",
-      "name": "Cerberus Series",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "CS",
-      "iconColor": "#880015",
-      "baseUrl": "https://legionscans.com/wp",
-      "description": "Read manga and manhwa in Spanish on Cerberus Series",
-      "descriptionEs": "Lee manga y manhwa en espanol en Cerberus Series",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/mangathemesia.js",
-      "config": {
-        "baseUrl": "https://legionscans.com/wp",
-        "id": "cerberusseries",
-        "name": "Cerberus Series",
-        "icon": "CS",
-        "iconColor": "#880015",
-        "lang": "es"
-      }
-    },
-    {
       "id": "lunapieces",
       "name": "Luna Pieces",
       "lang": "ES",
@@ -930,31 +604,6 @@
         "name": "Neko Scans",
         "icon": "NE",
         "iconColor": "#FDCB6E",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "novamanhwa",
-      "name": "Nova Manhwa",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "NM",
-      "iconColor": "#A29BFE",
-      "baseUrl": "https://novamanhwa.cc",
-      "description": "Read manhwa in Spanish on Nova Manhwa",
-      "descriptionEs": "Lee manhwa en espanol en Nova Manhwa",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/mangathemesia.js",
-      "config": {
-        "baseUrl": "https://novamanhwa.cc",
-        "id": "novamanhwa",
-        "name": "Nova Manhwa",
-        "icon": "NM",
-        "iconColor": "#A29BFE",
         "lang": "es"
       }
     },
@@ -1009,81 +658,6 @@
       }
     },
     {
-      "id": "submanhwa",
-      "name": "Sub Manhwa",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "SU",
-      "iconColor": "#EF5350",
-      "baseUrl": "https://submanhwa.com",
-      "description": "Read manhwa subtitled in Spanish on Sub Manhwa",
-      "descriptionEs": "Lee manhwa en espanol en Sub Manhwa",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://submanhwa.com",
-        "id": "submanhwa",
-        "name": "Sub Manhwa",
-        "icon": "SU",
-        "iconColor": "#EF5350",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "mangamx",
-      "name": "Manga MX",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "MX",
-      "iconColor": "#006D5B",
-      "baseUrl": "https://manga-oni.com",
-      "description": "Read manga and manhwa in Spanish on Manga MX",
-      "descriptionEs": "Lee manga y manhwa en espanol en Manga MX",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://manga-oni.com",
-        "id": "mangamx",
-        "name": "Manga MX",
-        "icon": "MX",
-        "iconColor": "#006D5B",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "ravenmanga",
-      "name": "Raven Manga",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "RV",
-      "iconColor": "#263238",
-      "baseUrl": "https://raventard.xyz",
-      "description": "Read manga and manhwa in Spanish on Raven Manga",
-      "descriptionEs": "Lee manga y manhwa en espanol en Raven Manga",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://raventard.xyz",
-        "id": "ravenmanga",
-        "name": "Raven Manga",
-        "icon": "RV",
-        "iconColor": "#263238",
-        "lang": "es"
-      }
-    },
-    {
       "id": "plottwistnofansub",
       "name": "PlotTwist Fansub",
       "lang": "ES",
@@ -1105,106 +679,6 @@
         "name": "PlotTwist Fansub",
         "icon": "PT",
         "iconColor": "#FF7043",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "tenkaiscan",
-      "name": "Tenkai Scan",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "TK",
-      "iconColor": "#1565C0",
-      "baseUrl": "https://falcoscan.net",
-      "description": "Read manga and manhwa in Spanish on Tenkai Scan",
-      "descriptionEs": "Lee manga y manhwa en espanol en Tenkai Scan",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://falcoscan.net",
-        "id": "tenkaiscan",
-        "name": "Tenkai Scan",
-        "icon": "TK",
-        "iconColor": "#1565C0",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "anzmanga",
-      "name": "ANZ Manga",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "AN",
-      "iconColor": "#00897B",
-      "baseUrl": "https://www.anzmanga25.com",
-      "description": "Read manga and manhwa in Spanish on ANZ Manga",
-      "descriptionEs": "Lee manga y manhwa en espanol en ANZ Manga",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://www.anzmanga25.com",
-        "id": "anzmanga",
-        "name": "ANZ Manga",
-        "icon": "AN",
-        "iconColor": "#00897B",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "doujinhentai",
-      "name": "Doujin Hentai",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "DH",
-      "iconColor": "#D50000",
-      "baseUrl": "https://doujinhentai.net",
-      "description": "Read adult doujinshi in Spanish on Doujin Hentai",
-      "descriptionEs": "Lee doujinshi adulto en espanol en Doujin Hentai",
-      "features": [
-        "Manga",
-        "NSFW"
-      ],
-      "nsfw": true,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://doujinhentai.net",
-        "id": "doujinhentai",
-        "name": "Doujin Hentai",
-        "icon": "DH",
-        "iconColor": "#D50000",
-        "lang": "es"
-      }
-    },
-    {
-      "id": "mangasin",
-      "name": "MangaSin",
-      "lang": "ES",
-      "version": "1.0.0",
-      "icon": "MG",
-      "iconColor": "#3F51B5",
-      "baseUrl": "https://m440.in",
-      "description": "Read manga and manhwa in Spanish on MangaSin",
-      "descriptionEs": "Lee manga y manhwa en espanol en MangaSin",
-      "features": [
-        "Manga",
-        "Manhwa"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/madara.js",
-      "config": {
-        "baseUrl": "https://m440.in",
-        "id": "mangasin",
-        "name": "MangaSin",
-        "icon": "MG",
-        "iconColor": "#3F51B5",
         "lang": "es"
       }
     }

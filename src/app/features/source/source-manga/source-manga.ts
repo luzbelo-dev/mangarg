@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
@@ -19,6 +20,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 export class SourceMangaComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly appLocation = inject(Location);
   private readonly adapterLoader = inject(AdapterLoaderService);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly i18n = inject(TranslateService);
@@ -193,6 +195,6 @@ export class SourceMangaComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/source', this.sourceId]);
+    this.appLocation.back();
   }
 }
