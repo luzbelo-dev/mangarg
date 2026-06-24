@@ -1,46 +1,19 @@
 <div class="landing">
-  <!-- Top bar -->
   <header class="landing__topbar">
-    <span class="landing__brand">
-      <span class="landing__brand-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
-        </svg>
-      </span>
-      Mi Manga Dinamita
-    </span>
-    <div class="landing__topbar-controls">
-      <button class="landing__theme-btn" (click)="toggleTheme()" [attr.aria-label]="isDark() ? 'Light mode' : 'Dark mode'">
-        @if (isDark()) {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-        } @else {
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        }
-      </button>
-    </div>
+    <span class="landing__brand">Mi Manga Dinamita</span>
   </header>
 
-  <!-- Hero -->
   <section class="landing__hero">
-    <div class="landing__hero-bg"></div>
-    <div class="landing__sparks" aria-hidden="true">
-      <span class="landing__spark landing__spark--1"></span>
-      <span class="landing__spark landing__spark--2"></span>
-      <span class="landing__spark landing__spark--3"></span>
-      <span class="landing__spark landing__spark--4"></span>
-    </div>
     <h1 class="landing__title">
       Mi Manga<br>
       <span class="landing__title-accent">Dinamita</span>
     </h1>
     <p class="landing__subtitle">{{ t().landing.subtitle }}</p>
     <button class="landing__cta" (click)="scrollToDownload()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      {{ lang() === 'es' ? 'Descargar gratis' : 'Download free' }}
+      {{ lang() === 'es' ? 'Descargar' : 'Download' }}
     </button>
   </section>
 
-  <!-- Stats -->
   <section class="landing__stats">
     <div class="landing__stat">
       <strong>{{ extensionCount }}</strong>
@@ -58,77 +31,10 @@
     </div>
   </section>
 
-  <!-- Features -->
-  <section class="landing__section">
-    <h2 class="landing__section-title">
-      {{ lang() === 'es' ? 'Todo lo que necesitás' : 'Everything you need' }}
-    </h2>
-    <div class="landing__features">
-      <div class="landing__feature">
-        <div class="landing__feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        </div>
-        <div>
-          <h3>{{ t().landing.feat1 }}</h3>
-          <p>{{ t().landing.feat1Desc }}</p>
-        </div>
-      </div>
-      <div class="landing__feature">
-        <div class="landing__feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
-        </div>
-        <div>
-          <h3>{{ t().landing.feat2 }}</h3>
-          <p>{{ t().landing.feat2Desc }}</p>
-        </div>
-      </div>
-      <div class="landing__feature">
-        <div class="landing__feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </div>
-        <div>
-          <h3>{{ t().landing.feat3 }}</h3>
-          <p>{{ t().landing.feat3Desc }}</p>
-        </div>
-      </div>
-      <div class="landing__feature">
-        <div class="landing__feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        </div>
-        <div>
-          <h3>{{ t().landing.feat4 }}</h3>
-          <p>{{ t().landing.feat4Desc }}</p>
-        </div>
-      </div>
-      <div class="landing__feature">
-        <div class="landing__feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div>
-          <h3>{{ lang() === 'es' ? 'Sin anuncios' : 'No ads' }}</h3>
-          <p>{{ lang() === 'es' ? 'Lectura limpia, sin publicidad invasiva ni trackers.' : 'Clean reading, no ads or trackers.' }}</p>
-        </div>
-      </div>
-      <div class="landing__feature">
-        <div class="landing__feature-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>
-        </div>
-        <div>
-          <h3>Open Source</h3>
-          <p>{{ lang() === 'es' ? 'Código abierto. Contribuí, reportá bugs, hacelo tuyo.' : 'Open source. Contribute, report bugs, make it yours.' }}</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Download -->
   <section id="download" class="landing__section">
     <h2 class="landing__section-title">
-      {{ lang() === 'es' ? 'Descargá ahora' : 'Download now' }}
+      {{ lang() === 'es' ? 'Descarga' : 'Download' }}
     </h2>
-    <p class="landing__section-desc">
-      {{ lang() === 'es' ? 'Disponible para Android, Windows y como webapp.' : 'Available for Android, Windows and as a web app.' }}
-    </p>
     <div class="landing__downloads">
       <a class="landing__download landing__download--primary" [href]="apkUrl" target="_blank" rel="noopener">
         <div class="landing__download-top">
@@ -141,7 +47,6 @@
           </div>
         </div>
         <div class="landing__download-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           {{ lang() === 'es' ? 'Descargar APK' : 'Download APK' }}
         </div>
       </a>
@@ -160,18 +65,13 @@
         </div>
       </a>
     </div>
-    <div class="landing__download-hint">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-      {{ lang() === 'es' ? 'iPhone, iPad y Linux: usá la webapp desde el navegador.' : 'iPhone, iPad and Linux: use the webapp from your browser.' }}
-    </div>
+    <p class="landing__hint">
+      {{ lang() === 'es' ? 'iPhone, iPad y Linux: usa la webapp desde el navegador.' : 'iPhone, iPad and Linux: use the webapp from your browser.' }}
+    </p>
   </section>
 
-  <!-- Footer -->
   <footer class="landing__footer">
-    <p>Mi Manga Dinamita v{{ version }}</p>
-    <a [href]="githubRepoUrl" target="_blank" rel="noopener">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-      GitHub
-    </a>
+    <p>v{{ version }}</p>
+    <a [href]="githubRepoUrl" target="_blank" rel="noopener">GitHub</a>
   </footer>
 </div>
