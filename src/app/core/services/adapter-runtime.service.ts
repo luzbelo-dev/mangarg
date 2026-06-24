@@ -3,6 +3,42 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AdapterApi, AdapterCache, MangaAdapterInstance } from '../models/adapter.model';
 
+function isCapacitor(): boolean {
+  return typeof (window as any)?.Capacitor !== 'undefined';
+}
+
+function needsProxy(url: string): boolean {
+  if (isCapacitor()) return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === 'localhost') return false;
+    if (parsed.hostname.includes('netlify.app')) return false;
+    if (parsed.hostname.includes('mangadex.org')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function proxyUrl(targetUrl: string, method = 'GET'): string {
+  const encoded = btoa(targetUrl).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `/.netlify/functions/source-proxy?url=${encoded}&method=${method}`;
+}
+
+function buildUrl(url: string, params?: Record<string, any>): string {
+  const fullUrl = new URL(url);
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      if (Array.isArray(v)) {
+        for (const item of v) fullUrl.searchParams.append(k, String(item));
+      } else {
+        fullUrl.searchParams.set(k, String(v));
+      }
+    }
+  }
+  return fullUrl.toString();
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdapterRuntimeService {
   private readonly http = inject(HttpClient);
@@ -11,48 +47,35 @@ export class AdapterRuntimeService {
   createApi(): AdapterApi {
     return {
       get: <T>(url: string, params?: Record<string, any>): Promise<T> => {
-        const fullUrl = new URL(url);
-        if (params) {
-          for (const [k, v] of Object.entries(params)) {
-            if (Array.isArray(v)) {
-              for (const item of v) fullUrl.searchParams.append(k, String(item));
-            } else {
-              fullUrl.searchParams.set(k, String(v));
-            }
-          }
-        }
-        return firstValueFrom(this.http.get<T>(fullUrl.toString()));
+        const target = buildUrl(url, params);
+        const fetchUrl = needsProxy(target) ? proxyUrl(target) : target;
+        return firstValueFrom(this.http.get<T>(fetchUrl));
       },
 
       getText: (url: string, params?: Record<string, any>): Promise<string> => {
-        const fullUrl = new URL(url);
-        if (params) {
-          for (const [k, v] of Object.entries(params)) {
-            if (Array.isArray(v)) {
-              for (const item of v) fullUrl.searchParams.append(k, String(item));
-            } else {
-              fullUrl.searchParams.set(k, String(v));
-            }
-          }
-        }
-        return firstValueFrom(this.http.get(fullUrl.toString(), { responseType: 'text' }));
+        const target = buildUrl(url, params);
+        const fetchUrl = needsProxy(target) ? proxyUrl(target) : target;
+        return firstValueFrom(this.http.get(fetchUrl, { responseType: 'text' }));
       },
 
       postText: (url: string, body?: any): Promise<string> => {
-        return firstValueFrom(this.http.post(url, body ?? '', {
+        const fetchUrl = needsProxy(url) ? proxyUrl(url, 'POST') : url;
+        return firstValueFrom(this.http.post(fetchUrl, body ?? '', {
           responseType: 'text',
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
         }));
       },
 
       post: <T>(url: string, body: any, headers?: Record<string, string>): Promise<T> => {
-        return firstValueFrom(this.http.post<T>(url, body, {
+        const fetchUrl = needsProxy(url) ? proxyUrl(url, 'POST') : url;
+        return firstValueFrom(this.http.post<T>(fetchUrl, body, {
           headers: headers ?? { 'Content-Type': 'application/json' },
         }));
       },
 
       fetchBlob: (url: string): Promise<Blob> => {
-        return firstValueFrom(this.http.get(url, { responseType: 'blob' }));
+        const fetchUrl = needsProxy(url) ? proxyUrl(url) : url;
+        return firstValueFrom(this.http.get(fetchUrl, { responseType: 'blob' }));
       },
 
       cache: this.createCache(),
