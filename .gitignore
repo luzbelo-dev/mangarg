@@ -46,3 +46,6 @@ Thumbs.db
 # Local Netlify folder
 .netlify
 release/
+graphify-out/
+.claude/
+test-adapters.mjs

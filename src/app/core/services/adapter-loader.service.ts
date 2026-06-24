@@ -20,7 +20,11 @@ export interface RepoManifest {
 }
 
 const REPOS_KEY = 'mt_extension_repos';
-const DEFAULT_REPO_URL = 'https://raw.githubusercontent.com/alearenass090/mi-manga-dinamita-extensions/main';
+
+function getDefaultRepoUrl(): string {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  return origin + '/default-repo';
+}
 
 @Injectable({ providedIn: 'root' })
 export class AdapterLoaderService {
@@ -53,7 +57,7 @@ export class AdapterLoaderService {
     }
     this.loaded = true;
     if (this.repos().length === 0) {
-      this.addRepo(DEFAULT_REPO_URL);
+      this.addRepo(getDefaultRepoUrl());
     }
   }
 
@@ -79,11 +83,20 @@ export class AdapterLoaderService {
 
     for (const repo of this.repos()) {
       try {
+        const repoBase = repo.url.endsWith('.json')
+          ? repo.url.substring(0, repo.url.lastIndexOf('/'))
+          : repo.url;
         const manifestUrl = repo.url.endsWith('.json')
           ? repo.url
           : `${repo.url}/manifest.json`;
         const manifest = await firstValueFrom(this.http.get<RepoManifest>(manifestUrl));
         if (manifest?.adapters) {
+          for (const adapter of manifest.adapters) {
+            if (adapter.adapterUrl && !adapter.adapterUrl.startsWith('http')) {
+              adapter.adapterUrl = `${repoBase}/${adapter.adapterUrl}`;
+            }
+            (adapter as any)._repoId = repo.id;
+          }
           allManifests.push(...manifest.adapters);
         }
         repo.lastUpdated = Date.now();

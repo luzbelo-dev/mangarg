@@ -70,8 +70,8 @@ export class ExtensionsPageComponent implements OnInit {
 
   async install(adapter: MangaAdapterManifest): Promise<void> {
     this.installingId.set(adapter.id);
-    const repo = this.loader.repos()[0];
-    await this.loader.installAdapter(adapter, repo?.id ?? 'default');
+    const repoId = (adapter as any)._repoId ?? this.loader.repos()[0]?.id ?? 'default';
+    await this.loader.installAdapter(adapter, repoId);
     this.installingId.set(null);
   }
 
