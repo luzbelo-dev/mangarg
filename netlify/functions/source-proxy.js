@@ -52,19 +52,22 @@ exports.handler = async function(event) {
   var requester = parsed.protocol === "https:" ? https : http;
 
   return new Promise(function(resolve) {
-    var isApi = parsed.hostname.includes("api.") || parsed.pathname.startsWith("/api/") || parsed.pathname.includes("/v1");
+    var isApi = parsed.hostname.includes("api.") || parsed.hostname.includes("graphql.") || parsed.pathname.startsWith("/api/") || parsed.pathname.includes("/v1");
+    var isMangaSite = !isApi;
     var options = {
       hostname: parsed.hostname,
       port: parsed.port || (parsed.protocol === "https:" ? 443 : 80),
       path: parsed.pathname + parsed.search,
       method: method,
       headers: {
-        "User-Agent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+        "User-Agent": isApi ? "MiMangaDinamita/1.2.0" : "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
         "Accept": isApi ? "application/json, */*" : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
-        "Referer": parsed.origin + "/"
       }
     };
+    if (isMangaSite) {
+      options.headers["Referer"] = parsed.origin + "/";
+    }
 
     if (method === "POST") {
       options.headers["Content-Type"] = event.headers["content-type"] || "application/x-www-form-urlencoded";
