@@ -1,4 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, from, concatMap, tap, map, finalize, catchError, of } from 'rxjs';
 import { IndexedDbService } from './indexeddb.service';
 import { AdapterLoaderService } from './adapter-loader.service';
@@ -26,6 +27,7 @@ export interface SourceDownloadedPage {
 
 @Injectable({ providedIn: 'root' })
 export class SourceDownloadService {
+  private readonly http = inject(HttpClient);
   private readonly db = inject(IndexedDbService);
   private readonly adapterLoader = inject(AdapterLoaderService);
 
@@ -94,8 +96,8 @@ export class SourceDownloadService {
         if (controller.signal.aborted) throw new Error('Cancelled');
 
         try {
-          const response = await fetch(page.url, { signal: controller.signal });
-          const blob = await response.blob();
+          if (controller.signal.aborted) throw new Error('Cancelled');
+          const blob = await firstValueFrom(this.http.get(page.url, { responseType: 'blob' }));
           totalBytes += blob.size;
 
           const pageData: SourceDownloadedPage = {

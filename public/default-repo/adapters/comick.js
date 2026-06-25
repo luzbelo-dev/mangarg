@@ -1,19 +1,29 @@
 (function(api, config) {
   var BASE = 'https://comick.art';
+  var API_BASE = 'https://api.comick.io';
   var COVER_BASE = 'https://meo.comick.pictures';
 
   function mapManga(item) {
-    var coverKey = item.md_covers && item.md_covers[0] ? item.md_covers[0].b2key : '';
-    if (!coverKey && item.cover_url) coverKey = '';
+    var coverUrl = item.default_thumbnail || '';
+    if (!coverUrl && item.md_covers && item.md_covers[0] && item.md_covers[0].b2key) {
+      coverUrl = COVER_BASE + '/' + item.md_covers[0].b2key;
+    }
+    if (!coverUrl && item.cover_url) coverUrl = item.cover_url;
     return {
       sourceId: 'comick',
-      slug: item.hid || item.slug || '',
+      slug: item.slug || item.hid || '',
       title: item.title || '',
-      coverUrl: coverKey ? COVER_BASE + '/' + coverKey : (item.cover_url || ''),
+      coverUrl: coverUrl,
       description: item.description || item.desc || '',
       score: item.rating ? parseFloat(item.rating) : undefined,
       contentRating: item.content_rating || undefined,
     };
+  }
+
+  function unwrap(res) {
+    if (res && res.data && Array.isArray(res.data)) return res.data;
+    if (Array.isArray(res)) return res;
+    return [];
   }
 
   return {
@@ -31,19 +41,16 @@
         type: 'comic',
         page: page || 1,
       });
-      var data = res.data || res;
-      if (!Array.isArray(data)) return [];
-      return data.map(mapManga);
+      return unwrap(res).map(mapManga);
     },
 
     getPopular: async function(page) {
+      var p = page || 1;
       var res = await api.get(BASE + '/api/comics/top', {
         limit: 20,
-        page: page || 1,
+        page: p,
       });
-      var data = res.data || res;
-      if (!Array.isArray(data)) return [];
-      return data.map(mapManga);
+      return unwrap(res).map(mapManga);
     },
 
     getLatest: async function(page) {
@@ -51,60 +58,72 @@
         order: 'new',
         page: page || 1,
       });
-      var data = res.data || res;
-      if (!Array.isArray(data)) return [];
-      return data.map(function(item) {
+      var items = unwrap(res);
+      return items.map(function(item) {
         if (item.comic) return mapManga(item.comic);
+        if (item.md_comics) return mapManga(item.md_comics);
         return mapManga(item);
       });
     },
 
     getMangaDetail: async function(slug) {
-      var res = await api.get(BASE + '/comic/' + slug);
-      if (!res || !res.comic) return null;
-      var comic = res.comic;
-      var coverKey = comic.md_covers && comic.md_covers[0] ? comic.md_covers[0].b2key : '';
-      var genres = (res.genres || []).map(function(g) { return g.name || ''; }).filter(Boolean);
-      var statusMap = { 1: 'ongoing', 2: 'completed', 3: 'cancelled', 4: 'hiatus' };
-      return {
-        slug: comic.hid || comic.slug,
-        title: comic.title || '',
-        coverUrl: coverKey ? COVER_BASE + '/' + coverKey : '',
-        description: comic.description || comic.desc || '',
-        status: statusMap[comic.status] || '',
-        genres: genres,
-        author: (res.authors || []).map(function(a) { return a.name; }).join(', ') || undefined,
-      };
+      try {
+        var res = await api.get(BASE + '/api/comics/' + slug + '/chapter-list', { lang: 'en', page: 1 });
+        return {
+          slug: slug,
+          title: slug.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }),
+          coverUrl: '',
+          description: '',
+          status: '',
+          genres: [],
+        };
+      } catch(e) {
+        return { slug: slug, title: slug, coverUrl: '', description: '' };
+      }
     },
 
     getChapters: async function(mangaSlug, lang) {
-      var res = await api.get(BASE + '/api/comics/' + mangaSlug + '/chapter-list', {
-        lang: lang || 'es',
-      });
-      var chapters = res.chapters || res.data || res;
-      if (!Array.isArray(chapters)) return [];
-      return chapters.map(function(ch) {
-        return {
-          id: ch.hid,
-          sourceId: 'comick',
-          mangaSlug: mangaSlug,
-          chapterNumber: ch.chap || '0',
-          title: ch.title || '',
-          language: ch.lang || 'es',
-          groupName: ch.group_name && ch.group_name[0] ? ch.group_name[0] : undefined,
-          publishDate: ch.created_at || '',
-        };
-      });
+      var allChapters = [];
+      var page = 1;
+      var maxPages = 10;
+      while (page <= maxPages) {
+        var res = await api.get(BASE + '/api/comics/' + mangaSlug + '/chapter-list', {
+          lang: lang || 'en',
+          page: page,
+        });
+        var chapters = unwrap(res);
+        if (chapters.length === 0) break;
+        for (var i = 0; i < chapters.length; i++) {
+          var ch = chapters[i];
+          allChapters.push({
+            id: ch.hid,
+            sourceId: 'comick',
+            mangaSlug: mangaSlug,
+            chapterNumber: ch.chap || '0',
+            title: ch.title || '',
+            language: ch.lang || 'en',
+            groupName: ch.group_name && ch.group_name[0] ? ch.group_name[0] : undefined,
+            publishDate: ch.created_at || '',
+          });
+        }
+        if (res && res.pagination && page >= res.pagination.last_page) break;
+        page++;
+      }
+      return allChapters;
     },
 
     getPages: async function(chapterId) {
-      var res = await api.get(BASE + '/chapter/' + chapterId);
-      var chapter = res.chapter || res;
-      var images = chapter.md_images || chapter.images || [];
-      return images.map(function(img, index) {
-        var url = img.b2key ? COVER_BASE + '/' + img.b2key : (img.url || '');
-        return { url: url, index: index };
-      });
+      try {
+        var res = await api.get(API_BASE + '/chapter/' + chapterId);
+        var chapter = res.chapter || res;
+        var images = chapter.md_images || chapter.images || [];
+        return images.map(function(img, index) {
+          var url = img.b2key ? COVER_BASE + '/' + img.b2key : (img.url || '');
+          return { url: url, index: index };
+        });
+      } catch(e) {
+        return [];
+      }
     },
   };
 })

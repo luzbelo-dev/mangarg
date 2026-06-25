@@ -124,7 +124,7 @@
 
         &:hover { color: white; border-color: rgba(255,255,255,0.3); }
         &:active { color: white; border-color: rgba(255,255,255,0.5); }
-        &.active { background: var(--accent, #6c5ce7); color: white; border-color: var(--accent, #6c5ce7); }
+        &.active { background: var(--accent, #e63946); color: white; border-color: var(--accent, #e63946); }
       }
     }
   }
@@ -188,7 +188,7 @@
     padding: 10px 20px;
     min-height: 44px;
     border-radius: 8px;
-    background: var(--accent, #6c5ce7);
+    background: var(--accent, #e63946);
     color: white;
     font-weight: 600;
     font-size: 0.85rem;
@@ -233,7 +233,7 @@
     button {
       padding: 8px 16px;
       border-radius: 6px;
-      background: var(--accent, #6c5ce7);
+      background: var(--accent, #e63946);
       color: white;
       border: none;
       font-size: 0.8rem;
@@ -277,7 +277,7 @@
     }
 
     &--next {
-      background: var(--accent, #6c5ce7);
+      background: var(--accent, #e63946);
       &:hover { opacity: 0.9; }
       &:active { transform: scale(0.97); }
     }
@@ -345,7 +345,7 @@
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      background: var(--accent, #6c5ce7);
+      background: var(--accent, #e63946);
       cursor: pointer;
     }
 
@@ -353,7 +353,7 @@
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      background: var(--accent, #6c5ce7);
+      background: var(--accent, #e63946);
       cursor: pointer;
       border: none;
     }

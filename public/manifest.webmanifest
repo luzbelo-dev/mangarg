@@ -6,8 +6,8 @@
   "orientation": "any",
   "scope": "./",
   "start_url": "./",
-  "theme_color": "#6c5ce7",
-  "background_color": "#0f0f1a",
+  "theme_color": "#0a0a0a",
+  "background_color": "#0a0a0a",
   "categories": ["entertainment", "books"],
   "icons": [
     {

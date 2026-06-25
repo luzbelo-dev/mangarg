@@ -254,41 +254,126 @@
   <!-- REPOS TAB -->
   @if (activeTab() === 'repos') {
     <div class="extensions__repos">
-      <div class="extensions__repo-add">
-        <input
-          class="extensions__repo-input"
-          type="url"
-          [placeholder]="lang() === 'es' ? 'URL del repositorio...' : 'Repository URL...'"
-          [value]="repoUrlInput()"
-          (input)="onRepoUrlInput($event)"
-          (keyup.enter)="addRepo()"
-        />
-        <button class="extensions__btn extensions__btn--install" (click)="addRepo()">
-          {{ lang() === 'es' ? 'Agregar' : 'Add' }}
-        </button>
+      <!-- Add repo -->
+      <div class="extensions__section">
+        <h3 class="extensions__section-title">
+          {{ lang() === 'es' ? 'Agregar repositorio' : 'Add repository' }}
+        </h3>
+        <p class="extensions__section-hint">
+          {{ lang() === 'es'
+            ? 'Pega una URL de repositorio, GitHub, o raw.githubusercontent.com'
+            : 'Paste a repository URL, GitHub, or raw.githubusercontent.com'
+          }}
+        </p>
+        <div class="extensions__repo-add">
+          <input
+            class="extensions__repo-input"
+            type="url"
+            [placeholder]="lang() === 'es' ? 'https://github.com/user/repo o URL directa...' : 'https://github.com/user/repo or direct URL...'"
+            [value]="repoUrlInput()"
+            (input)="onRepoUrlInput($event)"
+            (keyup.enter)="addRepo()"
+          />
+          <button class="extensions__btn extensions__btn--install" (click)="addRepo()">
+            {{ lang() === 'es' ? 'Agregar' : 'Add' }}
+          </button>
+        </div>
       </div>
 
-      <div class="extensions__repo-list">
-        @for (repo of loader.repos(); track repo.id) {
-          <div class="extensions__repo-card">
-            <div class="extensions__repo-info">
-              <h3 class="extensions__repo-name">{{ repo.name }}</h3>
-              <p class="extensions__repo-url">{{ repo.url }}</p>
+      <!-- Manual install from URL -->
+      <div class="extensions__section">
+        <h3 class="extensions__section-title">
+          {{ lang() === 'es' ? 'Instalar extension manual' : 'Install extension manually' }}
+        </h3>
+        <p class="extensions__section-hint">
+          {{ lang() === 'es'
+            ? 'Pega la URL directa a un archivo .js de extension'
+            : 'Paste the direct URL to an extension .js file'
+          }}
+        </p>
+        <div class="extensions__repo-add">
+          <input
+            class="extensions__repo-input"
+            type="url"
+            [placeholder]="lang() === 'es' ? 'URL del archivo .js...' : '.js file URL...'"
+            [value]="manualUrlInput()"
+            (input)="onManualUrlInput($event)"
+            (keyup.enter)="installFromUrl()"
+          />
+          <button
+            class="extensions__btn extensions__btn--install"
+            [disabled]="manualInstalling() || !manualUrlInput().trim()"
+            (click)="installFromUrl()"
+          >
+            @if (manualInstalling()) {
+              <div class="extensions__btn-spinner"></div>
+            } @else {
+              {{ lang() === 'es' ? 'Instalar' : 'Install' }}
+            }
+          </button>
+        </div>
+      </div>
+
+      <!-- Manual install from file -->
+      <div class="extensions__section">
+        <h3 class="extensions__section-title">
+          {{ lang() === 'es' ? 'Instalar desde archivo' : 'Install from file' }}
+        </h3>
+        <p class="extensions__section-hint">
+          {{ lang() === 'es'
+            ? 'Selecciona un archivo .js de extension desde tu dispositivo'
+            : 'Select an extension .js file from your device'
+          }}
+        </p>
+        <label class="extensions__file-btn">
+          <input
+            type="file"
+            accept=".js,application/javascript"
+            (change)="onFileSelected($event)"
+            style="display: none"
+          />
+          <span class="extensions__btn extensions__btn--install extensions__btn--file">
+            @if (manualInstalling()) {
+              <div class="extensions__btn-spinner"></div>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              {{ lang() === 'es' ? 'Elegir archivo .js' : 'Choose .js file' }}
+            }
+          </span>
+        </label>
+      </div>
+
+      <!-- Repo list -->
+      <div class="extensions__section">
+        <h3 class="extensions__section-title">
+          {{ lang() === 'es' ? 'Repositorios configurados' : 'Configured repositories' }}
+        </h3>
+        <div class="extensions__repo-list">
+          @for (repo of loader.repos(); track repo.id) {
+            <div class="extensions__repo-card">
+              <div class="extensions__repo-info">
+                <h3 class="extensions__repo-name">{{ repo.name }}</h3>
+                <p class="extensions__repo-url">{{ repo.url }}</p>
+              </div>
+              <div class="extensions__repo-actions">
+                <button class="extensions__btn extensions__btn--refresh" (click)="refreshRepos()">
+                  {{ lang() === 'es' ? 'Actualizar' : 'Refresh' }}
+                </button>
+                <button class="extensions__btn extensions__btn--uninstall" (click)="removeRepo(repo.id)">
+                  {{ lang() === 'es' ? 'Quitar' : 'Remove' }}
+                </button>
+              </div>
             </div>
-            <div class="extensions__repo-actions">
-              <button class="extensions__btn extensions__btn--refresh" (click)="refreshRepos()">
-                {{ lang() === 'es' ? 'Actualizar' : 'Refresh' }}
-              </button>
-              <button class="extensions__btn extensions__btn--uninstall" (click)="removeRepo(repo.id)">
-                {{ lang() === 'es' ? 'Quitar' : 'Remove' }}
-              </button>
+          } @empty {
+            <div class="extensions__empty">
+              <p>{{ lang() === 'es' ? 'No hay repositorios configurados.' : 'No repositories configured.' }}</p>
             </div>
-          </div>
-        } @empty {
-          <div class="extensions__empty">
-            <p>{{ lang() === 'es' ? 'No hay repositorios configurados.' : 'No repositories configured.' }}</p>
-          </div>
-        }
+          }
+        </div>
       </div>
     </div>
   }

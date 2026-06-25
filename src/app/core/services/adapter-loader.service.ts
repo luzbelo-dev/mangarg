@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, firstValueFrom, forkJoin, of, from, catchError, map, switchMap, tap } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { IndexedDbService } from './indexeddb.service';
 import { AdapterRuntimeService } from './adapter-runtime.service';
 import { InstalledAdapter, MangaAdapterInstance, MangaAdapterManifest } from '../models/adapter.model';
@@ -21,9 +21,38 @@ export interface RepoManifest {
 
 const REPOS_KEY = 'mt_extension_repos';
 
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+function isCapacitor(): boolean {
+  return typeof (window as any)?.Capacitor !== 'undefined';
+}
+
 function getDefaultRepoUrl(): string {
+  if (isCapacitor()) {
+    return '/default-repo';
+  }
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   return origin + '/default-repo';
+}
+
+function resolveGitHubUrl(url: string): string {
+  const ghMatch = url.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/?(.*)$/);
+  if (!ghMatch) return url;
+  const [, owner, repo, rest] = ghMatch;
+  const cleanRepo = repo.replace(/\.git$/, '');
+  const path = rest?.replace(/^(tree|blob)\/(main|master)\//, '') || '';
+  if (path && path.endsWith('.json')) {
+    return `https://raw.githubusercontent.com/${owner}/${cleanRepo}/main/${path}`;
+  }
+  if (path) {
+    return `https://raw.githubusercontent.com/${owner}/${cleanRepo}/main/${path}`;
+  }
+  return `https://raw.githubusercontent.com/${owner}/${cleanRepo}/main`;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -95,7 +124,8 @@ export class AdapterLoaderService {
         const manifestUrl = repo.url.endsWith('.json')
           ? repo.url
           : `${repo.url}/manifest.json`;
-        const manifest = await firstValueFrom(this.http.get<RepoManifest>(manifestUrl));
+
+        const manifest = await this.fetchJson<RepoManifest>(manifestUrl);
         if (manifest?.adapters) {
           for (const adapter of manifest.adapters) {
             if (adapter.adapterUrl && !adapter.adapterUrl.startsWith('http')) {
@@ -120,9 +150,7 @@ export class AdapterLoaderService {
 
   async installAdapter(manifest: MangaAdapterManifest, repoId: string): Promise<boolean> {
     try {
-      const code = await firstValueFrom(
-        this.http.get(manifest.adapterUrl, { responseType: 'text' })
-      );
+      const code = await this.fetchText(manifest.adapterUrl);
 
       const cfg = manifest.config ?? { baseUrl: manifest.baseUrl, id: manifest.id, name: manifest.name, icon: manifest.icon, iconColor: manifest.iconColor, lang: manifest.lang };
       const instance = this.runtime.execute(code, cfg);
@@ -158,12 +186,62 @@ export class AdapterLoaderService {
     }
   }
 
+  async installFromCode(code: string, sourceUrl?: string): Promise<{ success: boolean; name?: string; error?: string }> {
+    try {
+      const instance = this.runtime.execute(code, {});
+      if (!instance || !instance.id || !instance.name) {
+        return { success: false, error: 'Invalid adapter: missing id or name' };
+      }
+
+      if (this.isInstalled(instance.id)) {
+        await this.uninstallAdapter(instance.id);
+      }
+
+      this.loadedAdapters.set(instance.id, instance);
+
+      const installed: InstalledAdapter = {
+        id: instance.id,
+        repoId: 'manual',
+        name: instance.name,
+        lang: instance.lang || 'Multi',
+        version: '1.0.0',
+        icon: instance.icon || instance.name.substring(0, 2).toUpperCase(),
+        iconColor: instance.iconColor || '#e63946',
+        baseUrl: instance.baseUrl || '',
+        description: `Installed from ${sourceUrl || 'manual input'}`,
+        descriptionEs: `Instalado desde ${sourceUrl || 'entrada manual'}`,
+        features: [],
+        nsfw: false,
+        code,
+        config: {},
+        installedAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      await firstValueFrom(this.db.put('installed-adapters', installed));
+      this.installedAdapters.update(list => [...list, installed]);
+
+      return { success: true, name: instance.name };
+    } catch (e: any) {
+      return { success: false, error: e.message || 'Failed to execute adapter code' };
+    }
+  }
+
+  async installFromUrl(jsUrl: string): Promise<{ success: boolean; name?: string; error?: string }> {
+    try {
+      const code = await this.fetchText(jsUrl);
+      return this.installFromCode(code, jsUrl);
+    } catch (e: any) {
+      return { success: false, error: `Failed to fetch: ${e.message || 'Network error'}` };
+    }
+  }
+
   async uninstallAdapter(id: string): Promise<void> {
     this.loadedAdapters.delete(id);
     await firstValueFrom(this.db.delete('installed-adapters', id));
     const removed = this.installedAdapters().find(a => a.id === id);
     this.installedAdapters.update(list => list.filter(a => a.id !== id));
-    if (removed) {
+    if (removed && removed.repoId !== 'manual') {
       const manifest: MangaAdapterManifest = {
         id: removed.id,
         name: removed.name,
@@ -195,11 +273,17 @@ export class AdapterLoaderService {
   }
 
   async addRepo(url: string): Promise<void> {
-    const cleanUrl = url.trim().replace(/\/$/, '');
+    let cleanUrl = url.trim().replace(/\/$/, '');
+
+    // GitHub URL detection
+    if (cleanUrl.includes('github.com') && !cleanUrl.includes('raw.githubusercontent.com')) {
+      cleanUrl = resolveGitHubUrl(cleanUrl);
+    }
+
     if (this.repos().some(r => r.url === cleanUrl)) return;
 
     const repo: ExtensionRepo = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: this.extractName(cleanUrl),
       url: cleanUrl,
       addedAt: Date.now(),
@@ -211,15 +295,51 @@ export class AdapterLoaderService {
 
   removeRepo(repoId: string): void {
     this.repos.update(list => list.filter(r => r.id !== repoId));
+    this.availableAdapters.update(list => list.filter(a => (a as any)._repoId !== repoId));
     this.saveRepos();
   }
 
+  private async fetchJson<T>(url: string): Promise<T> {
+    if (this.isLocalUrl(url)) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    }
+    return firstValueFrom(this.http.get<T>(url));
+  }
+
+  private async fetchText(url: string): Promise<string> {
+    if (this.isLocalUrl(url)) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.text();
+    }
+    return firstValueFrom(this.http.get(url, { responseType: 'text' }));
+  }
+
+  private isLocalUrl(url: string): boolean {
+    if (url.startsWith('/') && !url.startsWith('//')) return true;
+    try {
+      const parsed = new URL(url);
+      return parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1';
+    } catch {
+      return false;
+    }
+  }
+
   private extractName(url: string): string {
+    if (url.includes('raw.githubusercontent.com')) {
+      const parts = url.split('/').filter(Boolean);
+      const idx = parts.indexOf('raw.githubusercontent.com');
+      if (idx >= 0 && parts[idx + 1] && parts[idx + 2]) {
+        return `${parts[idx + 1]}/${parts[idx + 2]}`;
+      }
+    }
     try {
       const parts = new URL(url).pathname.split('/').filter(Boolean);
       return parts[parts.length - 1] || 'Extension Repo';
     } catch {
-      return 'Extension Repo';
+      return url.split('/').pop() || 'Extension Repo';
     }
   }
 

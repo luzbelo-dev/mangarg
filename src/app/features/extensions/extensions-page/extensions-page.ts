@@ -5,6 +5,7 @@ import { AdapterLoaderService } from '../../../core/services/adapter-loader.serv
 import { InstalledAdapter, MangaAdapterManifest, MangaAdapterInstance } from '../../../core/models/adapter.model';
 import { SourceManga } from '../../../core/models/source.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
+import { ToastService } from '../../../core/services/toast.service';
 
 interface UniversalSearchGroup {
   sourceId: string;
@@ -26,6 +27,7 @@ export class ExtensionsPageComponent implements OnInit {
   private readonly router = inject(Router);
   protected readonly i18n = inject(TranslateService);
   protected readonly loader = inject(AdapterLoaderService);
+  private readonly toast = inject(ToastService);
 
   t = this.i18n.t;
   lang = this.i18n.lang;
@@ -44,6 +46,10 @@ export class ExtensionsPageComponent implements OnInit {
 
   // Confirmation dialog
   confirmAdapter = signal<MangaAdapterManifest | null>(null);
+
+  // Manual install
+  manualUrlInput = signal('');
+  manualInstalling = signal(false);
 
   readonly langFilters = ['All', 'Multi', 'EN', 'ES', 'JP', 'KO', 'ZH', 'FR', 'PT', 'ID'];
 
@@ -88,7 +94,6 @@ export class ExtensionsPageComponent implements OnInit {
     return this.lang() === 'es' ? item.descriptionEs : item.description;
   }
 
-  // Show confirmation dialog instead of installing directly
   showInstallConfirm(adapter: MangaAdapterManifest): void {
     this.confirmAdapter.set(adapter);
   }
@@ -107,12 +112,18 @@ export class ExtensionsPageComponent implements OnInit {
   async install(adapter: MangaAdapterManifest): Promise<void> {
     this.installingId.set(adapter.id);
     const repoId = (adapter as any)._repoId ?? this.loader.repos()[0]?.id ?? 'default';
-    await this.loader.installAdapter(adapter, repoId);
+    const success = await this.loader.installAdapter(adapter, repoId);
     this.installingId.set(null);
+    if (success) {
+      this.toast.show(this.lang() === 'es' ? `${adapter.name} instalada` : `${adapter.name} installed`);
+    } else {
+      this.toast.show(this.lang() === 'es' ? `Error instalando ${adapter.name}` : `Error installing ${adapter.name}`);
+    }
   }
 
   async uninstall(adapter: InstalledAdapter): Promise<void> {
     await this.loader.uninstallAdapter(adapter.id);
+    this.toast.show(this.lang() === 'es' ? `${adapter.name} desinstalada` : `${adapter.name} uninstalled`);
   }
 
   browseSource(adapter: InstalledAdapter): void {
@@ -128,16 +139,63 @@ export class ExtensionsPageComponent implements OnInit {
     if (!url) return;
     this.loader.addRepo(url);
     this.repoUrlInput.set('');
+    this.toast.show(this.lang() === 'es' ? 'Repositorio agregado' : 'Repository added');
   }
 
   removeRepo(repoId: string): void {
     this.loader.removeRepo(repoId);
+    this.toast.show(this.lang() === 'es' ? 'Repositorio eliminado' : 'Repository removed');
   }
 
   refreshRepos(): void {
     this.loader.refreshRepos();
   }
 
+  // Manual install from URL
+  onManualUrlInput(event: Event): void {
+    this.manualUrlInput.set((event.target as HTMLInputElement).value);
+  }
+
+  async installFromUrl(): Promise<void> {
+    const url = this.manualUrlInput().trim();
+    if (!url) return;
+
+    this.manualInstalling.set(true);
+    const result = await this.loader.installFromUrl(url);
+    this.manualInstalling.set(false);
+
+    if (result.success) {
+      this.manualUrlInput.set('');
+      this.toast.show(this.lang() === 'es' ? `${result.name} instalada` : `${result.name} installed`);
+    } else {
+      this.toast.show(result.error || 'Error');
+    }
+  }
+
+  // Manual install from file
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const code = reader.result as string;
+      this.manualInstalling.set(true);
+      const result = await this.loader.installFromCode(code, file.name);
+      this.manualInstalling.set(false);
+
+      if (result.success) {
+        this.toast.show(this.lang() === 'es' ? `${result.name} instalada` : `${result.name} installed`);
+      } else {
+        this.toast.show(result.error || 'Error');
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  // Universal search
   onUniversalInput(event: Event): void {
     this.universalQuery.set((event.target as HTMLInputElement).value);
   }

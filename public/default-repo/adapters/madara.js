@@ -57,7 +57,7 @@
     lang: config.lang || 'es',
     baseUrl: BASE,
     icon: config.icon || config.name.substring(0, 2).toUpperCase(),
-    iconColor: config.iconColor || '#6c5ce7',
+    iconColor: config.iconColor || '#e63946',
 
     search: async function(query, page) {
       var p = page || 1;

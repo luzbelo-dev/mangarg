@@ -133,7 +133,7 @@ import { Lang } from '../../../core/i18n/translations';
             <div class="more-sheet__divider"></div>
 
             <div class="more-sheet__version">
-              Mi Manga Dinamita v1.3.0
+              Mi Manga Dinamita v1.4.0
             </div>
           </div>
         </div>

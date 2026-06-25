@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
@@ -22,7 +21,6 @@ const READER_BODY_CLASS = 'source-reader-active';
 export class SourceReaderComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly location = inject(Location);
   private readonly adapterLoader = inject(AdapterLoaderService);
   private readonly sourceDownload = inject(SourceDownloadService);
   private readonly destroyRef = inject(DestroyRef);
@@ -116,7 +114,12 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.location.back();
+    const slug = this.mangaSlug();
+    if (slug) {
+      this.router.navigate(['/source', this.sourceId, 'manga', slug]);
+    } else {
+      this.router.navigate(['/source', this.sourceId]);
+    }
   }
 
   onPageLoad(index: number): void {

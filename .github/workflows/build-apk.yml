@@ -34,10 +34,20 @@ jobs:
         run: npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
 
       - name: Add Android platform
-        run: npx cap add android
+        run: npx cap add android || true
 
       - name: Sync web assets
         run: npx cap sync android
+
+      - name: Fix Android permissions
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if ! grep -q 'usesCleartextTraffic' "$MANIFEST"; then
+            sed -i 's|android:theme="@style/AppTheme"|android:usesCleartextTraffic="true"\n        android:theme="@style/AppTheme"|' "$MANIFEST"
+          fi
+          if ! grep -q 'ACCESS_NETWORK_STATE' "$MANIFEST"; then
+            sed -i 's|<uses-permission android:name="android.permission.INTERNET" />|<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />|' "$MANIFEST"
+          fi
 
       - name: Build APK
         working-directory: android
