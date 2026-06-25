@@ -42,9 +42,6 @@
   <div
     class="reader__viewport"
     (click)="onPageClick($event)"
-    (wheel)="onPageWheel($event)"
-    (touchstart)="onViewportTouchStart($event)"
-    (touchend)="onViewportTouchEnd($event)"
   >
     @if (isPageFailed(currentPage())) {
       <div class="reader__page-error">
@@ -72,9 +69,6 @@
     class="reader__pages"
     (click)="toggleHeader()"
     (scroll)="onScroll($event)"
-    (touchstart)="onLongstripTouchStart($event)"
-    (touchmove)="onLongstripTouchMove()"
-    (touchend)="onLongstripTouchEnd()"
   >
     @for (page of pages(); track page.index) {
       <div class="reader__page">

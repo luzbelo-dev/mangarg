@@ -220,6 +220,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   onViewportTouchStart(event: TouchEvent): void {
+    if (event.touches.length > 1) return;
     const touch = event.touches[0];
     this.touchStartX = touch.clientX;
     this.touchStartY = touch.clientY;
@@ -227,14 +228,13 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   onViewportTouchEnd(event: TouchEvent): void {
+    if (event.changedTouches.length > 1) return;
     const touch = event.changedTouches[0];
     const deltaX = touch.clientX - this.touchStartX;
     const deltaY = touch.clientY - this.touchStartY;
     const elapsed = Date.now() - this.touchStartTime;
     const absDx = Math.abs(deltaX);
     const absDy = Math.abs(deltaY);
-
-    event.preventDefault();
 
     if (elapsed < 400 && absDx > 40 && absDx > absDy * 1.5) {
       if (deltaX < 0) {

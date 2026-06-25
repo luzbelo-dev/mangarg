@@ -138,7 +138,7 @@
     justify-content: center;
     overflow: auto;
     cursor: pointer;
-    touch-action: pinch-zoom pan-x pan-y;
+    touch-action: manipulation;
     background: #000;
   }
 
@@ -158,9 +158,9 @@
     flex-direction: column;
     align-items: center;
     background: #000;
-    overflow-y: auto;
+    overflow: auto;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y pinch-zoom;
+    touch-action: manipulation;
   }
 
   &__loading, &__error, &__empty, &__end {

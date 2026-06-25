@@ -1,11 +1,15 @@
 import { Component, inject, computed, OnInit, OnDestroy, NgZone } from '@angular/core';
-import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, filter } from 'rxjs';
+import { map } from 'rxjs';
 import { NavbarComponent } from './shared/components/navbar/navbar';
 import { MobileHeaderComponent } from './shared/components/mobile-header/mobile-header';
 import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile-tab-bar';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container';
+
+function isCapacitor(): boolean {
+  return typeof (window as any)?.Capacitor !== 'undefined';
+}
 
 @Component({
   selector: 'mt-root',
@@ -74,8 +78,7 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
 export class App implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly ngZone = inject(NgZone);
-
-  private backButtonHandler: ((e: Event) => void) | null = null;
+  private backButtonCleanup: (() => void) | null = null;
 
   private readonly url = toSignal(
     this.router.events.pipe(map(() => this.router.url)),
@@ -98,29 +101,38 @@ export class App implements OnInit, OnDestroy {
   private readonly ROOT_ROUTES = ['/', '/search', '/explore', '/library', '/extensions', '/download'];
 
   ngOnInit(): void {
-    this.backButtonHandler = (e: Event) => {
-      e.preventDefault();
-      this.ngZone.run(() => this.handleBack());
-    };
-
-    document.addEventListener('backbutton', this.backButtonHandler);
-    window.addEventListener('popstate', this.onPopState);
-
-    if (typeof (window as any)?.Capacitor !== 'undefined') {
-      window.history.pushState({ mt: true }, '');
-    }
+    this.setupBackButton();
   }
 
-  private handleBack(): void {
-    const currentUrl = this.router.url.split('?')[0];
+  private async setupBackButton(): Promise<void> {
+    if (!isCapacitor()) return;
 
-    if (this.ROOT_ROUTES.includes(currentUrl)) {
-      return;
-    }
+    try {
+      const { App: CapApp } = await import('@capacitor/app');
 
-    const parentRoute = this.getParentRoute(currentUrl);
-    if (parentRoute) {
-      this.router.navigate([parentRoute], { replaceUrl: true });
+      const listener = await CapApp.addListener('backButton', ({ canGoBack }) => {
+        this.ngZone.run(() => {
+          const currentUrl = this.router.url.split('?')[0];
+
+          if (this.ROOT_ROUTES.includes(currentUrl)) {
+            CapApp.minimizeApp();
+            return;
+          }
+
+          const parentRoute = this.getParentRoute(currentUrl);
+          if (parentRoute) {
+            this.router.navigate([parentRoute], { replaceUrl: true });
+          } else if (canGoBack) {
+            window.history.back();
+          } else {
+            CapApp.minimizeApp();
+          }
+        });
+      });
+
+      this.backButtonCleanup = () => listener.remove();
+    } catch (e) {
+      console.error('Failed to setup back button:', e);
     }
   }
 
@@ -140,8 +152,7 @@ export class App implements OnInit, OnDestroy {
       return `/source/${mangaMatch[1]}`;
     }
 
-    const sourceMatch = url.match(/^\/source\/([^/]+)$/);
-    if (sourceMatch) {
+    if (url.match(/^\/source\/[^/]+$/)) {
       return '/extensions';
     }
 
@@ -151,19 +162,7 @@ export class App implements OnInit, OnDestroy {
     return '/extensions';
   }
 
-  private onPopState = (_e: PopStateEvent): void => {
-    this.ngZone.run(() => {
-      const currentUrl = this.router.url.split('?')[0];
-      if (this.ROOT_ROUTES.includes(currentUrl)) {
-        window.history.pushState({ mt: true }, '');
-      }
-    });
-  };
-
   ngOnDestroy(): void {
-    if (this.backButtonHandler) {
-      document.removeEventListener('backbutton', this.backButtonHandler);
-    }
-    window.removeEventListener('popstate', this.onPopState);
+    this.backButtonCleanup?.();
   }
 }

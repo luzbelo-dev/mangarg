@@ -1,57 +1,7 @@
 {
   "name": "Mi Manga Dinamita - Official Extensions",
-  "description": "Repositorio oficial — 62 extensiones",
+  "description": "Repositorio oficial — 60 extensiones ES",
   "adapters": [
-    {
-      "id": "mangadex",
-      "name": "MangaDex",
-      "lang": "Multi",
-      "version": "2.0.0",
-      "icon": "MD",
-      "iconColor": "#ff6740",
-      "baseUrl": "https://mangadex.org",
-      "description": "The largest manga source. No ads, multi-language.",
-      "descriptionEs": "La fuente de manga mas grande. Sin anuncios, multi-idioma.",
-      "features": [
-        "Multi-idioma",
-        "Capitulos gratis"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/mangadex.js",
-      "config": {
-        "baseUrl": "https://api.mangadex.org",
-        "id": "mangadex",
-        "name": "MangaDex",
-        "icon": "MD",
-        "iconColor": "#ff6740",
-        "lang": "multi"
-      }
-    },
-    {
-      "id": "comick",
-      "name": "ComicK",
-      "lang": "Multi",
-      "version": "1.5.0",
-      "icon": "CK",
-      "iconColor": "#5c6bc0",
-      "baseUrl": "https://comick.art",
-      "description": "Fast aggregator. No ads, clean interface.",
-      "descriptionEs": "Agregador rapido. Sin anuncios, interfaz limpia.",
-      "features": [
-        "Rapido",
-        "Multi-idioma"
-      ],
-      "nsfw": false,
-      "adapterUrl": "adapters/comick.js",
-      "config": {
-        "baseUrl": "https://comick.art",
-        "id": "comick",
-        "name": "ComicK",
-        "icon": "CK",
-        "iconColor": "#5c6bc0",
-        "lang": "multi"
-      }
-    },
     {
       "id": "inmanga",
       "name": "InManga",
