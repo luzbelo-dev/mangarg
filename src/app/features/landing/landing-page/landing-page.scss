@@ -49,7 +49,7 @@
   }
 
   &__title-accent {
-    color: #8b7cf7;
+    color: #e63946;
   }
 
   &__subtitle {
@@ -64,7 +64,7 @@
     display: inline-block;
     padding: 14px 40px;
     border-radius: 8px;
-    background: #8b7cf7;
+    background: #e63946;
     color: #0a0a0a;
     font-weight: 700;
     font-size: 0.9rem;
@@ -148,7 +148,7 @@
     transition: border-color 0.2s;
 
     &:hover {
-      border-color: #8b7cf7;
+      border-color: #e63946;
       color: #e8e4e0;
     }
 
@@ -157,7 +157,7 @@
     }
 
     &--primary {
-      border-color: #2a2540;
+      border-color: #2a1a1a;
     }
   }
 
@@ -176,7 +176,7 @@
   &__download-icon {
     width: 28px;
     height: 28px;
-    color: #8b7cf7;
+    color: #e63946;
   }
 
   &__download-version {
@@ -191,7 +191,7 @@
     justify-content: center;
     padding: 10px 16px;
     border-radius: 6px;
-    background: #8b7cf7;
+    background: #e63946;
     color: #0a0a0a;
     font-weight: 600;
     font-size: 0.82rem;
@@ -201,9 +201,9 @@
 
     &--secondary {
       background: transparent;
-      color: #8b7cf7;
-      border: 1px solid #2a2540;
-      &:hover { background: #8b7cf7; color: #0a0a0a; }
+      color: #e63946;
+      border: 1px solid #2a1a1a;
+      &:hover { background: #e63946; color: #0a0a0a; }
     }
   }
 
@@ -232,8 +232,8 @@
       display: flex;
       align-items: center;
       text-decoration: none;
-      &:hover { color: #8b7cf7; }
-      &:active { color: #8b7cf7; }
+      &:hover { color: #e63946; }
+      &:active { color: #e63946; }
     }
   }
 }
