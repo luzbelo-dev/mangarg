@@ -4,6 +4,6 @@ export const DOWNLOAD_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./download-page/download-page').then(m => m.DownloadPageComponent),
+      import('../library/downloads/downloads-page/downloads-page').then(m => m.DownloadsPageComponent),
   },
 ];

@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.mimangadinamita.app',
-  appName: 'Mi Manga Dinamita',
+  appName: 'Mangarg',
   webDir: 'dist/manga-tracker/browser',
   server: {
     androidScheme: 'https',

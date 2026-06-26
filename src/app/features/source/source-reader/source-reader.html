@@ -33,6 +33,31 @@
           </button>
         </div>
       </div>
+
+      <div class="reader__setting">
+        <label>Zoom</label>
+        <div class="reader__zoom-control">
+          <button class="reader__zoom-btn" (click)="zoomOut()" [disabled]="settings().zoom <= 50">−</button>
+          <span class="reader__zoom-value">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            {{ settings().zoom }}%
+          </span>
+          <button class="reader__zoom-btn" (click)="zoomIn()" [disabled]="settings().zoom >= 200">+</button>
+        </div>
+      </div>
+
+      <div class="reader__setting">
+        <button class="reader__save-btn" (click)="saveCurrentImage()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Guardar imagen
+        </button>
+      </div>
     </div>
   </div>
 }
@@ -40,24 +65,31 @@
 <!-- Page mode -->
 @if (!loading() && !error() && pages().length > 0 && settings().mode === 'page') {
   <div
+    #pageViewport
     class="reader__viewport"
+    (scroll)="onPageScroll($event)"
     (click)="onPageClick($event)"
   >
-    @if (isPageFailed(currentPage())) {
-      <div class="reader__page-error">
-        <p>Failed to load</p>
-        <button (click)="retryPage(pages()[currentPage()])">Retry</button>
+    @for (page of pages(); track page.index) {
+      <div class="reader__page-snap">
+        @if (isPageFailed(page.index)) {
+          <div class="reader__page-error">
+            <p>Failed to load</p>
+            <button (click)="retryPage(page)">Retry</button>
+          </div>
+        } @else {
+          <img
+            [src]="page.url"
+            [alt]="'Page ' + (page.index + 1)"
+            [style.width.%]="settings().zoom"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            draggable="false"
+            (load)="onPageLoad(page.index)"
+            (error)="onPageError($event, page)"
+          />
+        }
       </div>
-    } @else {
-      <img
-        [src]="getPageUrl(currentPage())"
-        [alt]="'Page ' + (currentPage() + 1)"
-        class="reader__page-image"
-        referrerpolicy="no-referrer"
-        draggable="false"
-        (load)="onPageLoad(currentPage())"
-        (error)="onPageError($event, pages()[currentPage()])"
-      />
     }
   </div>
 }
@@ -81,6 +113,7 @@
           <img
             [src]="page.url"
             [alt]="'Page ' + (page.index + 1)"
+            [style.width.%]="settings().zoom"
             loading="lazy"
             referrerpolicy="no-referrer"
             (load)="onPageLoad(page.index)"
@@ -111,25 +144,6 @@
   </div>
 }
 
-<!-- Chapter navigation for page mode (when on last page) -->
-@if (!loading() && !error() && pages().length > 0 && settings().mode === 'page' && currentPage() === pages().length - 1) {
-  <div class="reader__page-end-nav">
-    <div class="reader__chapter-nav">
-      @if (prevChapter(); as prev) {
-        <button class="reader__chapter-btn reader__chapter-btn--prev" (click)="navigateToChapter(prev)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-          Capitulo anterior
-        </button>
-      }
-      @if (nextChapter(); as next) {
-        <button class="reader__chapter-btn reader__chapter-btn--next" (click)="navigateToChapter(next)">
-          Siguiente capitulo
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      }
-    </div>
-  </div>
-}
 
 <!-- Loading / Error / Empty states -->
 @if (loading()) {
@@ -159,18 +173,28 @@
   </div>
 }
 
-<!-- Bottom progress bar -->
+<!-- Bottom bar -->
 @if (!loading() && pages().length > 0) {
   <div class="reader__bottom" [class.visible]="showHeader()">
-    <span class="reader__bottom-page">{{ currentPage() + 1 }}</span>
-    <input
-      type="range"
-      class="reader__slider"
-      [min]="0"
-      [max]="pages().length - 1"
-      [value]="currentPage()"
-      (input)="onSliderChange($event)"
-    />
-    <span class="reader__bottom-page">{{ pages().length }}</span>
+    <button class="reader__bottom-nav" [disabled]="!prevChapter()" (click)="prevChapter() && navigateToChapter(prevChapter()!)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Cap anterior</span>
+    </button>
+    <div class="reader__bottom-slider">
+      <span class="reader__bottom-page">{{ currentPage() + 1 }}</span>
+      <input
+        type="range"
+        class="reader__slider"
+        [min]="0"
+        [max]="pages().length - 1"
+        [value]="currentPage()"
+        (input)="onSliderChange($event)"
+      />
+      <span class="reader__bottom-page">{{ pages().length }}</span>
+    </div>
+    <button class="reader__bottom-nav" [disabled]="!nextChapter()" (click)="nextChapter() && navigateToChapter(nextChapter()!)">
+      <span>Sig capitulo</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
   </div>
 }

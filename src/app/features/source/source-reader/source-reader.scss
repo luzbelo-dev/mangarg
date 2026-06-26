@@ -129,25 +129,101 @@
     }
   }
 
+  &__zoom-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__zoom-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #aaa;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    &:hover { color: white; border-color: rgba(255,255,255,0.3); }
+    &:active { background: rgba(255,255,255,0.1); }
+    &:disabled { opacity: 0.3; cursor: not-allowed; }
+  }
+
+  &__zoom-value {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    min-width: 70px;
+  }
+
+  &__save-btn {
+    width: 100%;
+    padding: 12px 16px;
+    min-height: 44px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    border: none;
+    background: var(--accent, #e63946);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s ease;
+
+    &:hover { opacity: 0.9; }
+    &:active { opacity: 0.85; transform: scale(0.98); }
+  }
+
   // Page mode viewport
   &__viewport {
     position: fixed;
     inset: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: auto;
-    cursor: pointer;
-    touch-action: manipulation;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-x pinch-zoom;
     background: #000;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 
-  &__page-image {
+  &__page-snap {
+    flex-shrink: 0;
     width: 100%;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-    display: block;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    -webkit-tap-highlight-color: transparent;
+
+    img {
+      width: 100%;
+      max-width: none;
+      height: auto;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      -webkit-tap-highlight-color: transparent;
+    }
   }
 
   // Longstrip / scroll mode
@@ -160,7 +236,8 @@
     background: #000;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-x pan-y pinch-zoom;
   }
 
   &__loading, &__error, &__empty, &__end {
@@ -203,15 +280,16 @@
 
   &__page {
     width: 100%;
-    max-width: 100%;
+    max-width: none;
     display: flex;
     justify-content: center;
     min-height: 200px;
     padding: 0;
+    overflow: visible;
 
     img {
       width: 100%;
-      max-width: 100%;
+      max-width: none;
       display: block;
       object-fit: contain;
     }
@@ -251,7 +329,6 @@
     display: flex;
     gap: 12px;
     justify-content: center;
-    flex-wrap: wrap;
     width: 100%;
     padding: 0 16px;
   }
@@ -259,16 +336,19 @@
   &__chapter-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    padding: 14px 24px;
+    flex: 1;
+    padding: 14px 16px;
     min-height: 48px;
     border-radius: 10px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     border: none;
     transition: all 0.2s ease;
     color: white;
+    white-space: nowrap;
 
     &--prev {
       background: rgba(255, 255, 255, 0.12);
@@ -319,11 +399,41 @@
     }
   }
 
+  &__bottom-nav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: rgba(255,255,255,0.8);
+    background: none;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 0.6rem;
+    font-weight: 600;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+
+    &:hover { background: rgba(255,255,255,0.1); }
+    &:active { background: rgba(255,255,255,0.2); }
+    &:disabled { opacity: 0.2; cursor: default; background: none; }
+  }
+
+  &__bottom-slider {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
   &__bottom-page {
     color: rgba(255,255,255,0.8);
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    min-width: 24px;
+    min-width: 18px;
     text-align: center;
     flex-shrink: 0;
   }

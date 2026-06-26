@@ -1,7 +1,7 @@
 {
-  "name": "mi-manga-dinamita",
-  "version": "1.4.0",
-  "description": "Lector de manga gratuito con tracking, biblioteca y descargas offline",
+  "name": "mangarg",
+  "version": "1.5.0",
+  "description": "Lector de manga gratuito en español con tracking, biblioteca y descargas offline",
   "main": "electron/main.js",
   "scripts": {
     "ng": "ng",
@@ -26,6 +26,7 @@
     "@capacitor/app": "^8.1.0",
     "@capacitor/cli": "^8.4.1",
     "@capacitor/core": "^8.4.1",
+    "@capacitor/filesystem": "^8.1.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

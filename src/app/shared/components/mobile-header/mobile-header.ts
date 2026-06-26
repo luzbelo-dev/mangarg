@@ -16,7 +16,7 @@ import { TranslateService } from '../../../core/i18n/translate.service';
           </svg>
         </button>
       }
-      <span class="mobile-header__title">Mi Manga Dinamita</span>
+      <span class="mobile-header__title">Mangarg</span>
     </header>
   `,
   styles: `

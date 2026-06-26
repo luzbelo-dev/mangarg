@@ -2,9 +2,12 @@ import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, O
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
 import { ReaderSettingsService } from '../../../core/services/reader-settings.service';
 import { SourceDownloadService } from '../../../core/services/source-download.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { SourcePage, SourceChapter } from '../../../core/models/source.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 
@@ -23,10 +26,12 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly adapterLoader = inject(AdapterLoaderService);
   private readonly sourceDownload = inject(SourceDownloadService);
+  private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
   readonly readerSettings = inject(ReaderSettingsService);
 
   @ViewChild('longstripContainer') longstripContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('pageViewport') pageViewport?: ElementRef<HTMLDivElement>;
 
   settings = this.readerSettings.settings;
 
@@ -42,22 +47,25 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   chapters = signal<SourceChapter[]>([]);
   loadingChapters = signal(false);
 
+  private readonly chapterIdSignal = signal('');
+
   prevChapter = computed(() => {
     const chs = this.chapters();
-    const currentIdx = chs.findIndex(c => c.id === this.chapterId);
+    const id = this.chapterIdSignal();
+    const currentIdx = chs.findIndex(c => c.id === id);
     if (currentIdx > 0) return chs[currentIdx - 1];
     return null;
   });
 
   nextChapter = computed(() => {
     const chs = this.chapters();
-    const currentIdx = chs.findIndex(c => c.id === this.chapterId);
+    const id = this.chapterIdSignal();
+    const currentIdx = chs.findIndex(c => c.id === id);
     if (currentIdx >= 0 && currentIdx < chs.length - 1) return chs[currentIdx + 1];
     return null;
   });
 
   private sourceId = '';
-  private chapterId = '';
   private failedPages = new Set<number>();
   private preloadedPages = new Set<number>();
   private headerTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -71,13 +79,6 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     document.body.classList.add(READER_BODY_CLASS);
 
-    this.route.params
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(params => {
-        this.sourceId = params['sourceId'];
-        this.chapterId = params['chapterId'];
-      });
-
     this.route.queryParams
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(qp => {
@@ -85,9 +86,21 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
         this.chapterNumber.set(qp['ch'] || qp['chapterNumber'] || '');
       });
 
-    // Initialize download service before loading pages so we can check for offline chapters
-    this.sourceDownload.init().then(() => this.loadPages());
-    this.loadChapterList();
+    this.sourceDownload.init().then(() => {
+      this.route.params
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(params => {
+          const newChapterId = params['chapterId'];
+          const changed = this.chapterIdSignal() !== '' && this.chapterIdSignal() !== newChapterId;
+          this.sourceId = params['sourceId'];
+          this.chapterIdSignal.set(newChapterId);
+          this.loadPages();
+          if (!changed) {
+            this.loadChapterList();
+          }
+        });
+    });
+
     this.startHeaderTimer();
   }
 
@@ -171,12 +184,15 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
   goToPage(page: number): void {
     if (page >= 0 && page < this.pages().length) {
-      this.currentPage.set(page);
-
-      if (this.settings().mode === 'longstrip' && this.longstripContainer) {
-        const images = this.longstripContainer.nativeElement.querySelectorAll('.reader__page');
-        if (images[page]) {
-          images[page].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (this.settings().mode === 'page') {
+        this.scrollToPage(page);
+      } else {
+        this.currentPage.set(page);
+        if (this.longstripContainer) {
+          const images = this.longstripContainer.nativeElement.querySelectorAll('.reader__page');
+          if (images[page]) {
+            images[page].scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }
       }
     }
@@ -188,13 +204,17 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   nextPage(): void {
-    if (this.currentPage() < this.pages().length - 1) {
+    if (this.settings().mode === 'page') {
+      this.scrollToPage(this.currentPage() + 1);
+    } else if (this.currentPage() < this.pages().length - 1) {
       this.currentPage.update(p => p + 1);
     }
   }
 
   prevPage(): void {
-    if (this.currentPage() > 0) {
+    if (this.settings().mode === 'page') {
+      this.scrollToPage(this.currentPage() - 1);
+    } else if (this.currentPage() > 0) {
       this.currentPage.update(p => p - 1);
     }
   }
@@ -204,18 +224,105 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     this.currentPage.set(0);
   }
 
+  zoomIn(): void {
+    this.readerSettings.zoomIn();
+  }
+
+  zoomOut(): void {
+    this.readerSettings.zoomOut();
+  }
+
+  async saveCurrentImage(): Promise<void> {
+    const pageIndex = this.currentPage();
+    const allPages = this.pages();
+    if (pageIndex < 0 || pageIndex >= allPages.length) return;
+
+    const pageUrl = allPages[pageIndex].url;
+    const fileName = `manga_ch${this.chapterNumber()}_p${pageIndex + 1}.jpg`;
+
+    try {
+      let blob: Blob;
+      if (pageUrl.startsWith('blob:')) {
+        const resp = await fetch(pageUrl);
+        blob = await resp.blob();
+      } else {
+        const resp = await fetch(pageUrl, { mode: 'cors', referrerPolicy: 'no-referrer' });
+        blob = await resp.blob();
+      }
+
+      if (Capacitor.isNativePlatform()) {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve, reject) => {
+          reader.onloadend = () => {
+            const result = reader.result as string;
+            resolve(result.split(',')[1]);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+
+        await Filesystem.writeFile({
+          path: `Download/${fileName}`,
+          data: base64,
+          directory: Directory.ExternalStorage,
+          recursive: true,
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      this.toast.success('✓ Imagen guardada');
+    } catch (err) {
+      console.error('Error saving image:', err);
+      this.toast.error('✕ Error al guardar imagen');
+    }
+
+    this.showSettings.set(false);
+  }
+
   onPageClick(event: MouseEvent): void {
     const target = event.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const width = rect.width;
 
-    if (x < width * 0.35) {
-      this.prevPage();
-    } else if (x > width * 0.65) {
-      this.nextPage();
+    if (x < width * 0.3) {
+      this.scrollToPage(this.currentPage() - 1);
+    } else if (x > width * 0.7) {
+      this.scrollToPage(this.currentPage() + 1);
     } else {
       this.toggleHeader();
+    }
+  }
+
+  onPageScroll(event: Event): void {
+    const container = event.target as HTMLElement;
+    const scrollLeft = container.scrollLeft;
+    const pageWidth = container.clientWidth;
+    if (pageWidth === 0) return;
+    const idx = Math.round(scrollLeft / pageWidth);
+    if (idx !== this.currentPage()) {
+      this.currentPage.set(idx);
+    }
+  }
+
+  private scrollToPage(index: number): void {
+    if (index < 0 || index >= this.pages().length) return;
+    this.currentPage.set(index);
+    if (this.pageViewport) {
+      const pageWidth = this.pageViewport.nativeElement.clientWidth;
+      this.pageViewport.nativeElement.scrollTo({
+        left: index * pageWidth,
+        behavior: 'smooth',
+      });
     }
   }
 
@@ -356,13 +463,18 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private async loadPages(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
+    this.currentPage.set(0);
     this.failedPages.clear();
     this.preloadedPages.clear();
+    for (const url of this.blobUrls) {
+      URL.revokeObjectURL(url);
+    }
+    this.blobUrls = [];
 
     // Check if chapter is downloaded first
-    if (this.sourceDownload.isDownloaded(this.chapterId)) {
+    if (this.sourceDownload.isDownloaded(this.chapterIdSignal())) {
       try {
-        const downloadedPages = await this.sourceDownload.getDownloadedPages(this.chapterId);
+        const downloadedPages = await this.sourceDownload.getDownloadedPages(this.chapterIdSignal());
         if (downloadedPages.length > 0) {
           const pages: SourcePage[] = downloadedPages.map(p => {
             const blobUrl = URL.createObjectURL(p.blob);
@@ -387,7 +499,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    from(adapter.getPages(this.chapterId))
+    from(adapter.getPages(this.chapterIdSignal()))
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
