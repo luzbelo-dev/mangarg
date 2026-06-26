@@ -27,7 +27,7 @@ export const translations = {
       sources: 'Fuentes',
       trackers: 'Trackers',
       installed: 'Instaladas',
-      available: 'Disponibles',
+      available: 'Buscar extensiones',
       install: 'Instalar',
       uninstall: 'Desinstalar',
       installedBadge: 'Instalado',

@@ -33,11 +33,7 @@ function isCapacitor(): boolean {
 }
 
 function getDefaultRepoUrl(): string {
-  if (isCapacitor()) {
-    return '/default-repo';
-  }
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  return origin + '/default-repo';
+  return 'https://raw.githubusercontent.com/alearenass090/mangarg-repo/main';
 }
 
 function resolveGitHubUrl(url: string): string {
