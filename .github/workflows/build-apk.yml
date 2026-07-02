@@ -91,9 +91,31 @@ jobs:
 
       - name: Create latest release with APK
         run: |
+          VERSION=$(node -p "require('./package.json').version")
+          SHA256=$(sha256sum mangarg.apk | cut -d' ' -f1)
+          SIZE=$(du -h mangarg.apk | cut -f1)
+          {
+            echo "Lector de manga gratuito y open source para Android."
+            echo ""
+            echo "## 📦 Instalación"
+            echo ""
+            echo "Descargá \`mangarg.apk\` e instalalo. Si ya tenés Mangarg, se actualiza encima sin perder tus datos — y la propia app te avisa de las próximas versiones."
+            echo ""
+            echo "## 📝 Últimos cambios"
+            echo ""
+            git log -10 --pretty="- %s"
+            echo ""
+            echo "[Historial completo](https://github.com/alearenass090/mangarg/commits/master)"
+            echo ""
+            echo "## 🔒 Verificación"
+            echo ""
+            echo "| Archivo | Tamaño | SHA-256 |"
+            echo "| --- | --- | --- |"
+            echo "| mangarg.apk | ${SIZE} | \`${SHA256}\` |"
+          } > release-notes.md
           gh release create latest mangarg.apk \
-            --title "Mangarg - Ultima version" \
-            --notes "APK generado automaticamente. Descarga mangarg.apk e instalalo en tu Android." \
+            --title "Mangarg v${VERSION}" \
+            --notes-file release-notes.md \
             --latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

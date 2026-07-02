@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { TranslateService } from '../../../core/i18n/translate.service';
-import { ThemeService } from '../../../core/services/theme.service';
 import { DOWNLOAD_LINKS } from '../../../core/constants/download-links';
 import { APP_VERSION } from '../../../core/constants/app-version';
 
@@ -8,26 +8,18 @@ import { APP_VERSION } from '../../../core/constants/app-version';
   selector: 'mt-landing-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink],
   templateUrl: './landing-page.html',
   styleUrl: './landing-page.scss',
 })
 export class LandingPageComponent {
-  protected readonly i18n = inject(TranslateService);
-  protected readonly themeService = inject(ThemeService);
+  private readonly i18n = inject(TranslateService);
 
-  t = this.i18n.t;
-  lang = this.i18n.lang;
-  isDark = this.themeService.isDark;
-
+  readonly t = this.i18n.t;
   readonly apkUrl = DOWNLOAD_LINKS.apk;
   readonly exeUrl = DOWNLOAD_LINKS.exe;
   readonly githubRepoUrl = DOWNLOAD_LINKS.repo;
   readonly version = APP_VERSION;
-  readonly extensionCount = 29;
-
-  toggleTheme(): void {
-    this.themeService.toggle();
-  }
 
   scrollToDownload(): void {
     document.getElementById('download')?.scrollIntoView({ behavior: 'smooth' });

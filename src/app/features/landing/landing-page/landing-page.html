@@ -1,76 +1,87 @@
 <div class="landing">
   <header class="landing__topbar">
-    <span class="landing__brand">Mangarg</span>
+    <div class="landing__brand">
+      <svg class="landing__brand-mark" viewBox="0 0 1024 1024" aria-hidden="true">
+        <path d="M360 236 h304 a24 24 0 0 1 24 24 v528 l-176 -120 -176 120 v-528 a24 24 0 0 1 24 -24 z" fill="#e63946"/>
+        <polyline points="410,588 410,372 512,468 614,372 614,588" fill="none" stroke="#0d0d10" stroke-width="56" stroke-linejoin="miter"/>
+      </svg>
+      <span class="landing__brand-name">Mangarg</span>
+    </div>
+    <nav class="landing__nav">
+      <a class="landing__nav-link" [href]="githubRepoUrl" target="_blank" rel="noopener">GitHub</a>
+      <button class="landing__nav-cta" (click)="scrollToDownload()">{{ t().landing.download }}</button>
+    </nav>
   </header>
 
-  <section class="landing__hero">
-    <h1 class="landing__title">
-      Mang<span class="landing__title-accent">arg</span>
-    </h1>
-    <p class="landing__subtitle">{{ t().landing.subtitle }}</p>
-    <button class="landing__cta" (click)="scrollToDownload()">
-      {{ lang() === 'es' ? 'Descargar' : 'Download' }}
-    </button>
-  </section>
+  <main class="landing__main">
+    <section class="landing__hero">
+      <h1 class="landing__title">Mangarg</h1>
+      <p class="landing__tagline">{{ t().landing.tagline }}</p>
+      <p class="landing__description">{{ t().landing.description }}</p>
+      <div class="landing__actions">
+        <button class="landing__btn landing__btn--primary" (click)="scrollToDownload()">
+          {{ t().landing.download }}
+        </button>
+        <a class="landing__btn landing__btn--ghost" routerLink="/browse">
+          {{ t().landing.openWebapp }}
+        </a>
+      </div>
+      <p class="landing__meta">v{{ version }} · Android · Open source</p>
+    </section>
 
-  <section class="landing__stats">
-    <div class="landing__stat">
-      <strong>{{ extensionCount }}</strong>
-      <span>{{ lang() === 'es' ? 'Extensiones' : 'Extensions' }}</span>
-    </div>
-    <div class="landing__stat-divider"></div>
-    <div class="landing__stat">
-      <strong>7000+</strong>
-      <span>Manga</span>
-    </div>
-    <div class="landing__stat-divider"></div>
-    <div class="landing__stat">
-      <strong>Offline</strong>
-      <span>{{ lang() === 'es' ? 'Lectura local' : 'Read anywhere' }}</span>
-    </div>
-  </section>
+    <section class="landing__features">
+      <article class="landing__feature">
+        <svg class="landing__feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5a2.5 2.5 0 0 0-5 0V5H4a2 2 0 0 0-2 2v3.8h1.5a2.7 2.7 0 0 1 0 5.4H2V20a2 2 0 0 0 2 2h3.8v-1.5a2.7 2.7 0 0 1 5.4 0V22H17a2 2 0 0 0 2-2v-4h1.5a2.5 2.5 0 0 0 0-5z"/>
+        </svg>
+        <h2 class="landing__feature-title">{{ t().landing.featExtensionsTitle }}</h2>
+        <p class="landing__feature-desc">{{ t().landing.featExtensionsDesc }}</p>
+      </article>
+      <article class="landing__feature">
+        <svg class="landing__feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <h2 class="landing__feature-title">{{ t().landing.featOfflineTitle }}</h2>
+        <p class="landing__feature-desc">{{ t().landing.featOfflineDesc }}</p>
+      </article>
+      <article class="landing__feature">
+        <svg class="landing__feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1z"/>
+        </svg>
+        <h2 class="landing__feature-title">{{ t().landing.featTrackingTitle }}</h2>
+        <p class="landing__feature-desc">{{ t().landing.featTrackingDesc }}</p>
+      </article>
+    </section>
 
-  <section id="download" class="landing__section">
-    <h2 class="landing__section-title">
-      {{ lang() === 'es' ? 'Descarga' : 'Download' }}
-    </h2>
-    <div class="landing__downloads">
-      <a class="landing__download landing__download--primary" [href]="apkUrl" target="_blank" rel="noopener">
-        <div class="landing__download-top">
-          <svg class="landing__download-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.64.64 0 0 0-.87.26l-1.88 3.24a11.07 11.07 0 0 0-8.86 0L5.73 5.71a.646.646 0 0 0-.87-.27c-.31.16-.42.54-.26.85L6.44 9.48C3.12 11.21.81 14.39.81 18h22.39c0-3.61-2.31-6.79-5.6-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/>
-          </svg>
-          <div>
-            <strong>Android</strong>
-            <span class="landing__download-version">v{{ version }} APK</span>
+    <section id="download" class="landing__download">
+      <h2 class="landing__section-title">{{ t().landing.downloadTitle }}</h2>
+      <div class="landing__cards">
+        <a class="landing__card" [href]="apkUrl" target="_blank" rel="noopener">
+          <div class="landing__card-info">
+            <strong class="landing__card-title">Android</strong>
+            <span class="landing__card-desc">{{ t().landing.androidDesc }}</span>
           </div>
-        </div>
-        <div class="landing__download-btn">
-          {{ lang() === 'es' ? 'Descargar APK' : 'Download APK' }}
-        </div>
-      </a>
-      <a class="landing__download" [href]="exeUrl" target="_blank" rel="noopener">
-        <div class="landing__download-top">
-          <svg class="landing__download-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
-          </svg>
-          <div>
-            <strong>Windows</strong>
-            <span class="landing__download-version">Portable .exe</span>
+          <span class="landing__btn landing__btn--primary landing__btn--small">APK · v{{ version }}</span>
+        </a>
+        <a class="landing__card" [href]="exeUrl" target="_blank" rel="noopener">
+          <div class="landing__card-info">
+            <strong class="landing__card-title">Windows</strong>
+            <span class="landing__card-desc">{{ t().landing.windowsDesc }}</span>
           </div>
-        </div>
-        <div class="landing__download-btn landing__download-btn--secondary">
-          {{ lang() === 'es' ? 'Descargar' : 'Download' }}
-        </div>
-      </a>
-    </div>
-    <p class="landing__hint">
-      {{ lang() === 'es' ? 'iPhone, iPad y Linux: usa la webapp desde el navegador.' : 'iPhone, iPad and Linux: use the webapp from your browser.' }}
-    </p>
-  </section>
+          <span class="landing__btn landing__btn--ghost landing__btn--small">.exe</span>
+        </a>
+      </div>
+      <p class="landing__hint">{{ t().landing.otherPlatforms }}</p>
+    </section>
+  </main>
 
   <footer class="landing__footer">
-    <p>v{{ version }}</p>
+    <span>Open source · MIT</span>
+    <span class="landing__footer-sep">·</span>
     <a [href]="githubRepoUrl" target="_blank" rel="noopener">GitHub</a>
+    <span class="landing__footer-sep">·</span>
+    <span>v{{ version }}</span>
   </footer>
 </div>

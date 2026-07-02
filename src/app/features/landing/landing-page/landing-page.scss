@@ -1,251 +1,295 @@
+// Landing estilo mihon.app: fondo casi negro, un solo acento (rojo de marca),
+// jerarquia tipografica clara y mucho aire. Sin decoracion que no informe.
+
+$bg: #0d0d10;
+$surface: #16161a;
+$border: #26262c;
+$text: #ecebf0;
+$muted: #8d8d95;
+$accent: #e63946;
+
 :host {
   display: block;
-  background: #0a0a0a;
-  min-height: 100vh;
-  position: relative;
-  z-index: 1;
-}
-
-:host::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: #0a0a0a;
-  z-index: -1;
 }
 
 .landing {
-  max-width: 600px;
-  margin: 0 auto;
-  overflow-x: hidden;
-  background: #0a0a0a;
   min-height: 100vh;
-  color: #e8e4e0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: $bg;
+  color: $text;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
 
+  // ---- Topbar ----
   &__topbar {
-    padding: 20px 24px;
-  }
-
-  &__brand {
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: #888;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  &__hero {
-    text-align: center;
-    padding: 80px 24px 60px;
-  }
-
-  &__title {
-    font-size: 3rem;
-    font-weight: 800;
-    letter-spacing: -1.5px;
-    line-height: 1.05;
-    color: #e8e4e0;
-    margin-bottom: 16px;
-  }
-
-  &__title-accent {
-    color: #e63946;
-  }
-
-  &__subtitle {
-    font-size: 0.95rem;
-    color: #666;
-    max-width: 360px;
-    margin: 0 auto 32px;
-    line-height: 1.5;
-  }
-
-  &__cta {
-    display: inline-block;
-    padding: 14px 40px;
-    border-radius: 8px;
-    background: #e63946;
-    color: #0a0a0a;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 0.02em;
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.2s;
-
-    &:hover { opacity: 0.85; }
-    &:active { transform: scale(0.97); }
-  }
-
-  &__stats {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    max-width: 420px;
-    margin: 0 auto;
-    padding: 24px;
-    border-top: 1px solid #1a1a1a;
-    border-bottom: 1px solid #1a1a1a;
-  }
-
-  &__stat {
-    flex: 1;
-    text-align: center;
-    strong {
-      display: block;
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #e8e4e0;
-      letter-spacing: -0.5px;
-    }
-    span {
-      font-size: 0.7rem;
-      color: #555;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-  }
-
-  &__stat-divider {
-    width: 1px;
-    height: 28px;
-    background: #1a1a1a;
-    flex-shrink: 0;
-  }
-
-  &__section {
-    padding: 48px 24px;
-
-    &-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-      margin-bottom: 24px;
-      text-align: center;
-      color: #e8e4e0;
-    }
-  }
-
-  &__downloads {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    max-width: 420px;
-    margin: 0 auto 16px;
-  }
-
-  &__download {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 20px 16px;
-    border-radius: 10px;
-    background: #111;
-    border: 1px solid #1a1a1a;
-    text-decoration: none;
-    color: #e8e4e0;
-    transition: border-color 0.2s;
-
-    &:hover {
-      border-color: #e63946;
-      color: #e8e4e0;
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
-
-    &--primary {
-      border-color: #2a1a1a;
-    }
-  }
-
-  &__download-top {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    strong {
-      font-size: 1rem;
-      font-weight: 700;
-      display: block;
-    }
-  }
-
-  &__download-icon {
-    width: 28px;
-    height: 28px;
-    color: #e63946;
-  }
-
-  &__download-version {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: #555;
-  }
-
-  &__download-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 16px;
-    border-radius: 6px;
-    background: #e63946;
-    color: #0a0a0a;
-    font-weight: 600;
-    font-size: 0.82rem;
-    transition: opacity 0.2s;
-
-    &:hover { opacity: 0.85; }
-
-    &--secondary {
-      background: transparent;
-      color: #e63946;
-      border: 1px solid #2a1a1a;
-      &:hover { background: #e63946; color: #0a0a0a; }
-    }
-  }
-
-  &__hint {
-    text-align: center;
-    font-size: 0.75rem;
-    color: #444;
-    max-width: 420px;
-    margin: 0 auto;
-  }
-
-  &__footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 24px;
-    border-top: 1px solid #1a1a1a;
-    font-size: 0.75rem;
-    color: #444;
+    gap: 16px;
+    max-width: 1080px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 16px 24px;
+    padding-top: calc(16px + env(safe-area-inset-top, 0px));
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__brand-mark {
+    width: 26px;
+    height: 26px;
+  }
+
+  &__brand-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  &__nav-link {
+    color: $muted;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.15s ease;
+
+    &:hover { color: $text; }
+  }
+
+  &__nav-cta {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: $accent;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover { opacity: 0.9; }
+  }
+
+  // ---- Main ----
+  &__main {
+    flex: 1;
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  // ---- Hero ----
+  &__hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 96px 0 88px;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: clamp(3rem, 9vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  &__tagline {
+    margin: 14px 0 0;
+    font-size: clamp(1.25rem, 4vw, 1.6rem);
+    font-weight: 600;
+    color: $muted;
+    letter-spacing: -0.01em;
+  }
+
+  &__description {
+    margin: 18px 0 0;
+    max-width: 46ch;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: $muted;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 32px;
+  }
+
+  &__meta {
+    margin: 26px 0 0;
+    font-size: 0.8rem;
+    color: $muted;
+    opacity: 0.75;
+  }
+
+  // ---- Botones (2 variantes, nada mas) ----
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 26px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease, background 0.15s ease;
+  }
+
+  &__btn--primary {
+    background: $accent;
+    color: #fff;
+
+    &:hover { opacity: 0.9; }
+  }
+
+  &__btn--ghost {
+    background: $surface;
+    color: $text;
+    border: 1px solid $border;
+
+    &:hover { background: #1c1c21; }
+  }
+
+  &__btn--small {
+    padding: 9px 16px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  // ---- Features ----
+  &__features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    padding-bottom: 88px;
+  }
+
+  &__feature {
+    padding: 26px 24px;
+    border: 1px solid $border;
+    border-radius: 14px;
+    background: $surface;
+  }
+
+  &__feature-icon {
+    width: 26px;
+    height: 26px;
+    color: $muted;
+  }
+
+  &__feature-title {
+    margin: 14px 0 6px;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  &__feature-desc {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: $muted;
+  }
+
+  // ---- Descarga ----
+  &__download {
+    padding-bottom: 96px;
+  }
+
+  &__section-title {
+    margin: 0 0 22px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-align: center;
+  }
+
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  &__card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 22px;
+    border: 1px solid $border;
+    border-radius: 14px;
+    background: $surface;
+    text-decoration: none;
+    color: $text;
+    transition: border-color 0.15s ease;
+
+    &:hover { border-color: #3a3a42; }
+  }
+
+  &__card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  &__card-title {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  &__card-desc {
+    font-size: 0.85rem;
+    color: $muted;
+  }
+
+  &__hint {
+    margin: 20px auto 0;
+    max-width: 60ch;
+    text-align: center;
+    font-size: 0.85rem;
+    color: $muted;
+  }
+
+  // ---- Footer ----
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 26px 24px;
+    padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid $border;
+    font-size: 0.85rem;
+    color: $muted;
 
     a {
-      color: #555;
-      font-weight: 500;
-      padding: 10px;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
+      color: $muted;
       text-decoration: none;
-      &:hover { color: #e63946; }
-      &:active { color: #e63946; }
+
+      &:hover { color: $text; }
     }
   }
-}
 
-@media (max-width: 640px) {
-  .landing {
-    &__hero { padding: 60px 20px 48px; }
-    &__title { font-size: 2.2rem; letter-spacing: -1px; }
-    &__stats { flex-direction: column; gap: 12px; margin: 0 20px; padding: 20px; }
-    &__stat-divider { width: 40px; height: 1px; }
-    &__downloads { grid-template-columns: 1fr; }
-    &__section { padding: 36px 20px; }
-    &__footer { padding: 20px; }
+  &__footer-sep {
+    opacity: 0.5;
   }
 }

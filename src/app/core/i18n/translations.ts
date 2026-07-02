@@ -65,46 +65,20 @@ export const translations = {
       featureNoProxyDesc: 'Tu app, tus datos. Open source, sin tracking, sin anuncios.',
     },
     landing: {
-      inDevelopment: 'Proyecto en desarrollo — Futuro lector de manga open source multiplataforma',
-      subtitle: 'Tu lector de manga gratuito, open source, sin anuncios. Buscá, leé y organizá tu manga favorito.',
-      startReading: 'Empezar a leer',
-      download: 'Descargar app',
-      howTitle: 'Cómo funciona',
-      step1Title: 'Buscá tu manga',
-      step1Desc: 'Escribí el nombre y encontrá cualquier manga entre miles de títulos.',
-      step2Title: 'Leé los capítulos',
-      step2Desc: 'Lector integrado con modo página y scroll vertical. Calidad original o ahorro de datos.',
-      step3Title: 'Armá tu biblioteca',
-      step3Desc: 'Organizá por categorías: leyendo, planificado, completado, en espera, dropeado.',
-      step4Title: 'Descargá offline',
-      step4Desc: 'Guardá capítulos en tu dispositivo y leé sin internet.',
-      featuresTitle: 'Features',
-      feat1: 'Búsqueda',
-      feat1Desc: 'Buscá manga por nombre entre miles de títulos.',
-      feat2: 'Lector',
-      feat2Desc: 'Modo página o scroll. Zoom, fullscreen, atajos de teclado.',
-      feat3: 'Biblioteca',
-      feat3Desc: '5 categorías. Seguí tu progreso de lectura.',
-      feat4: 'Offline',
-      feat4Desc: 'Descargá capítulos y leé sin conexión.',
-      feat5: 'Explorar',
-      feat5Desc: 'Navegá por 25 géneros, filtrá y ordená.',
-      feat6: 'Dark mode',
-      feat6Desc: 'Modo oscuro y claro. Español e inglés.',
-      downloadTitle: 'Descargá la app',
-      downloadDesc: 'Descargá Mangarg en tu dispositivo. Funciona más rápido que la web.',
-      downloadExe: 'Descargar .exe',
-      downloadApk: 'Descargar APK',
-      windowsHow1: 'Descargás el .exe portable (91 MB), no necesita instalación',
-      windowsHow2: 'Abrilo y listo. Va directo a MangaDex sin proxy = ultra rápido',
-      windowsHow3: 'Podés ponerlo en el escritorio o donde quieras',
-      androidHow1: 'Descargás el .apk e instalás como cualquier app',
-      androidHow2: 'Puede pedir "permitir orígenes desconocidos" en ajustes',
-      iosInstructions: 'Safari > Compartir > Agregar a inicio',
-      cloneRepo: 'Clonar repo + npm start',
-      extensionsTitle: 'Extensiones recomendadas',
-      extensionsDesc: 'Apps y fuentes para complementar tu experiencia de manga.',
-      seeAllExtensions: 'Ver todas las extensiones',
+      tagline: 'Lector de manga completo',
+      description: 'Descubrí y leé manga, manhwa y cómics en tu Android — gratis, open source y sin anuncios.',
+      download: 'Descargar',
+      openWebapp: 'Abrir webapp',
+      featExtensionsTitle: 'Extensiones',
+      featExtensionsDesc: 'Instalá solo las fuentes que uses. Más de 29 fuentes en español y repos de la comunidad.',
+      featOfflineTitle: 'Sin conexión',
+      featOfflineDesc: 'Descargá capítulos en tu dispositivo y leé donde quieras, sin internet.',
+      featTrackingTitle: 'Seguimiento',
+      featTrackingDesc: 'Biblioteca de favoritos, novedades de tus mangas e historial de lectura.',
+      downloadTitle: 'Descargá Mangarg',
+      androidDesc: 'La app completa. Se actualiza sola.',
+      windowsDesc: 'Portable, sin instalación.',
+      otherPlatforms: 'iPhone, iPad y Linux: usá la webapp desde el navegador.',
     },
     rankings: {
       topScored: 'Mejor Puntuados',
@@ -239,46 +213,20 @@ export const translations = {
       featureNoProxyDesc: 'Your app, your data. Open source, no tracking, no ads.',
     },
     landing: {
-      inDevelopment: 'Project in development — Future open source cross-platform manga reader',
-      subtitle: 'Your free, open source manga reader. No ads. Search, read and organize your favorite manga.',
-      startReading: 'Start reading',
-      download: 'Download app',
-      howTitle: 'How it works',
-      step1Title: 'Search your manga',
-      step1Desc: 'Type a name and find any manga among thousands of titles.',
-      step2Title: 'Read chapters',
-      step2Desc: 'Built-in reader with page mode and vertical scroll. Full quality or data saver.',
-      step3Title: 'Build your library',
-      step3Desc: 'Organize by category: reading, plan to read, completed, on hold, dropped.',
-      step4Title: 'Download offline',
-      step4Desc: 'Save chapters to your device and read without internet.',
-      featuresTitle: 'Features',
-      feat1: 'Search',
-      feat1Desc: 'Search manga by name among thousands of titles.',
-      feat2: 'Reader',
-      feat2Desc: 'Page or scroll mode. Zoom, fullscreen, keyboard shortcuts.',
-      feat3: 'Library',
-      feat3Desc: '5 categories. Track your reading progress.',
-      feat4: 'Offline',
-      feat4Desc: 'Download chapters and read without connection.',
-      feat5: 'Explore',
-      feat5Desc: 'Browse 25 genres, filter and sort.',
-      feat6: 'Dark mode',
-      feat6Desc: 'Dark and light mode. English and Spanish.',
-      downloadTitle: 'Download the app',
-      downloadDesc: 'Download Mangarg to your device. Faster than the web.',
-      downloadExe: 'Download .exe',
-      downloadApk: 'Download APK',
-      windowsHow1: 'Download the portable .exe (91 MB), no installation needed',
-      windowsHow2: 'Open it and go. Direct MangaDex connection = ultra fast',
-      windowsHow3: 'Put it on your desktop or wherever you want',
-      androidHow1: 'Download the .apk and install like any app',
-      androidHow2: 'May ask to "allow unknown sources" in settings',
-      iosInstructions: 'Safari > Share > Add to Home Screen',
-      cloneRepo: 'Clone repo + npm start',
-      extensionsTitle: 'Recommended extensions',
-      extensionsDesc: 'Apps and sources to complement your manga experience.',
-      seeAllExtensions: 'See all extensions',
+      tagline: 'Full-featured manga reader',
+      description: 'Discover and read manga, manhwa and comics on your Android — free, open source and ad-free.',
+      download: 'Download',
+      openWebapp: 'Open webapp',
+      featExtensionsTitle: 'Extensions',
+      featExtensionsDesc: 'Install only the sources you use. 29+ Spanish sources and community repos.',
+      featOfflineTitle: 'Offline',
+      featOfflineDesc: 'Download chapters to your device and read anywhere, no internet needed.',
+      featTrackingTitle: 'Tracking',
+      featTrackingDesc: 'Favorites library, updates for your manga and reading history.',
+      downloadTitle: 'Download Mangarg',
+      androidDesc: 'The full app. Updates itself.',
+      windowsDesc: 'Portable, no install.',
+      otherPlatforms: 'iPhone, iPad and Linux: use the webapp from your browser.',
     },
     rankings: {
       topScored: 'Top Scored',
@@ -394,46 +342,20 @@ export interface Translations {
     confirmLink: string;
   };
   landing: {
-    inDevelopment: string;
-    subtitle: string;
-    startReading: string;
+    tagline: string;
+    description: string;
     download: string;
-    howTitle: string;
-    step1Title: string;
-    step1Desc: string;
-    step2Title: string;
-    step2Desc: string;
-    step3Title: string;
-    step3Desc: string;
-    step4Title: string;
-    step4Desc: string;
-    featuresTitle: string;
-    feat1: string;
-    feat1Desc: string;
-    feat2: string;
-    feat2Desc: string;
-    feat3: string;
-    feat3Desc: string;
-    feat4: string;
-    feat4Desc: string;
-    feat5: string;
-    feat5Desc: string;
-    feat6: string;
-    feat6Desc: string;
+    openWebapp: string;
+    featExtensionsTitle: string;
+    featExtensionsDesc: string;
+    featOfflineTitle: string;
+    featOfflineDesc: string;
+    featTrackingTitle: string;
+    featTrackingDesc: string;
     downloadTitle: string;
-    downloadDesc: string;
-    downloadExe: string;
-    downloadApk: string;
-    windowsHow1: string;
-    windowsHow2: string;
-    windowsHow3: string;
-    androidHow1: string;
-    androidHow2: string;
-    iosInstructions: string;
-    cloneRepo: string;
-    extensionsTitle: string;
-    extensionsDesc: string;
-    seeAllExtensions: string;
+    androidDesc: string;
+    windowsDesc: string;
+    otherPlatforms: string;
   };
   download: {
     tagline: string;
