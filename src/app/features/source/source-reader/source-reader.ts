@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed, effect, OnInit, OnDestroy, DestroyRef, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
@@ -7,8 +7,11 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
 import { ReaderSettingsService } from '../../../core/services/reader-settings.service';
 import { SourceDownloadService } from '../../../core/services/source-download.service';
+import { ReadingHistoryService } from '../../../core/services/reading-history.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SourcePage, SourceChapter } from '../../../core/models/source.model';
+import { ReaderMode } from '../../../core/models/reader.model';
+import { ReadingHistory } from '../../../core/models/tracking.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 
 const READER_BODY_CLASS = 'source-reader-active';
@@ -26,6 +29,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly adapterLoader = inject(AdapterLoaderService);
   private readonly sourceDownload = inject(SourceDownloadService);
+  private readonly readingHistory = inject(ReadingHistoryService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
   readonly readerSettings = inject(ReaderSettingsService);
@@ -43,6 +47,8 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   error = signal<string | null>(null);
   chapterNumber = signal('');
   mangaSlug = signal('');
+  mangaTitle = signal('');
+  coverUrl = signal('');
   isOffline = signal(false);
   chapters = signal<SourceChapter[]>([]);
   loadingChapters = signal(false);
@@ -75,6 +81,19 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private touchStartY = 0;
   private touchStartTime = 0;
   private isTouchScrolling = false;
+  private resumePage: number | null = null;
+
+  constructor() {
+    // Centraliza el registro de progreso: cualquier cambio real de pagina
+    // (scroll, tap, teclado, slider) termina actualizando currentPage, asi
+    // que reaccionar a la signal evita repetir la llamada en cada handler.
+    effect(() => {
+      const idx = this.currentPage();
+      const total = this.pages().length;
+      if (total === 0 || this.isOffline()) return;
+      this.recordProgress(idx, total);
+    });
+  }
 
   ngOnInit(): void {
     document.body.classList.add(READER_BODY_CLASS);
@@ -84,7 +103,13 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
       .subscribe(qp => {
         this.mangaSlug.set(qp['manga'] || qp['mangaSlug'] || '');
         this.chapterNumber.set(qp['ch'] || qp['chapterNumber'] || '');
+        this.mangaTitle.set(qp['title'] || '');
+        this.coverUrl.set(qp['cover'] || '');
+        const resume = qp['resume'];
+        this.resumePage = resume !== undefined ? parseInt(resume, 10) : null;
       });
+
+    this.readingHistory.loadHistory().subscribe();
 
     this.sourceDownload.init().then(() => {
       this.route.params
@@ -162,6 +187,39 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     return allPages[pageIndex].url;
   }
 
+  // Paginas en el orden en que deben quedar en el DOM/scroll. El manga RTL se
+  // lee de derecha a izquierda: la pagina 0 (primera a leer) tiene que ser el
+  // ultimo elemento del DOM (el mas a la derecha en un flex row normal). Se
+  // invierte el array en vez de usar CSS flex-direction:row-reverse, que
+  // tiene su propia semantica de scrollLeft/scroll-snap facil de arruinar.
+  displayPages = computed(() => {
+    const all = this.pages();
+    return this.isRtl() ? [...all].reverse() : all;
+  });
+
+  isRtl(): boolean {
+    return this.settings().mode === 'page-rtl';
+  }
+
+  isVerticalPaged(): boolean {
+    return this.settings().mode === 'page-vertical';
+  }
+
+  isPagedMode(): boolean {
+    const m = this.settings().mode;
+    return m === 'page' || m === 'page-rtl' || m === 'page-vertical';
+  }
+
+  private toDomIndex(readingIndex: number): number {
+    const total = this.pages().length;
+    return this.isRtl() ? total - 1 - readingIndex : readingIndex;
+  }
+
+  private toReadingIndex(domIndex: number): number {
+    const total = this.pages().length;
+    return this.isRtl() ? total - 1 - domIndex : domIndex;
+  }
+
   onScroll(event: Event): void {
     const container = event.target as HTMLElement;
     const images = container.querySelectorAll('.reader__page');
@@ -184,7 +242,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
   goToPage(page: number): void {
     if (page >= 0 && page < this.pages().length) {
-      if (this.settings().mode === 'page') {
+      if (this.isPagedMode()) {
         this.scrollToPage(page);
       } else {
         this.currentPage.set(page);
@@ -204,7 +262,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   nextPage(): void {
-    if (this.settings().mode === 'page') {
+    if (this.isPagedMode()) {
       this.scrollToPage(this.currentPage() + 1);
     } else if (this.currentPage() < this.pages().length - 1) {
       this.currentPage.update(p => p + 1);
@@ -212,14 +270,14 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   prevPage(): void {
-    if (this.settings().mode === 'page') {
+    if (this.isPagedMode()) {
       this.scrollToPage(this.currentPage() - 1);
     } else if (this.currentPage() > 0) {
       this.currentPage.update(p => p - 1);
     }
   }
 
-  setMode(mode: 'page' | 'longstrip'): void {
+  setMode(mode: ReaderMode): void {
     this.readerSettings.setMode(mode);
     this.currentPage.set(0);
   }
@@ -291,13 +349,31 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   onPageClick(event: MouseEvent): void {
     const target = event.currentTarget as HTMLElement;
     const rect = target.getBoundingClientRect();
+
+    if (this.isVerticalPaged()) {
+      const y = event.clientY - rect.top;
+      const height = rect.height;
+      if (y < height * 0.3) {
+        this.prevPage();
+      } else if (y > height * 0.7) {
+        this.nextPage();
+      } else {
+        this.toggleHeader();
+      }
+      return;
+    }
+
     const x = event.clientX - rect.left;
     const width = rect.width;
+    // En RTL "adelante" queda del lado izquierdo de la pantalla, asi que las
+    // zonas de tap se invierten respecto de LTR.
+    const backwardZone = this.isRtl() ? x > width * 0.7 : x < width * 0.3;
+    const forwardZone = this.isRtl() ? x < width * 0.3 : x > width * 0.7;
 
-    if (x < width * 0.3) {
-      this.scrollToPage(this.currentPage() - 1);
-    } else if (x > width * 0.7) {
-      this.scrollToPage(this.currentPage() + 1);
+    if (backwardZone) {
+      this.prevPage();
+    } else if (forwardZone) {
+      this.nextPage();
     } else {
       this.toggleHeader();
     }
@@ -305,24 +381,39 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
   onPageScroll(event: Event): void {
     const container = event.target as HTMLElement;
-    const scrollLeft = container.scrollLeft;
+
+    if (this.isVerticalPaged()) {
+      const pageHeight = container.clientHeight;
+      if (pageHeight === 0) return;
+      const domIdx = Math.round(container.scrollTop / pageHeight);
+      const readingIdx = this.toReadingIndex(domIdx);
+      if (readingIdx !== this.currentPage()) this.currentPage.set(readingIdx);
+      return;
+    }
+
     const pageWidth = container.clientWidth;
     if (pageWidth === 0) return;
-    const idx = Math.round(scrollLeft / pageWidth);
-    if (idx !== this.currentPage()) {
-      this.currentPage.set(idx);
+    const domIdx = Math.round(container.scrollLeft / pageWidth);
+    const readingIdx = this.toReadingIndex(domIdx);
+    if (readingIdx !== this.currentPage()) {
+      this.currentPage.set(readingIdx);
     }
   }
 
   private scrollToPage(index: number): void {
     if (index < 0 || index >= this.pages().length) return;
     this.currentPage.set(index);
-    if (this.pageViewport) {
-      const pageWidth = this.pageViewport.nativeElement.clientWidth;
-      this.pageViewport.nativeElement.scrollTo({
-        left: index * pageWidth,
-        behavior: 'smooth',
-      });
+    if (!this.pageViewport) return;
+
+    const el = this.pageViewport.nativeElement;
+    const domIndex = this.toDomIndex(index);
+
+    if (this.isVerticalPaged()) {
+      const pageHeight = el.clientHeight;
+      el.scrollTo({ top: domIndex * pageHeight, behavior: 'smooth' });
+    } else {
+      const pageWidth = el.clientWidth;
+      el.scrollTo({ left: domIndex * pageWidth, behavior: 'smooth' });
     }
   }
 
@@ -343,8 +434,37 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     const absDx = Math.abs(deltaX);
     const absDy = Math.abs(deltaY);
 
+    if (this.isVerticalPaged()) {
+      if (elapsed < 400 && absDy > 40 && absDy > absDx * 1.5) {
+        if (deltaY < 0) {
+          this.nextPage();
+        } else {
+          this.prevPage();
+        }
+        return;
+      }
+
+      if (elapsed < 300 && absDx < 15 && absDy < 15) {
+        const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+        const y = touch.clientY - rect.top;
+        const height = rect.height;
+
+        if (y < height * 0.35) {
+          this.prevPage();
+        } else if (y > height * 0.65) {
+          this.nextPage();
+        } else {
+          this.toggleHeader();
+        }
+      }
+      return;
+    }
+
     if (elapsed < 400 && absDx > 40 && absDx > absDy * 1.5) {
-      if (deltaX < 0) {
+      // Swipe (arrastre): estandar de carrusel, independiente de las zonas
+      // de tap. En RTL se invierte igual que el resto de la navegacion.
+      const swipedTowardStart = this.isRtl() ? deltaX > 0 : deltaX < 0;
+      if (swipedTowardStart) {
         this.nextPage();
       } else {
         this.prevPage();
@@ -356,10 +476,12 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
       const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
       const x = touch.clientX - rect.left;
       const width = rect.width;
+      const backwardZone = this.isRtl() ? x > width * 0.65 : x < width * 0.35;
+      const forwardZone = this.isRtl() ? x < width * 0.35 : x > width * 0.65;
 
-      if (x < width * 0.35) {
+      if (backwardZone) {
         this.prevPage();
-      } else if (x > width * 0.65) {
+      } else if (forwardZone) {
         this.nextPage();
       } else {
         this.toggleHeader();
@@ -388,7 +510,10 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   onPageWheel(event: WheelEvent): void {
-    if (this.settings().mode !== 'page') return;
+    // El scroll-snap vertical nativo ya maneja la rueda en modo vertical;
+    // acá solo traducimos rueda (vertical por naturaleza) a paginas
+    // horizontales, que si necesitan ayuda manual.
+    if (this.isVerticalPaged() || !this.isPagedMode()) return;
     event.preventDefault();
     if (event.deltaY > 0) {
       this.nextPage();
@@ -402,11 +527,23 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     switch (event.key) {
       case 'ArrowLeft':
         event.preventDefault();
-        this.prevPage();
+        if (this.isRtl()) this.nextPage(); else this.prevPage();
         break;
       case 'ArrowRight':
         event.preventDefault();
-        this.nextPage();
+        if (this.isRtl()) this.prevPage(); else this.nextPage();
+        break;
+      case 'ArrowUp':
+        if (this.isVerticalPaged()) {
+          event.preventDefault();
+          this.prevPage();
+        }
+        break;
+      case 'ArrowDown':
+        if (this.isVerticalPaged()) {
+          event.preventDefault();
+          this.nextPage();
+        }
         break;
       case ' ':
         event.preventDefault();
@@ -429,9 +566,31 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
         queryParams: {
           manga: this.mangaSlug(),
           ch: chapter.chapterNumber,
+          title: this.mangaTitle() || undefined,
+          cover: this.coverUrl() || undefined,
         },
       }
     );
+  }
+
+  private recordProgress(pageIndex: number, totalPages: number): void {
+    const chapterId = this.chapterIdSignal();
+    if (!chapterId || !this.sourceId) return;
+
+    const entry: ReadingHistory = {
+      chapterId,
+      sourceId: this.sourceId,
+      mangaSlug: this.mangaSlug(),
+      mangaTitle: this.mangaTitle(),
+      coverUrl: this.coverUrl() || undefined,
+      chapterNumber: this.chapterNumber() || null,
+      chapterTitle: null,
+      lastPage: pageIndex,
+      totalPages,
+      readAt: new Date().toISOString(),
+      completed: pageIndex >= totalPages - 1,
+    };
+    this.readingHistory.markPageRead(entry);
   }
 
   private loadChapterList(): void {
@@ -484,6 +643,12 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
           this.pages.set(pages);
           this.isOffline.set(true);
           this.loading.set(false);
+
+          const resumeTo = this.resumePage;
+          this.resumePage = null;
+          if (resumeTo !== null && resumeTo > 0 && resumeTo < pages.length) {
+            setTimeout(() => this.goToPage(resumeTo));
+          }
           return;
         }
       } catch (err) {
@@ -505,7 +670,16 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.pages.set(data);
           this.loading.set(false);
-          if (data.length > 0) {
+          if (data.length === 0) return;
+
+          const resumeTo = this.resumePage;
+          this.resumePage = null;
+          if (resumeTo !== null && resumeTo > 0 && resumeTo < data.length) {
+            this.preloadAhead(resumeTo);
+            // El viewport recien existe en el DOM despues de este render;
+            // esperamos al siguiente tick para poder medir/scrollear.
+            setTimeout(() => this.goToPage(resumeTo));
+          } else {
             this.preloadAhead(0);
           }
         },
@@ -529,6 +703,12 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
       if (target >= allPages.length || this.preloadedPages.has(target)) continue;
       this.preloadedPages.add(target);
       const img = new Image();
+      // Sin esto, una precarga que falla (red, hotlink bloqueado, etc.) deja
+      // el indice marcado como "ya intentado" para siempre y nunca se
+      // reintenta, aunque el usuario todavia no haya llegado a esa pagina.
+      img.onerror = () => {
+        this.preloadedPages.delete(target);
+      };
       img.src = allPages[target].url;
     }
   }

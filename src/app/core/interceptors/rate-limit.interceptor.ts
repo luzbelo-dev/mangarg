@@ -2,10 +2,9 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { timer, switchMap } from 'rxjs';
 
 // Intervalo minimo entre requests para cada dominio con rate limit conocido.
-const DOMAIN_INTERVALS: { match: string; interval: number }[] = [
-  { match: 'api.jikan.moe', interval: 350 },   // Jikan: ~3 req/s
-  { match: 'api.mangadex.org', interval: 250 }, // MangaDex: ~5 req/s
-];
+// (Sin reglas por ahora — se agregan por dominio cuando una fuente de
+// extension lo necesite.)
+const DOMAIN_INTERVALS: { match: string; interval: number }[] = [];
 
 // Proxima marca de tiempo permitida por dominio. Al encolar acumulamos el
 // intervalo sobre el ultimo turno reservado (no sobre "ahora"), asi varios

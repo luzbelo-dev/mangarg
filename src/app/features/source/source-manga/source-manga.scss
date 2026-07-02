@@ -236,26 +236,37 @@
   &__chapter-list {
     display: flex;
     flex-direction: column;
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  &__chapter-window {
+    flex-shrink: 0;
+    width: 100%;
   }
 
   &__chapter-item {
     display: flex;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
-    min-height: 48px;
+    height: 48px;
+    flex-shrink: 0;
   }
 
   &__chapter-content {
     flex: 1;
+    min-width: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 12px;
+    padding: 0 12px;
     cursor: pointer;
     border: none;
     background: none;
     text-align: left;
-    min-height: 48px;
+    height: 48px;
     transition: background 0.15s ease;
     color: var(--text-primary);
     font-family: inherit;
@@ -313,16 +324,22 @@
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
+    max-width: 60%;
   }
 
   &__chapter-number {
     font-size: 0.88rem;
     font-weight: 600;
+    white-space: nowrap;
   }
 
   &__chapter-title {
     font-size: 0.78rem;
     color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__chapter-meta {
@@ -330,16 +347,24 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 2px;
+    min-width: 0;
+    max-width: 40%;
+    flex-shrink: 0;
   }
 
   &__chapter-group {
     font-size: 0.72rem;
     color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   &__chapter-date {
     font-size: 0.72rem;
     color: var(--text-muted);
+    white-space: nowrap;
   }
 
   &__no-chapters {

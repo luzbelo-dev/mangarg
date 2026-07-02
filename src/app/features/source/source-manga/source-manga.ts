@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, DestroyRef, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, AfterViewInit, DestroyRef, computed, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { from } from 'rxjs';
@@ -18,7 +18,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
   templateUrl: './source-manga.html',
   styleUrl: './source-manga.scss',
 })
-export class SourceMangaComponent implements OnInit {
+export class SourceMangaComponent implements OnInit, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly adapterLoader = inject(AdapterLoaderService);
@@ -43,6 +43,36 @@ export class SourceMangaComponent implements OnInit {
 
   sourceId = '';
   slug = '';
+
+  // Windowed rendering for the chapter list: mangas with hundreds/thousands
+  // of chapters (e.g. InManga has 1000+) would otherwise render every row
+  // as a DOM node. Row height is fixed at 48px via CSS so this math is exact.
+  @ViewChild('chapterListEl') private chapterListEl?: ElementRef<HTMLDivElement>;
+  private static readonly CHAPTER_ROW_HEIGHT = 48;
+  private static readonly CHAPTER_OVERSCAN = 8;
+
+  private readonly chapterScrollTop = signal(0);
+  private readonly chapterViewportHeight = signal(600);
+
+  private readonly chapterStartIndex = computed(() =>
+    Math.max(0, Math.floor(this.chapterScrollTop() / SourceMangaComponent.CHAPTER_ROW_HEIGHT) - SourceMangaComponent.CHAPTER_OVERSCAN)
+  );
+
+  private readonly chapterVisibleCount = computed(() =>
+    Math.ceil(this.chapterViewportHeight() / SourceMangaComponent.CHAPTER_ROW_HEIGHT) + SourceMangaComponent.CHAPTER_OVERSCAN * 2
+  );
+
+  private readonly chapterEndIndex = computed(() =>
+    Math.min(this.chapters().length, this.chapterStartIndex() + this.chapterVisibleCount())
+  );
+
+  visibleChapters = computed(() => this.chapters().slice(this.chapterStartIndex(), this.chapterEndIndex()));
+
+  chapterTopSpacerHeight = computed(() => this.chapterStartIndex() * SourceMangaComponent.CHAPTER_ROW_HEIGHT);
+
+  chapterBottomSpacerHeight = computed(() =>
+    (this.chapters().length - this.chapterEndIndex()) * SourceMangaComponent.CHAPTER_ROW_HEIGHT
+  );
 
   isInLibrary = computed(() => {
     return this.sourceLibrary.allEntries().some(
@@ -76,6 +106,25 @@ export class SourceMangaComponent implements OnInit {
           );
         }
       });
+  }
+
+  ngAfterViewInit(): void {
+    this.syncChapterViewportHeight();
+  }
+
+  onChapterListScroll(event: Event): void {
+    const el = event.target as HTMLDivElement;
+    this.chapterScrollTop.set(el.scrollTop);
+    if (el.clientHeight !== this.chapterViewportHeight()) {
+      this.chapterViewportHeight.set(el.clientHeight);
+    }
+  }
+
+  private syncChapterViewportHeight(): void {
+    const el = this.chapterListEl?.nativeElement;
+    if (el && el.clientHeight > 0) {
+      this.chapterViewportHeight.set(el.clientHeight);
+    }
   }
 
   private loadMangaDetail(instance: MangaAdapterInstance): void {
@@ -120,6 +169,10 @@ export class SourceMangaComponent implements OnInit {
           });
           this.chapters.set(sorted);
           this.loadingChapters.set(false);
+          // El contenedor con scroll recien existe en el DOM despues de que
+          // el @if de loading cambie; esperamos al siguiente tick para leer
+          // su altura real en vez de usar el default estatico.
+          setTimeout(() => this.syncChapterViewportHeight());
         },
         error: (err) => {
           console.error('Failed to load chapters:', err);
@@ -183,12 +236,15 @@ export class SourceMangaComponent implements OnInit {
   }
 
   onChapterClick(chapter: SourceChapter): void {
+    const m = this.manga();
     this.router.navigate(
       ['/source', this.sourceId, 'reader', chapter.id],
       {
         queryParams: {
           manga: this.slug,
           ch: chapter.chapterNumber,
+          title: m?.title,
+          cover: m?.coverUrl,
         },
       }
     );

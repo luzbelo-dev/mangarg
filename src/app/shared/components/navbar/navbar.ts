@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
 import { ThemeService } from '../../../core/services/theme.service';
-import { LibraryService } from '../../../core/services/library.service';
+import { SourceLibraryService } from '../../../core/services/source-library.service';
 import { TranslateService } from '../../../core/i18n/translate.service';
 import { Lang } from '../../../core/i18n/translations';
 
@@ -17,17 +15,18 @@ import { Lang } from '../../../core/i18n/translations';
 })
 export class NavbarComponent {
   private readonly themeService = inject(ThemeService);
-  private readonly libraryService = inject(LibraryService);
+  private readonly sourceLibrary = inject(SourceLibraryService);
   protected readonly i18n = inject(TranslateService);
 
   isDark = this.themeService.isDark;
   lang = this.i18n.lang;
   t = this.i18n.t;
 
-  libraryCount = toSignal(
-    this.libraryService.allEntries$.pipe(map(e => e.length)),
-    { initialValue: 0 }
-  );
+  libraryCount = this.sourceLibrary.count;
+
+  constructor() {
+    void this.sourceLibrary.init();
+  }
 
   toggleTheme(): void {
     this.themeService.toggle();

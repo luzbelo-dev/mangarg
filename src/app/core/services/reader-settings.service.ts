@@ -1,10 +1,8 @@
 import { Injectable, signal } from '@angular/core';
-import { ReaderSettings, ReaderMode, ImageQuality, FitMode } from '../models/reader.model';
+import { ReaderSettings, ReaderMode } from '../models/reader.model';
 
 const DEFAULT_SETTINGS: ReaderSettings = {
   mode: 'page',
-  quality: 'dataSaver',
-  fitMode: 'width',
   zoom: 100,
 };
 
@@ -20,14 +18,6 @@ export class ReaderSettingsService {
 
   setMode(mode: ReaderMode): void {
     this.update({ mode });
-  }
-
-  setQuality(quality: ImageQuality): void {
-    this.update({ quality });
-  }
-
-  setFitMode(fitMode: FitMode): void {
-    this.update({ fitMode });
   }
 
   setZoom(zoom: number): void {

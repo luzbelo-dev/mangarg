@@ -43,12 +43,6 @@ export class ReadingHistoryService {
     return this.history$.value.get(chapterId)?.completed ?? false;
   }
 
-  getHistoryForManga(malId: number): Observable<ReadingHistory[]> {
-    return this.history$.pipe(
-      map(m => [...m.values()].filter(h => h.mal_id === malId))
-    );
-  }
-
   getRecentHistory(limit: number): Observable<ReadingHistory[]> {
     return this.history$.pipe(
       map(m => [...m.values()]
@@ -58,9 +52,9 @@ export class ReadingHistoryService {
     );
   }
 
-  getLastReadChapter(malId: number): ReadingHistory | undefined {
+  getLastReadChapter(sourceId: string, mangaSlug: string): ReadingHistory | undefined {
     const entries = [...this.history$.value.values()]
-      .filter(h => h.mal_id === malId)
+      .filter(h => h.sourceId === sourceId && h.mangaSlug === mangaSlug)
       .sort((a, b) => new Date(b.readAt).getTime() - new Date(a.readAt).getTime());
     return entries[0];
   }

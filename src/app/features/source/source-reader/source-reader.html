@@ -24,12 +24,18 @@
     <div class="reader__settings" (click)="$event.stopPropagation()">
       <div class="reader__setting">
         <label>Reading mode</label>
-        <div class="reader__setting-options">
+        <div class="reader__setting-options reader__setting-options--grid">
           <button [class.active]="settings().mode === 'longstrip'" (click)="setMode('longstrip')">
             Scroll
           </button>
           <button [class.active]="settings().mode === 'page'" (click)="setMode('page')">
-            Page
+            Page (LTR)
+          </button>
+          <button [class.active]="settings().mode === 'page-rtl'" (click)="setMode('page-rtl')">
+            Page (RTL)
+          </button>
+          <button [class.active]="settings().mode === 'page-vertical'" (click)="setMode('page-vertical')">
+            Page (Vertical)
           </button>
         </div>
       </div>
@@ -62,15 +68,17 @@
   </div>
 }
 
-<!-- Page mode -->
-@if (!loading() && !error() && pages().length > 0 && settings().mode === 'page') {
+<!-- Page mode (LTR / RTL / vertical) -->
+@if (!loading() && !error() && pages().length > 0 && isPagedMode()) {
   <div
     #pageViewport
     class="reader__viewport"
+    [class.reader__viewport--vertical]="isVerticalPaged()"
     (scroll)="onPageScroll($event)"
     (click)="onPageClick($event)"
+    (wheel)="onPageWheel($event)"
   >
-    @for (page of pages(); track page.index) {
+    @for (page of displayPages(); track page.index) {
       <div class="reader__page-snap">
         @if (isPageFailed(page.index)) {
           <div class="reader__page-error">

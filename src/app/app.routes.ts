@@ -5,10 +5,10 @@ import { isCapacitor } from './core/utils/platform';
 
 const appRedirectGuard = () => {
   const router = inject(Router);
-  // En la APK nativa arrancamos directo en /extensions; en web (incluido
+  // En la APK nativa arrancamos directo en /library; en web (incluido
   // localhost y dominio propio) mostramos la landing.
   if (isCapacitor()) {
-    return router.createUrlTree(['/extensions']);
+    return router.createUrlTree(['/library']);
   }
   return true;
 };
@@ -22,29 +22,20 @@ export const routes: Routes = [
     canActivate: [appRedirectGuard],
   },
   {
-    path: 'search',
-    loadChildren: () =>
-      import('./features/search/search.routes').then(m => m.SEARCH_ROUTES),
-  },
-  {
-    path: 'manga',
-    loadChildren: () =>
-      import('./features/detail/detail.routes').then(m => m.DETAIL_ROUTES),
-  },
-  {
-    path: 'explore',
-    loadChildren: () =>
-      import('./features/explore/explore.routes').then(m => m.EXPLORE_ROUTES),
-  },
-  {
     path: 'download',
     loadChildren: () =>
       import('./features/download/download.routes').then(m => m.DOWNLOAD_ROUTES),
   },
   {
-    path: 'extensions',
+    path: 'browse',
     loadChildren: () =>
       import('./features/extensions/extensions.routes').then(m => m.EXTENSIONS_ROUTES),
+  },
+  {
+    // Ruta vieja (pre-restructura de navegacion estilo Mihon); se mantiene
+    // como redirect para no romper bookmarks/deep-links existentes.
+    path: 'extensions',
+    redirectTo: 'browse',
   },
   {
     path: 'library',
@@ -52,9 +43,14 @@ export const routes: Routes = [
       import('./features/library/library.routes').then(m => m.LIBRARY_ROUTES),
   },
   {
-    path: 'reader',
+    path: 'updates',
     loadChildren: () =>
-      import('./features/reader/reader.routes').then(m => m.READER_ROUTES),
+      import('./features/updates/updates.routes').then(m => m.UPDATES_ROUTES),
+  },
+  {
+    path: 'history',
+    loadChildren: () =>
+      import('./features/history/history.routes').then(m => m.HISTORY_ROUTES),
   },
   {
     path: 'source',

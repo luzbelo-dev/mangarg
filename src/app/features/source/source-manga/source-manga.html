@@ -124,9 +124,14 @@
         <div class="source-manga__chapters-loading">
           <mt-loading-spinner size="md" />
         </div>
+      } @else if (chapters().length === 0) {
+        <div class="source-manga__no-chapters">
+          <p>{{ lang() === 'es' ? 'No se encontraron capitulos' : 'No chapters found' }}</p>
+        </div>
       } @else {
-        <div class="source-manga__chapter-list">
-          @for (chapter of chapters(); track chapter.id) {
+        <div #chapterListEl class="source-manga__chapter-list" (scroll)="onChapterListScroll($event)">
+          <div class="source-manga__chapter-window" [style.height.px]="chapterTopSpacerHeight()"></div>
+          @for (chapter of visibleChapters(); track chapter.id) {
             <div class="source-manga__chapter-item">
               <button class="source-manga__chapter-content" (click)="onChapterClick(chapter)">
                 <div class="source-manga__chapter-main">
@@ -167,11 +172,8 @@
                 }
               </button>
             </div>
-          } @empty {
-            <div class="source-manga__no-chapters">
-              <p>{{ lang() === 'es' ? 'No se encontraron capitulos' : 'No chapters found' }}</p>
-            </div>
           }
+          <div class="source-manga__chapter-window" [style.height.px]="chapterBottomSpacerHeight()"></div>
         </div>
       }
     </div>

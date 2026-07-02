@@ -110,17 +110,23 @@
       display: flex;
       gap: 4px;
 
+      &--grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
       button {
         flex: 1;
         padding: 10px 12px;
         min-height: 44px;
         border-radius: 6px;
-        font-size: 0.875rem;
+        font-size: 0.8rem;
         color: #aaa;
         border: 1px solid rgba(255,255,255,0.1);
         background: none;
         cursor: pointer;
         transition: all 0.2s ease;
+        white-space: nowrap;
 
         &:hover { color: white; border-color: rgba(255,255,255,0.3); }
         &:active { color: white; border-color: rgba(255,255,255,0.5); }
@@ -202,6 +208,14 @@
     background: #000;
     scrollbar-width: none;
     &::-webkit-scrollbar { display: none; }
+  }
+
+  &__viewport--vertical {
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    touch-action: pan-y pinch-zoom;
   }
 
   &__page-snap {

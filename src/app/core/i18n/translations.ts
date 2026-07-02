@@ -4,11 +4,11 @@ export const translations = {
   es: {
     nav: {
       home: 'Inicio',
-      search: 'Buscar',
-      explore: 'Explorar',
       library: 'Biblioteca',
       extensions: 'Extensiones',
-
+      updates: 'Novedades',
+      history: 'Historial',
+      browse: 'Explorar',
       download: 'Descargar',
       more: 'Mas',
       close: 'Cerrar',
@@ -105,82 +105,15 @@ export const translations = {
       topScored: 'Mejor Puntuados',
       mostPopular: 'Más Populares',
     },
-    explore: {
-      title: 'Explorar',
-      subtitle: 'Descubrí manga por género',
-      popular: 'Popular',
-      topRated: 'Top',
-      genres: 'Géneros',
-      orderBy: 'Ordenar por',
-      byScore: 'Puntuación',
-      byPopularity: 'Popularidad',
-      byTitle: 'Título',
-      clearFilters: 'Limpiar filtros',
-      results: 'resultados',
-      noResults: 'No se encontraron manga con esos filtros',
-      selectGenres: 'Seleccioná géneros para explorar',
-    },
-    search: {
-      title: 'Buscar Manga',
-      subtitle: 'Encontrá tu próximo manga favorito',
-      placeholder: 'Buscar manga... (mínimo 3 caracteres)',
-      noResults: 'No se encontraron resultados',
-      noResultsHint: 'Probá con otro nombre o en japonés',
-      welcome: 'Escribí el nombre de un manga para empezar',
-      error: 'Error en la búsqueda. Intentá de nuevo.',
-      clear: 'Limpiar búsqueda',
-    },
     detail: {
-      back: 'Volver',
-      backToSearch: 'Volver a buscar',
       addToLibrary: 'Agregar a biblioteca',
       removeFromLibrary: 'Quitar de biblioteca',
-      addFavorite: 'Agregar a favoritos',
-      removeFavorite: 'Quitar de favoritos',
-      readOnMangaDex: 'Leer en MangaDex',
-      searchOnMangaDex: 'Buscar en MangaDex',
-      viewOnMAL: 'Ver en MyAnimeList',
-      startReading: 'Empezar a leer',
-      resumeReading: 'Continuar leyendo',
-      chapters: 'capítulos',
-      volumes: 'volúmenes',
-      ranking: 'Ranking',
-      popularity: 'Popularidad',
-      members: 'Miembros',
-      synopsis: 'Sinopsis',
-      genres: 'Géneros',
-      themes: 'Temas',
-      authors: 'Autores',
-      publication: 'Publicación',
-      externalLinks: 'Links externos',
-      loadError: 'No se pudo cargar el manga.',
     },
     library: {
       title: 'Mi Biblioteca',
-      all: 'Todos',
-      reading: 'Leyendo',
-      planToRead: 'Planificado',
-      completed: 'Completado',
-      onHold: 'En espera',
-      dropped: 'Dropeado',
-      sortLastRead: 'Último leído',
-      sortTitle: 'Título',
-      sortUnread: 'No leídos',
-      sortDateAdded: 'Fecha agregado',
-      viewGrid: 'Grilla',
-      viewList: 'Lista',
-      empty: 'Tu biblioteca está vacía',
-      addManga: 'Buscar manga para agregar',
-      changeCategory: 'Cambiar categoría',
-      remove: 'Quitar',
-      unreadChapters: 'no leídos',
       downloads: 'Descargas',
       storageUsed: 'Almacenamiento usado',
-      deleteDownload: 'Eliminar descarga',
       deleteAllDownloads: 'Eliminar todas las descargas',
-      downloadChapter: 'Descargar capítulo',
-      downloading: 'Descargando...',
-      downloaded: 'Descargado',
     },
     reader: {
       page: 'Página',
@@ -195,13 +128,6 @@ export const translations = {
       mode: 'Modo',
       pageMode: 'Página',
       longStrip: 'Scroll vertical',
-      quality: 'Calidad',
-      fullQuality: 'Original',
-      dataSaver: 'Ahorro de datos',
-      fitMode: 'Ajuste',
-      fitWidth: 'Ancho',
-      fitHeight: 'Alto',
-      original: 'Original',
       zoom: 'Zoom',
       zoomIn: 'Acercar',
       zoomOut: 'Alejar',
@@ -231,6 +157,12 @@ export const translations = {
       empty: 'No leíste nada todavía',
       lastRead: 'Último leído',
     },
+    updates: {
+      title: 'Actualizaciones',
+      refresh: 'Buscar nuevos',
+      markAllRead: 'Marcar todo leído',
+      empty: 'No hay actualizaciones todavía',
+    },
     customize: {
       title: 'Personalizacion',
       accentColor: 'Color de acento',
@@ -241,11 +173,11 @@ export const translations = {
   en: {
     nav: {
       home: 'Home',
-      search: 'Search',
-      explore: 'Explore',
       library: 'Library',
       extensions: 'Extensions',
-
+      updates: 'Updates',
+      history: 'History',
+      browse: 'Browse',
       download: 'Download',
       more: 'More',
       close: 'Close',
@@ -342,82 +274,15 @@ export const translations = {
       topScored: 'Top Scored',
       mostPopular: 'Most Popular',
     },
-    explore: {
-      title: 'Explore',
-      subtitle: 'Discover manga by genre',
-      popular: 'Popular',
-      topRated: 'Top',
-      genres: 'Genres',
-      orderBy: 'Order by',
-      byScore: 'Score',
-      byPopularity: 'Popularity',
-      byTitle: 'Title',
-      clearFilters: 'Clear filters',
-      results: 'results',
-      noResults: 'No manga found with those filters',
-      selectGenres: 'Select genres to explore',
-    },
-    search: {
-      title: 'Search Manga',
-      subtitle: 'Find your next favorite manga',
-      placeholder: 'Search manga... (min 3 characters)',
-      noResults: 'No results found',
-      noResultsHint: 'Try a different name or in Japanese',
-      welcome: 'Type a manga name to get started',
-      error: 'Search failed. Please try again.',
-      clear: 'Clear search',
-    },
     detail: {
-      back: 'Back',
-      backToSearch: 'Back to search',
       addToLibrary: 'Add to library',
       removeFromLibrary: 'Remove from library',
-      addFavorite: 'Add to favorites',
-      removeFavorite: 'Remove from favorites',
-      readOnMangaDex: 'Read on MangaDex',
-      searchOnMangaDex: 'Search on MangaDex',
-      viewOnMAL: 'View on MyAnimeList',
-      startReading: 'Start reading',
-      resumeReading: 'Resume reading',
-      chapters: 'chapters',
-      volumes: 'volumes',
-      ranking: 'Ranking',
-      popularity: 'Popularity',
-      members: 'Members',
-      synopsis: 'Synopsis',
-      genres: 'Genres',
-      themes: 'Themes',
-      authors: 'Authors',
-      publication: 'Publication',
-      externalLinks: 'External links',
-      loadError: 'Could not load manga.',
     },
     library: {
       title: 'My Library',
-      all: 'All',
-      reading: 'Reading',
-      planToRead: 'Plan to Read',
-      completed: 'Completed',
-      onHold: 'On Hold',
-      dropped: 'Dropped',
-      sortLastRead: 'Last read',
-      sortTitle: 'Title',
-      sortUnread: 'Unread',
-      sortDateAdded: 'Date added',
-      viewGrid: 'Grid',
-      viewList: 'List',
-      empty: 'Your library is empty',
-      addManga: 'Search manga to add',
-      changeCategory: 'Change category',
-      remove: 'Remove',
-      unreadChapters: 'unread',
       downloads: 'Downloads',
       storageUsed: 'Storage used',
-      deleteDownload: 'Delete download',
       deleteAllDownloads: 'Delete all downloads',
-      downloadChapter: 'Download chapter',
-      downloading: 'Downloading...',
-      downloaded: 'Downloaded',
     },
     reader: {
       page: 'Page',
@@ -432,13 +297,6 @@ export const translations = {
       mode: 'Mode',
       pageMode: 'Page',
       longStrip: 'Long strip',
-      quality: 'Quality',
-      fullQuality: 'Full quality',
-      dataSaver: 'Data saver',
-      fitMode: 'Fit',
-      fitWidth: 'Width',
-      fitHeight: 'Height',
-      original: 'Original',
       zoom: 'Zoom',
       zoomIn: 'Zoom in',
       zoomOut: 'Zoom out',
@@ -468,6 +326,12 @@ export const translations = {
       empty: "You haven't read anything yet",
       lastRead: 'Last read',
     },
+    updates: {
+      title: 'Updates',
+      refresh: 'Check for updates',
+      markAllRead: 'Mark all read',
+      empty: 'No updates yet',
+    },
     customize: {
       title: 'Customization',
       accentColor: 'Accent color',
@@ -480,10 +344,11 @@ export const translations = {
 export interface Translations {
   nav: {
     home: string;
-    search: string;
-    explore: string;
     library: string;
     extensions: string;
+    updates: string;
+    history: string;
+    browse: string;
     download: string;
     more: string;
     close: string;
@@ -580,82 +445,15 @@ export interface Translations {
     topScored: string;
     mostPopular: string;
   };
-  explore: {
-    title: string;
-    subtitle: string;
-    popular: string;
-    topRated: string;
-    genres: string;
-    orderBy: string;
-    byScore: string;
-    byPopularity: string;
-    byTitle: string;
-    clearFilters: string;
-    results: string;
-    noResults: string;
-    selectGenres: string;
-  };
-  search: {
-    title: string;
-    subtitle: string;
-    placeholder: string;
-    noResults: string;
-    noResultsHint: string;
-    welcome: string;
-    error: string;
-    clear: string;
-  };
   detail: {
-    back: string;
-    backToSearch: string;
     addToLibrary: string;
     removeFromLibrary: string;
-    addFavorite: string;
-    removeFavorite: string;
-    readOnMangaDex: string;
-    searchOnMangaDex: string;
-    viewOnMAL: string;
-    startReading: string;
-    resumeReading: string;
-    chapters: string;
-    volumes: string;
-    ranking: string;
-    popularity: string;
-    members: string;
-    synopsis: string;
-    genres: string;
-    themes: string;
-    authors: string;
-    publication: string;
-    externalLinks: string;
-    loadError: string;
   };
   library: {
     title: string;
-    all: string;
-    reading: string;
-    planToRead: string;
-    completed: string;
-    onHold: string;
-    dropped: string;
-    sortLastRead: string;
-    sortTitle: string;
-    sortUnread: string;
-    sortDateAdded: string;
-    viewGrid: string;
-    viewList: string;
-    empty: string;
-    addManga: string;
-    changeCategory: string;
-    remove: string;
-    unreadChapters: string;
     downloads: string;
     storageUsed: string;
-    deleteDownload: string;
     deleteAllDownloads: string;
-    downloadChapter: string;
-    downloading: string;
-    downloaded: string;
   };
   reader: {
     page: string;
@@ -670,13 +468,6 @@ export interface Translations {
     mode: string;
     pageMode: string;
     longStrip: string;
-    quality: string;
-    fullQuality: string;
-    dataSaver: string;
-    fitMode: string;
-    fitWidth: string;
-    fitHeight: string;
-    original: string;
     zoom: string;
     zoomIn: string;
     zoomOut: string;
@@ -705,6 +496,12 @@ export interface Translations {
     clear: string;
     empty: string;
     lastRead: string;
+  };
+  updates: {
+    title: string;
+    refresh: string;
+    markAllRead: string;
+    empty: string;
   };
   customize: {
     title: string;

@@ -91,10 +91,13 @@ export class AdapterLoaderService {
       console.error('Failed to load adapters from DB:', e);
     }
     this.loaded = true;
+
+    // Refresco de repos en segundo plano: no bloquea el arranque de la app.
+    // installedAdapters ya quedo listo arriba desde IndexedDB (instantaneo).
     if (this.repos().length === 0) {
-      await this.addRepo(getDefaultRepoUrl());
+      void this.addRepo(getDefaultRepoUrl());
     } else {
-      await this.refreshRepos();
+      void this.refreshRepos();
     }
   }
 

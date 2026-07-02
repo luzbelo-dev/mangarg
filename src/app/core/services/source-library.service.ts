@@ -13,6 +13,11 @@ export interface SourceLibraryEntry {
   status?: string;
   genres?: string[];
   addedAt: string;
+  // Usado por UpdatesService para detectar capitulos nuevos sin tener que
+  // comparar la lista completa de capitulos guardados en otro lado.
+  lastKnownChapterId?: string;
+  lastKnownChapterCount?: number;
+  lastCheckedAt?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -69,5 +74,19 @@ export class SourceLibraryService {
     } else {
       await this.add(entry);
     }
+  }
+
+  async updateCheckState(
+    sourceId: string,
+    slug: string,
+    patch: Pick<SourceLibraryEntry, 'lastKnownChapterId' | 'lastKnownChapterCount' | 'lastCheckedAt'>
+  ): Promise<void> {
+    const id = this.makeId(sourceId, slug);
+    const current = this.entries().find(e => e.id === id);
+    if (!current) return;
+
+    const updated: SourceLibraryEntry = { ...current, ...patch };
+    await firstValueFrom(this.db.put('source-library', updated));
+    this.entries.update(list => list.map(e => (e.id === id ? updated : e)));
   }
 }

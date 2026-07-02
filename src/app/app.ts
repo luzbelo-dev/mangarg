@@ -7,6 +7,11 @@ import { MobileHeaderComponent } from './shared/components/mobile-header/mobile-
 import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile-tab-bar';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container';
 import { isCapacitor } from './core/utils/platform';
+import { UpdatesService } from './core/services/updates.service';
+import { SourceLibraryService } from './core/services/source-library.service';
+
+// Cada cuanto se chequean capitulos nuevos mientras la app esta en foreground.
+const UPDATES_CHECK_INTERVAL_MS = 30 * 60 * 1000;
 
 @Component({
   selector: 'mt-root',
@@ -75,7 +80,11 @@ import { isCapacitor } from './core/utils/platform';
 export class App implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly ngZone = inject(NgZone);
+  private readonly updatesService = inject(UpdatesService);
+  private readonly sourceLibrary = inject(SourceLibraryService);
   private backButtonCleanup: (() => void) | null = null;
+  private resumeListenerCleanup: (() => void) | null = null;
+  private updatesIntervalId: ReturnType<typeof setInterval> | null = null;
 
   private readonly url = toSignal(
     this.router.events.pipe(map(() => this.router.url)),
@@ -84,7 +93,7 @@ export class App implements OnInit, OnDestroy {
 
   isReaderRoute = computed(() => {
     const u = this.url();
-    return u.startsWith('/reader') || u.match(/\/source\/[^/]+\/reader\//) !== null;
+    return u.match(/\/source\/[^/]+\/reader\//) !== null;
   });
 
   isLandingRoute = computed(() => this.url() === '/' || this.url() === '');
@@ -95,10 +104,36 @@ export class App implements OnInit, OnDestroy {
     return !this.ROOT_ROUTES.includes(u) && !this.isReaderRoute() && !this.isLandingRoute();
   });
 
-  private readonly ROOT_ROUTES = ['/', '/search', '/explore', '/library', '/extensions', '/download'];
+  private readonly ROOT_ROUTES = ['/', '/library', '/updates', '/history', '/extensions', '/download'];
 
   ngOnInit(): void {
     this.setupBackButton();
+    this.setupUpdatesCheck();
+  }
+
+  private async setupUpdatesCheck(): Promise<void> {
+    await this.sourceLibrary.init();
+
+    // Chequeo inicial en background (no bloquea el arranque) + intervalo
+    // mientras la app este en foreground.
+    void this.updatesService.checkForUpdates();
+    this.updatesIntervalId = setInterval(() => {
+      void this.updatesService.checkForUpdates();
+    }, UPDATES_CHECK_INTERVAL_MS);
+
+    if (!isCapacitor()) return;
+
+    try {
+      const { App: CapApp } = await import('@capacitor/app');
+      const listener = await CapApp.addListener('resume', () => {
+        this.ngZone.run(() => {
+          void this.updatesService.checkForUpdates();
+        });
+      });
+      this.resumeListenerCleanup = () => listener.remove();
+    } catch (e) {
+      console.error('Failed to setup updates resume listener:', e);
+    }
   }
 
   private async setupBackButton(): Promise<void> {
@@ -153,13 +188,14 @@ export class App implements OnInit, OnDestroy {
       return '/extensions';
     }
 
-    if (url.startsWith('/manga/')) return '/search';
-    if (url.startsWith('/reader/')) return '/search';
-
     return '/extensions';
   }
 
   ngOnDestroy(): void {
     this.backButtonCleanup?.();
+    this.resumeListenerCleanup?.();
+    if (this.updatesIntervalId !== null) {
+      clearInterval(this.updatesIntervalId);
+    }
   }
 }
