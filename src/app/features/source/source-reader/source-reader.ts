@@ -307,6 +307,28 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     this.readerSettings.zoomOut();
   }
 
+  // --- Zoom en modo pagina ---
+  // Las paginas de manga son altas: con object-fit:contain quedan limitadas
+  // por ALTURA, asi que agrandar el ancho de la caja no cambia nada visible.
+  // El zoom-in tiene que crecer en el eje contrario al del paginado, y el
+  // exceso se panea con scroll dentro de la celda:
+  //  - paginado horizontal (LTR/RTL) -> crece la ALTURA (pan vertical)
+  //  - paginado vertical             -> crece el ANCHO (pan horizontal)
+  isPagedZoomedIn(): boolean {
+    return this.settings().zoom > 100;
+  }
+
+  pagedZoomHeight(): number | null {
+    const z = this.settings().zoom;
+    return z > 100 && !this.isVerticalPaged() ? z : null;
+  }
+
+  pagedZoomWidth(): number | null {
+    const z = this.settings().zoom;
+    if (z <= 100) return z;
+    return this.isVerticalPaged() ? z : null;
+  }
+
   async saveCurrentImage(): Promise<void> {
     const pageIndex = this.currentPage();
     const allPages = this.pages();
@@ -531,6 +553,9 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     // acá solo traducimos rueda (vertical por naturaleza) a paginas
     // horizontales, que si necesitan ayuda manual.
     if (this.isVerticalPaged() || !this.isPagedMode()) return;
+    // Con zoom activo la rueda tiene que PANEAR la pagina zoomeada (scroll
+    // nativo de la celda), no saltar de pagina.
+    if (this.isPagedZoomedIn()) return;
     event.preventDefault();
     if (event.deltaY > 0) {
       this.nextPage();

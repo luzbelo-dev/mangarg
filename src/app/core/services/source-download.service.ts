@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom, from, concatMap, tap, map, finalize, catchError, of } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { IndexedDbService } from './indexeddb.service';
 import { AdapterLoaderService } from './adapter-loader.service';
 

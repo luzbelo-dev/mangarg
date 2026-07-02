@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, computed, OnInit } 
 import { Router } from '@angular/router';
 import { TranslateService } from '../../../core/i18n/translate.service';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
-import { InstalledAdapter, MangaAdapterManifest, MangaAdapterInstance } from '../../../core/models/adapter.model';
+import { InstalledAdapter, MangaAdapterManifest } from '../../../core/models/adapter.model';
 import { SourceManga } from '../../../core/models/source.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 import { ToastService } from '../../../core/services/toast.service';

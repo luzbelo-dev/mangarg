@@ -89,7 +89,9 @@
           <img
             [src]="page.url"
             [alt]="'Page ' + (page.index + 1)"
-            [style.width.%]="settings().zoom"
+            [style.width.%]="pagedZoomWidth()"
+            [style.height.%]="pagedZoomHeight()"
+            [class.reader__img--zoomed]="isPagedZoomedIn()"
             [attr.fetchpriority]="page.index === currentPage() ? 'high' : null"
             loading="lazy"
             decoding="async"
@@ -123,7 +125,7 @@
           <img
             [src]="page.url"
             [alt]="'Page ' + (page.index + 1)"
-            [style.width.%]="settings().zoom"
+            [style.width.vw]="settings().zoom"
             loading="lazy"
             decoding="async"
             referrerpolicy="no-referrer"

@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { SourceManga, SourceChapter, SourcePage } from '../models/source.model';
+import { SourceManga, SourcePage } from '../models/source.model';
 
 export interface LocalMangaEntry {
   id: string;
@@ -53,7 +53,6 @@ export class LocalMangaService {
 
   async addFromDirectory(dirHandle: FileSystemDirectoryHandle): Promise<LocalMangaEntry | null> {
     const chapters: LocalChapter[] = [];
-    let coverDataUrl = '';
 
     const subDirs: FileSystemDirectoryHandle[] = [];
     const rootImages: File[] = [];
@@ -95,7 +94,7 @@ export class LocalMangaService {
 
     if (chapters.length === 0) return null;
 
-    coverDataUrl = chapters[0]?.pages[0]?.dataUrl || '';
+    const coverDataUrl = chapters[0]?.pages[0]?.dataUrl || '';
 
     const entry: LocalMangaEntry = {
       id: crypto.randomUUID(),
@@ -199,7 +198,6 @@ export class LocalMangaService {
 
       const compressionMethod = view.getUint16(offset + 8, true);
       const compressedSize = view.getUint32(offset + 18, true);
-      const uncompressedSize = view.getUint32(offset + 22, true);
       const fileNameLength = view.getUint16(offset + 26, true);
       const extraLength = view.getUint16(offset + 28, true);
       const dataStart = offset + 30 + fileNameLength + extraLength;

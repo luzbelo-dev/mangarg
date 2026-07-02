@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Location } from '@angular/common';
-import { TranslateService } from '../../../core/i18n/translate.service';
 
 @Component({
   selector: 'mt-mobile-header',

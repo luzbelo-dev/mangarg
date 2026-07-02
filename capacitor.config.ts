@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'com.mangarg.app',
   appName: 'Mangarg',
   webDir: 'dist/manga-tracker/browser',
+  // Habilita pinch-zoom nativo del WebView (por defecto Capacitor lo bloquea
+  // aunque el viewport y touch-action lo permitan). Clave para el reader.
+  zoomEnabled: true,
   server: {
     androidScheme: 'https',
     // Sin allowNavigation:['*']: la app es una SPA y no debe navegar el WebView
