@@ -68,7 +68,7 @@ jobs:
           # normalizar por si el secret quedo con salto de linea al final
           KS_PASS=$(printf '%s' "$KEYSTORE_PASSWORD" | tr -d '\r\n')
           KS_ALIAS=$(printf '%s' "$KEY_ALIAS" | tr -d '\r\n')
-          echo "$KEYSTORE_BASE64" | base64 -d > release.jks
+          printf '%s' "$KEYSTORE_BASE64" | tr -d ' \r\n' | base64 -d > release.jks
           BUILD_TOOLS=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
           UNSIGNED=android/app/build/outputs/apk/release/app-release-unsigned.apk
           "$BUILD_TOOLS/zipalign" -f -p 4 "$UNSIGNED" mangarg-aligned.apk
