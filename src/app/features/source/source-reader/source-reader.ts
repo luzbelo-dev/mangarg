@@ -517,9 +517,14 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Cuantas paginas se precargan hacia adelante. Buffer rodante: al cargarse
+  // una pagina se precargan las siguientes, asi el scroll nunca espera.
+  // Mihon/Tachiyomi usan ~4-6; 5 da un buen margen sin saturar memoria.
+  private static readonly PRELOAD_AHEAD = 5;
+
   private preloadAhead(fromIndex: number): void {
     const allPages = this.pages();
-    for (let i = 1; i <= 2; i++) {
+    for (let i = 1; i <= SourceReaderComponent.PRELOAD_AHEAD; i++) {
       const target = fromIndex + i;
       if (target >= allPages.length || this.preloadedPages.has(target)) continue;
       this.preloadedPages.add(target);
