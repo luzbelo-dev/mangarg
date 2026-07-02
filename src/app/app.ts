@@ -8,7 +8,9 @@ import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container';
 import { isCapacitor } from './core/utils/platform';
 import { UpdatesService } from './core/services/updates.service';
+import { UpdateCheckService } from './core/services/update-check.service';
 import { SourceLibraryService } from './core/services/source-library.service';
+import { TranslateService } from './core/i18n/translate.service';
 
 // Cada cuanto se chequean capitulos nuevos mientras la app esta en foreground.
 const UPDATES_CHECK_INTERVAL_MS = 30 * 60 * 1000;
@@ -30,6 +32,13 @@ const UPDATES_CHECK_INTERVAL_MS = 30 * 60 * 1000;
     </main>
     @if (!hideAppShell()) {
       <mt-mobile-tab-bar class="mobile-only" />
+    }
+    @if (appUpdate.available(); as upd) {
+      <div class="update-banner">
+        <span class="update-banner__text">{{ t().update.available }} · v{{ upd.version }}</span>
+        <button class="update-banner__action" (click)="appUpdate.openDownload()">{{ t().update.action }}</button>
+        <button class="update-banner__later" (click)="appUpdate.dismiss()">{{ t().update.later }}</button>
+      </div>
     }
     <mt-toast-container />
   `,
@@ -75,6 +84,62 @@ const UPDATES_CHECK_INTERVAL_MS = 30 * 60 * 1000;
         min-height: 100vh;
       }
     }
+
+    .update-banner {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 12px);
+      z-index: 1200;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .update-banner__text {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.85rem;
+      color: #fff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .update-banner__action {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent, #e63946);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .update-banner__later {
+      padding: 8px 10px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    @media (min-width: 769px) {
+      .update-banner {
+        left: auto;
+        right: 20px;
+        bottom: 20px;
+        max-width: 420px;
+      }
+    }
   `,
 })
 export class App implements OnInit, OnDestroy {
@@ -82,6 +147,8 @@ export class App implements OnInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
   private readonly updatesService = inject(UpdatesService);
   private readonly sourceLibrary = inject(SourceLibraryService);
+  readonly appUpdate = inject(UpdateCheckService);
+  readonly t = inject(TranslateService).t;
   private backButtonCleanup: (() => void) | null = null;
   private resumeListenerCleanup: (() => void) | null = null;
   private updatesIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -109,6 +176,8 @@ export class App implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setupBackButton();
     this.setupUpdatesCheck();
+    // Version nueva de la APP (no de capitulos): silencioso si no hay red.
+    void this.appUpdate.check();
   }
 
   private async setupUpdatesCheck(): Promise<void> {

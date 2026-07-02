@@ -19,6 +19,11 @@ export const translations = {
       lightMode: 'Cambiar a modo claro',
       darkMode: 'Cambiar a modo oscuro',
     },
+    update: {
+      available: 'Nueva version disponible',
+      action: 'Actualizar',
+      later: 'Mas tarde',
+    },
     extensions: {
       title: 'Extensiones',
       subtitle: 'Apps y fuentes para leer manga en cualquier dispositivo',
@@ -187,6 +192,11 @@ export const translations = {
       nsfw: '+18',
       lightMode: 'Switch to light mode',
       darkMode: 'Switch to dark mode',
+    },
+    update: {
+      available: 'New version available',
+      action: 'Update',
+      later: 'Later',
     },
     extensions: {
       title: 'Extensions',
@@ -358,6 +368,11 @@ export interface Translations {
     nsfw: string;
     lightMode: string;
     darkMode: string;
+  };
+  update: {
+    available: string;
+    action: string;
+    later: string;
   };
   extensions: {
     title: string;
