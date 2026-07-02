@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateService } from '../../../core/i18n/translate.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import { CustomizationService, ACCENT_PRESETS, FONT_PRESETS } from '../../../core/services/customization.service';
 import { Lang } from '../../../core/i18n/translations';
 
 @Component({
@@ -130,6 +131,51 @@ import { Lang } from '../../../core/i18n/translations';
               </button>
             </div>
 
+            <button class="more-sheet__item more-sheet__item--clickable" (click)="toggleCustomize()">
+              <span class="more-sheet__item-label">{{ t().customize.title }}</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-secondary)">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1.08z"/>
+              </svg>
+            </button>
+
+            @if (customizeOpen()) {
+              <div class="customize-panel">
+                <div class="customize-panel__section">
+                  <span class="customize-panel__label">{{ t().customize.accentColor }}</span>
+                  <div class="customize-panel__colors">
+                    @for (preset of accentPresets; track preset.color) {
+                      <button
+                        class="customize-panel__color-btn"
+                        [class.customize-panel__color-btn--active]="customization.accentColor() === preset.color"
+                        [style.background]="preset.color"
+                        (click)="customization.setAccentColor(preset.color)"
+                        [attr.aria-label]="preset.name"
+                      ></button>
+                    }
+                  </div>
+                </div>
+
+                <div class="customize-panel__section">
+                  <span class="customize-panel__label">{{ t().customize.font }}</span>
+                  <div class="customize-panel__fonts">
+                    @for (font of fontPresets; track font.name) {
+                      <button
+                        class="customize-panel__font-btn"
+                        [class.customize-panel__font-btn--active]="customization.fontFamily() === font.value"
+                        [style.font-family]="font.value"
+                        (click)="customization.setFontFamily(font.value)"
+                      >{{ font.name }}</button>
+                    }
+                  </div>
+                </div>
+
+                <button class="customize-panel__reset" (click)="customization.reset()">
+                  {{ t().customize.reset }}
+                </button>
+              </div>
+            }
+
             <div class="more-sheet__divider"></div>
 
             <div class="more-sheet__version">
@@ -256,6 +302,8 @@ import { Lang } from '../../../core/i18n/translations';
       display: flex;
       flex-direction: column;
       gap: 4px;
+      max-height: 60vh;
+      overflow-y: auto;
     }
 
     .more-sheet__item {
@@ -344,6 +392,110 @@ import { Lang } from '../../../core/i18n/translations';
       }
     }
 
+    .more-sheet__item--clickable {
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border: none;
+      background: none;
+      width: 100%;
+
+      &:hover, &:active {
+        background: var(--accent-light);
+      }
+    }
+
+    .customize-panel {
+      padding: 12px;
+      margin: 4px 0;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .customize-panel__section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .customize-panel__label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .customize-panel__colors {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .customize-panel__color-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+
+      &:active {
+        transform: scale(0.9);
+      }
+
+      &--active {
+        border-color: var(--text-primary);
+        transform: scale(1.1);
+      }
+    }
+
+    .customize-panel__fonts {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .customize-panel__font-btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+
+      &:active {
+        background: var(--accent-light);
+      }
+
+      &--active {
+        border-color: var(--accent);
+        background: var(--accent-light);
+        font-weight: 600;
+      }
+    }
+
+    .customize-panel__reset {
+      align-self: flex-end;
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: none;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease;
+
+      &:active {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+    }
+
     .more-sheet__version {
       text-align: center;
       font-size: 0.75rem;
@@ -374,18 +526,31 @@ import { Lang } from '../../../core/i18n/translations';
 export class MobileTabBarComponent {
   protected readonly i18n = inject(TranslateService);
   private readonly themeService = inject(ThemeService);
+  readonly customization = inject(CustomizationService);
 
   t = this.i18n.t;
   lang = this.i18n.lang;
   isDark = this.themeService.isDark;
   moreOpen = signal(false);
+  customizeOpen = signal(false);
+
+  accentPresets = ACCENT_PRESETS;
+  fontPresets = FONT_PRESETS;
 
   toggleMore(): void {
     this.moreOpen.update(v => !v);
+    if (!this.moreOpen()) {
+      this.customizeOpen.set(false);
+    }
   }
 
   closeMore(): void {
     this.moreOpen.set(false);
+    this.customizeOpen.set(false);
+  }
+
+  toggleCustomize(): void {
+    this.customizeOpen.update(v => !v);
   }
 
   onLangChange(event: Event): void {

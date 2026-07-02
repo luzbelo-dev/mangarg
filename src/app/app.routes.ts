@@ -1,11 +1,13 @@
 import { Routes } from '@angular/router';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { isCapacitor } from './core/utils/platform';
 
 const appRedirectGuard = () => {
   const router = inject(Router);
-  const isWebsite = window.location.hostname.includes('netlify.app');
-  if (!isWebsite) {
+  // En la APK nativa arrancamos directo en /extensions; en web (incluido
+  // localhost y dominio propio) mostramos la landing.
+  if (isCapacitor()) {
     return router.createUrlTree(['/extensions']);
   }
   return true;

@@ -49,7 +49,7 @@ function handler(req, res) {
     path: parsed.pathname + parsed.search,
     method: method,
     headers: {
-      'User-Agent': isApi ? 'MiMangaDinamita/1.2.0' : 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
+      'User-Agent': isApi ? 'Mangarg/1.5.0' : 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36',
       'Accept': isApi ? 'application/json, */*' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
       'Accept-Encoding': 'identity',

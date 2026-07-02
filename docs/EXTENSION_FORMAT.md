@@ -1,8 +1,8 @@
-# Mi Manga Dinamita — Extension Repository Format
+# Mangarg — Extension Repository Format
 
 ## How to create an extension repository
 
-Anyone can create and share manga source extensions for Mi Manga Dinamita. 
+Anyone can create and share manga source extensions for Mangarg. 
 Host a `manifest.json` file at a public URL and users can add your repo.
 
 ## Manifest format

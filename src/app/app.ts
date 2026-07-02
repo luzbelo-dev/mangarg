@@ -6,10 +6,7 @@ import { NavbarComponent } from './shared/components/navbar/navbar';
 import { MobileHeaderComponent } from './shared/components/mobile-header/mobile-header';
 import { MobileTabBarComponent } from './shared/components/mobile-tab-bar/mobile-tab-bar';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container';
-
-function isCapacitor(): boolean {
-  return typeof (window as any)?.Capacitor !== 'undefined';
-}
+import { isCapacitor } from './core/utils/platform';
 
 @Component({
   selector: 'mt-root',

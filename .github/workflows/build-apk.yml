@@ -18,20 +18,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
 
       - name: Build Angular
         run: npx ng build
-
-      - name: Install Capacitor
-        run: npm install @capacitor/core @capacitor/cli @capacitor/android --legacy-peer-deps
 
       - name: Add Android platform
         run: npx cap add android || true
@@ -56,7 +57,7 @@ jobs:
           ./gradlew assembleDebug
 
       - name: Rename APK
-        run: mv android/app/build/outputs/apk/debug/app-debug.apk mi-manga-dinamita.apk
+        run: mv android/app/build/outputs/apk/debug/app-debug.apk mangarg.apk
 
       - name: Delete old latest release
         run: gh release delete latest --yes --cleanup-tag || true
@@ -65,9 +66,9 @@ jobs:
 
       - name: Create latest release with APK
         run: |
-          gh release create latest mi-manga-dinamita.apk \
-            --title "Mi Manga Dinamita - Ultima version" \
-            --notes "APK generado automaticamente. Descarga mi-manga-dinamita.apk e instalalo en tu Android." \
+          gh release create latest mangarg.apk \
+            --title "Mangarg - Ultima version" \
+            --notes "APK generado automaticamente. Descarga mangarg.apk e instalalo en tu Android." \
             --latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -75,5 +76,5 @@ jobs:
       - name: Upload APK as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mi-manga-dinamita-apk
-          path: mi-manga-dinamita.apk
+          name: mangarg-apk
+          path: mangarg.apk

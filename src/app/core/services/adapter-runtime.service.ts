@@ -2,24 +2,41 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AdapterApi, AdapterCache, MangaAdapterInstance } from '../models/adapter.model';
-
-function isCapacitor(): boolean {
-  return typeof (window as any)?.Capacitor !== 'undefined';
-}
+import { isCapacitor } from '../utils/platform';
 
 const CORS_SAFE_DOMAINS: string[] = [];
 
+// Metodos/propiedades minimos que debe exponer un adapter valido. Se usa para
+// validar la forma del objeto que devuelve el codigo remoto antes de confiar
+// en el (defensa contra codigo de extensiones malformado o malicioso).
+const REQUIRED_METHODS = ['search', 'getPopular', 'getChapters', 'getPages'] as const;
+const REQUIRED_STRINGS = ['id', 'name'] as const;
+
+export function validateAdapterInstance(instance: any): string | null {
+  if (!instance || typeof instance !== 'object') return 'el adapter no devolvio un objeto';
+  for (const p of REQUIRED_STRINGS) {
+    if (typeof instance[p] !== 'string' || !instance[p]) return `falta la propiedad "${p}"`;
+  }
+  for (const m of REQUIRED_METHODS) {
+    if (typeof instance[m] !== 'function') return `falta el metodo "${m}()"`;
+  }
+  return null;
+}
+
 function needsProxy(url: string): boolean {
   if (isCapacitor()) return false;
+  let parsed: URL;
   try {
-    const parsed = new URL(url);
-    for (const domain of CORS_SAFE_DOMAINS) {
-      if (parsed.hostname === domain || parsed.hostname.endsWith('.' + domain)) return false;
-    }
-    return true;
+    parsed = new URL(url);
   } catch {
-    return false;
+    // Una URL malformada de un adapter debe fallar con un error claro,
+    // no pedirse tal cual (antes devolvia false y fallaba confuso mas abajo).
+    throw new Error(`Invalid URL from adapter: ${url}`);
   }
+  for (const domain of CORS_SAFE_DOMAINS) {
+    if (parsed.hostname === domain || parsed.hostname.endsWith('.' + domain)) return false;
+  }
+  return true;
 }
 
 function proxyUrl(targetUrl: string, method = 'GET'): string {

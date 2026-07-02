@@ -1,23 +1,33 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { timer, switchMap } from 'rxjs';
 
-let lastJikanRequest = 0;
-const MIN_INTERVAL = 350;
+// Intervalo minimo entre requests para cada dominio con rate limit conocido.
+const DOMAIN_INTERVALS: { match: string; interval: number }[] = [
+  { match: 'api.jikan.moe', interval: 350 },   // Jikan: ~3 req/s
+  { match: 'api.mangadex.org', interval: 250 }, // MangaDex: ~5 req/s
+];
+
+// Proxima marca de tiempo permitida por dominio. Al encolar acumulamos el
+// intervalo sobre el ultimo turno reservado (no sobre "ahora"), asi varios
+// requests simultaneos se serializan en vez de programarse todos con el
+// mismo delay.
+const nextAllowed = new Map<string, number>();
+
+function ruleFor(url: string): { key: string; interval: number } | null {
+  for (const rule of DOMAIN_INTERVALS) {
+    if (url.includes(rule.match)) return { key: rule.match, interval: rule.interval };
+  }
+  return null;
+}
 
 export const rateLimitInterceptor: HttpInterceptorFn = (req, next) => {
-  if (!req.url.includes('api.jikan.moe')) {
-    return next(req);
-  }
+  const rule = ruleFor(req.url);
+  if (!rule) return next(req);
 
   const now = Date.now();
-  const elapsed = now - lastJikanRequest;
+  const scheduled = Math.max(now, nextAllowed.get(rule.key) ?? 0);
+  nextAllowed.set(rule.key, scheduled + rule.interval);
 
-  if (elapsed >= MIN_INTERVAL) {
-    lastJikanRequest = now;
-    return next(req);
-  }
-
-  const delay = MIN_INTERVAL - elapsed;
-  lastJikanRequest = now + delay;
-  return timer(delay).pipe(switchMap(() => next(req)));
+  const delay = scheduled - now;
+  return delay <= 0 ? next(req) : timer(delay).pipe(switchMap(() => next(req)));
 };

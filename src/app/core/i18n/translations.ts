@@ -231,6 +231,12 @@ export const translations = {
       empty: 'No leíste nada todavía',
       lastRead: 'Último leído',
     },
+    customize: {
+      title: 'Personalizacion',
+      accentColor: 'Color de acento',
+      font: 'Tipografia',
+      reset: 'Restablecer',
+    },
   },
   en: {
     nav: {
@@ -461,6 +467,12 @@ export const translations = {
       clear: 'Clear history',
       empty: "You haven't read anything yet",
       lastRead: 'Last read',
+    },
+    customize: {
+      title: 'Customization',
+      accentColor: 'Accent color',
+      font: 'Font',
+      reset: 'Reset',
     },
   },
 };
@@ -693,5 +705,11 @@ export interface Translations {
     clear: string;
     empty: string;
     lastRead: string;
+  };
+  customize: {
+    title: string;
+    accentColor: string;
+    font: string;
+    reset: string;
   };
 }

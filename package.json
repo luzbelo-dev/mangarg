@@ -43,8 +43,8 @@
     "ws": "^8.21.0"
   },
   "build": {
-    "appId": "com.mimangadinamita.app",
-    "productName": "Mi Manga Dinamita",
+    "appId": "com.mangarg.app",
+    "productName": "Mangarg",
     "directories": {
       "output": "release"
     },

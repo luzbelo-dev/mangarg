@@ -14,6 +14,9 @@ export interface MangaAdapterManifest {
   nsfw: boolean;
   adapterUrl: string;
   config?: Record<string, any>;
+  // SHA-256 hex opcional del codigo del adapter. Si esta presente se verifica
+  // contra el codigo descargado antes de ejecutarlo.
+  checksum?: string;
 }
 
 export interface MangaAdapterInstance {

@@ -2,7 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { IndexedDbService } from './indexeddb.service';
-import { AdapterRuntimeService } from './adapter-runtime.service';
+import { AdapterRuntimeService, validateAdapterInstance } from './adapter-runtime.service';
 import { InstalledAdapter, MangaAdapterInstance, MangaAdapterManifest } from '../models/adapter.model';
 
 export interface ExtensionRepo {
@@ -28,12 +28,18 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 
-function isCapacitor(): boolean {
-  return typeof (window as any)?.Capacitor !== 'undefined';
-}
-
 function getDefaultRepoUrl(): string {
   return 'https://raw.githubusercontent.com/alearenass090/mangarg-repo/main';
+}
+
+// SHA-256 hex del texto dado. Requiere contexto seguro (https/localhost), que
+// se cumple en Netlify y en la APK (androidScheme https).
+async function sha256Hex(text: string): Promise<string> {
+  const data = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 function resolveGitHubUrl(url: string): string {
@@ -148,8 +154,22 @@ export class AdapterLoaderService {
     try {
       const code = await this.fetchText(manifest.adapterUrl);
 
+      // Verificar checksum si el manifest lo declara, antes de ejecutar el codigo.
+      if (manifest.checksum) {
+        const actual = await sha256Hex(code);
+        if (actual.toLowerCase() !== manifest.checksum.toLowerCase()) {
+          console.error(`Checksum mismatch para ${manifest.id}: esperado ${manifest.checksum}, obtenido ${actual}`);
+          return false;
+        }
+      }
+
       const cfg = manifest.config ?? { baseUrl: manifest.baseUrl, id: manifest.id, name: manifest.name, icon: manifest.icon, iconColor: manifest.iconColor, lang: manifest.lang };
       const instance = this.runtime.execute(code, cfg);
+      const invalid = validateAdapterInstance(instance);
+      if (invalid) {
+        console.error(`Adapter ${manifest.id} invalido: ${invalid}`);
+        return false;
+      }
       this.loadedAdapters.set(manifest.id, instance);
 
       const installed: InstalledAdapter = {
@@ -185,8 +205,9 @@ export class AdapterLoaderService {
   async installFromCode(code: string, sourceUrl?: string): Promise<{ success: boolean; name?: string; error?: string }> {
     try {
       const instance = this.runtime.execute(code, {});
-      if (!instance || !instance.id || !instance.name) {
-        return { success: false, error: 'Invalid adapter: missing id or name' };
+      const invalid = validateAdapterInstance(instance);
+      if (invalid) {
+        return { success: false, error: `Adapter invalido: ${invalid}` };
       }
 
       if (this.isInstalled(instance.id)) {

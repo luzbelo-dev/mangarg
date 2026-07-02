@@ -40,7 +40,7 @@ exports.handler = async function(event) {
     https.get({
       hostname: parsed.hostname,
       path: parsed.pathname + parsed.search,
-      headers: { "User-Agent": "MiMangaDinamita/1.0" }
+      headers: { "User-Agent": "Mangarg/1.5.0" }
     }, function(res) {
       var data = "";
       res.on("data", function(c) { data += c; });

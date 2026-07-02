@@ -9,7 +9,7 @@ function createWindow() {
     height: 800,
     minWidth: 400,
     minHeight: 600,
-    title: 'Mi Manga Dinamita',
+    title: 'Mangarg',
     icon: path.join(__dirname, '..', 'public', 'icons', 'icon-512x512.png'),
     webPreferences: {
       nodeIntegration: false,

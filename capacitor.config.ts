@@ -1,14 +1,17 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.mimangadinamita.app',
+  appId: 'com.mangarg.app',
   appName: 'Mangarg',
   webDir: 'dist/manga-tracker/browser',
   server: {
     androidScheme: 'https',
-    allowNavigation: ['*'],
+    // Sin allowNavigation:['*']: la app es una SPA y no debe navegar el WebView
+    // a origenes externos. Las requests a APIs/imagenes van por CapacitorHttp
+    // (habilitado abajo), que las intercepta de forma nativa sin importar esto.
   },
   android: {
+    // Necesario: varias fuentes de manga sirven imagenes por HTTP (cleartext).
     allowMixedContent: true,
   },
   plugins: {
