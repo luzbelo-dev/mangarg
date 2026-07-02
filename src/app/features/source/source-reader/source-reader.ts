@@ -74,6 +74,8 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private sourceId = '';
   private failedPages = new Set<number>();
   private preloadedPages = new Set<number>();
+  private pageRetries = new Map<number, number>();
+  private prefetchGeneration = 0;
   private headerTimeout: ReturnType<typeof setTimeout> | null = null;
   private blobUrls: string[] = [];
 
@@ -131,6 +133,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     document.body.classList.remove(READER_BODY_CLASS);
+    this.prefetchGeneration++; // corta los workers de prefetch en curso
     if (this.headerTimeout) {
       clearTimeout(this.headerTimeout);
     }
@@ -167,8 +170,21 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   onPageError(event: Event, page: SourcePage): void {
-    this.failedPages.add(page.index);
     const img = event.target as HTMLImageElement;
+    const attempts = this.pageRetries.get(page.index) ?? 0;
+    if (attempts < 1 && !this.isOffline()) {
+      // Primer fallo: suele ser un hiccup transitorio del CDN. Un reintento
+      // automatico con backoff corto antes de molestar con "Failed to load".
+      this.pageRetries.set(page.index, attempts + 1);
+      const url = page.url;
+      setTimeout(() => {
+        if (!img.isConnected) return;
+        img.src = '';
+        img.src = url;
+      }, 800);
+      return;
+    }
+    this.failedPages.add(page.index);
     img.style.display = 'none';
   }
 
@@ -177,6 +193,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   retryPage(page: SourcePage): void {
+    this.pageRetries.delete(page.index);
     this.failedPages.delete(page.index);
     this.pages.update(current => [...current]);
   }
@@ -625,6 +642,8 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     this.currentPage.set(0);
     this.failedPages.clear();
     this.preloadedPages.clear();
+    this.pageRetries.clear();
+    this.prefetchGeneration++; // cancela los workers de prefetch del capitulo anterior
     for (const url of this.blobUrls) {
       URL.revokeObjectURL(url);
     }
@@ -676,11 +695,13 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
           this.resumePage = null;
           if (resumeTo !== null && resumeTo > 0 && resumeTo < data.length) {
             this.preloadAhead(resumeTo);
+            this.startChapterPrefetch(resumeTo);
             // El viewport recien existe en el DOM despues de este render;
             // esperamos al siguiente tick para poder medir/scrollear.
             setTimeout(() => this.goToPage(resumeTo));
           } else {
             this.preloadAhead(0);
+            this.startChapterPrefetch(0);
           }
         },
         error: (err) => {
@@ -711,6 +732,43 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
       };
       img.src = allPages[target].url;
     }
+  }
+
+  // --- Prefetch progresivo del capitulo completo ---
+  // El buffer rodante (preloadAhead) cubre lo inmediato; esta cola baja el
+  // RESTO del capitulo en segundo plano con concurrencia limitada, arrancando
+  // desde la pagina actual hacia adelante (y al final, lo anterior, por si se
+  // retomo a mitad). En una conexion rapida el capitulo entero queda en cache
+  // HTTP en segundos y el lector nunca vuelve a esperar una imagen.
+  private static readonly PREFETCH_CONCURRENCY = 3;
+
+  private startChapterPrefetch(fromIndex: number): void {
+    if (this.isOffline()) return;
+    const generation = this.prefetchGeneration;
+    const all = this.pages();
+    const order: number[] = [];
+    for (let i = fromIndex + 1; i < all.length; i++) order.push(i);
+    for (let i = 0; i < fromIndex; i++) order.push(i);
+
+    let cursor = 0;
+    const next = () => {
+      // Si cambio el capitulo (o se destruyo el componente), la generacion
+      // avanza y este worker muere solo.
+      if (generation !== this.prefetchGeneration) return;
+      while (cursor < order.length && this.preloadedPages.has(order[cursor])) cursor++;
+      if (cursor >= order.length) return;
+      const target = order[cursor++];
+      this.preloadedPages.add(target);
+      const img = new Image();
+      img.onload = () => next();
+      img.onerror = () => {
+        this.preloadedPages.delete(target);
+        next();
+      };
+      img.src = all[target].url;
+    };
+
+    for (let w = 0; w < SourceReaderComponent.PREFETCH_CONCURRENCY; w++) next();
   }
 
   private startHeaderTimer(): void {
