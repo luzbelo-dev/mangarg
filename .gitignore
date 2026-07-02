@@ -50,3 +50,7 @@ release/
 graphify-out/
 .claude/
 test-adapters.mjs
+
+# Claves de firma de Android — NUNCA commitear
+*.jks
+*.keystore
