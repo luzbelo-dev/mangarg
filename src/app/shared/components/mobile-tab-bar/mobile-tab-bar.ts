@@ -1,9 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { TranslateService } from '../../../core/i18n/translate.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { CustomizationService, ACCENT_PRESETS, FONT_PRESETS } from '../../../core/services/customization.service';
 import { Lang } from '../../../core/i18n/translations';
+import { APP_VERSION } from '../../../core/constants/app-version';
 
 @Component({
   selector: 'mt-mobile-tab-bar',
@@ -12,25 +15,6 @@ import { Lang } from '../../../core/i18n/translations';
   imports: [RouterLink, RouterLinkActive],
   template: `
     <nav class="tab-bar" role="tablist">
-      <a
-        routerLink="/extensions"
-        routerLinkActive="tab-bar__tab--active"
-        class="tab-bar__tab"
-        role="tab"
-      >
-        <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
-        <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5" fill="none" stroke="currentColor" stroke-width="2"/>
-          <path d="M2 12l10 5 10-5" fill="none" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        <span class="tab-bar__label">{{ lang() === 'es' ? 'Extensiones' : 'Extensions' }}</span>
-      </a>
-
       <a
         routerLink="/library"
         routerLinkActive="tab-bar__tab--active"
@@ -44,26 +28,58 @@ import { Lang } from '../../../core/i18n/translations';
         <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
           <path d="M6.5 2C5.12 2 4 3.12 4 4.5v15C4 20.88 5.12 22 6.5 22H20V2H6.5zM4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
         </svg>
-        <span class="tab-bar__label">{{ lang() === 'es' ? 'Biblioteca' : 'Library' }}</span>
+        <span class="tab-bar__label">{{ t().nav.library }}</span>
       </a>
 
       <a
-        routerLink="/download"
+        routerLink="/updates"
         routerLinkActive="tab-bar__tab--active"
         class="tab-bar__tab"
         role="tab"
       >
         <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
         <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4h18z"/>
-          <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2"/>
-          <line x1="12" y1="15" x2="12" y2="3" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="2"/>
         </svg>
-        <span class="tab-bar__label">{{ lang() === 'es' ? 'Descargas' : 'Downloads' }}</span>
+        <span class="tab-bar__label">{{ t().nav.updates }}</span>
+      </a>
+
+      <a
+        routerLink="/history"
+        routerLinkActive="tab-bar__tab--active"
+        class="tab-bar__tab"
+        role="tab"
+      >
+        <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14" fill="none" stroke="var(--bg-nav)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="tab-bar__label">{{ t().nav.history }}</span>
+      </a>
+
+      <a
+        routerLink="/browse"
+        class="tab-bar__tab"
+        [class.tab-bar__tab--active]="browseActive()"
+        role="tab"
+      >
+        <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+        </svg>
+        <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <circle cx="12" cy="12" r="10"/>
+          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="var(--bg-nav)"/>
+        </svg>
+        <span class="tab-bar__label">{{ t().nav.browse }}</span>
       </a>
 
       <button
@@ -178,8 +194,17 @@ import { Lang } from '../../../core/i18n/translations';
 
             <div class="more-sheet__divider"></div>
 
+            <a class="more-sheet__link" routerLink="/download" (click)="closeMore()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>{{ t().nav.download }}</span>
+            </a>
+
             <div class="more-sheet__version">
-              Mangarg v1.5.0
+              Mangarg v{{ version }}
             </div>
           </div>
         </div>
@@ -526,6 +551,7 @@ import { Lang } from '../../../core/i18n/translations';
 export class MobileTabBarComponent {
   protected readonly i18n = inject(TranslateService);
   private readonly themeService = inject(ThemeService);
+  private readonly router = inject(Router);
   readonly customization = inject(CustomizationService);
 
   t = this.i18n.t;
@@ -533,6 +559,21 @@ export class MobileTabBarComponent {
   isDark = this.themeService.isDark;
   moreOpen = signal(false);
   customizeOpen = signal(false);
+  readonly version = APP_VERSION;
+
+  private readonly url = toSignal(
+    this.router.events.pipe(map(() => this.router.url)),
+    { initialValue: this.router.url },
+  );
+
+  // El tab Explorar se marca tambien dentro de una fuente (/source/...):
+  // navegar el catalogo de una extension sigue siendo "explorar". Se maneja
+  // a mano (no con routerLinkActive) porque /extensions redirige a /browse y
+  // el redirect rompe el matching del directive.
+  readonly browseActive = computed(() => {
+    const u = this.url().split('?')[0];
+    return u.startsWith('/browse') || u.startsWith('/extensions') || u.startsWith('/source');
+  });
 
   accentPresets = ACCENT_PRESETS;
   fontPresets = FONT_PRESETS;
