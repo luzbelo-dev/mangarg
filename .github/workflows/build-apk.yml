@@ -40,6 +40,9 @@ jobs:
       - name: Sync web assets
         run: npx cap sync android
 
+      - name: Generate app icons
+        run: npx capacitor-assets generate --android
+
       - name: Fix Android permissions
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
