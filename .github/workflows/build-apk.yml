@@ -108,7 +108,7 @@ jobs:
             echo ""
             git log -10 --pretty="- %s"
             echo ""
-            echo "[Historial completo](https://github.com/alearenass090/mangarg/commits/master)"
+            echo "[Historial completo](https://github.com/luzbelo-dev/mangarg/commits/master)"
             echo ""
             echo "## 🔒 Verificación"
             echo ""

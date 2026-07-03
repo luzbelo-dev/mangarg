@@ -22,13 +22,13 @@
 
 [[redirects]]
   from = "/download/mangarg.apk"
-  to = "https://github.com/alearenass090/mangarg/releases/download/latest/mangarg.apk"
+  to = "https://github.com/luzbelo-dev/mangarg/releases/download/latest/mangarg.apk"
   status = 302
   force = true
 
 [[redirects]]
   from = "/download/Mangarg.exe"
-  to = "https://github.com/alearenass090/mangarg/releases/download/latest/Mangarg.exe"
+  to = "https://github.com/luzbelo-dev/mangarg/releases/download/latest/Mangarg.exe"
   status = 302
   force = true
 

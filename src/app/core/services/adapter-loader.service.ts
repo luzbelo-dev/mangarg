@@ -29,7 +29,7 @@ function generateId(): string {
 }
 
 function getDefaultRepoUrl(): string {
-  return 'https://raw.githubusercontent.com/alearenass090/mangarg-repo/main';
+  return 'https://raw.githubusercontent.com/luzbelo-dev/mangarg-repo/main';
 }
 
 // SHA-256 hex del texto dado. Requiere contexto seguro (https/localhost), que
