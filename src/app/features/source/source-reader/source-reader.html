@@ -42,16 +42,31 @@
 
       <div class="reader__setting">
         <label>Zoom</label>
-        <div class="reader__zoom-control">
-          <button class="reader__zoom-btn" (click)="zoomOut()" [disabled]="settings().zoom <= 50">−</button>
-          <span class="reader__zoom-value">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            {{ settings().zoom }}%
-          </span>
-          <button class="reader__zoom-btn" (click)="zoomIn()" [disabled]="settings().zoom >= 200">+</button>
-        </div>
+        @if (settings().mode === 'longstrip') {
+          <div class="reader__zoom-control">
+            <button class="reader__zoom-btn" (click)="zoomOut()" [disabled]="settings().zoom <= 50">−</button>
+            <span class="reader__zoom-value">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              {{ settings().zoom }}%
+            </span>
+            <button class="reader__zoom-btn" (click)="zoomIn()" [disabled]="settings().zoom >= 300">+</button>
+          </div>
+          <p class="reader__setting-hint">Pellizcá para ajustar el ancho</p>
+        } @else {
+          <div class="reader__zoom-control">
+            <button class="reader__zoom-btn" (click)="zoomOut()" [disabled]="zoomDisplay() <= 100">−</button>
+            <span class="reader__zoom-value">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              {{ zoomDisplay() }}%
+            </span>
+            <button class="reader__zoom-btn" (click)="zoomIn()" [disabled]="zoomDisplay() >= 400">+</button>
+          </div>
+          <p class="reader__setting-hint">Pellizcá o tocá dos veces la página</p>
+        }
       </div>
 
       <div class="reader__setting">
@@ -74,33 +89,37 @@
     #pageViewport
     class="reader__viewport"
     [class.reader__viewport--vertical]="isVerticalPaged()"
+    [class.reader__viewport--zoomed]="isZoomed()"
     (scroll)="onPageScroll($event)"
     (click)="onPageClick($event)"
     (wheel)="onPageWheel($event)"
+    (touchstart)="onViewportTouchStart($event)"
+    (touchmove)="onViewportTouchMove($event)"
+    (touchend)="onViewportTouchEnd($event)"
+    (touchcancel)="onViewportTouchCancel()"
   >
     @for (page of displayPages(); track page.index) {
       <div class="reader__page-snap">
-        @if (isPageFailed(page.index)) {
-          <div class="reader__page-error">
-            <p>Failed to load</p>
-            <button (click)="retryPage(page)">Retry</button>
-          </div>
-        } @else {
-          <img
-            [src]="page.url"
-            [alt]="'Page ' + (page.index + 1)"
-            [style.width.%]="pagedZoomWidth()"
-            [style.height.%]="pagedZoomHeight()"
-            [class.reader__img--zoomed]="isPagedZoomedIn()"
-            [attr.fetchpriority]="page.index === currentPage() ? 'high' : null"
-            loading="lazy"
-            decoding="async"
-            referrerpolicy="no-referrer"
-            draggable="false"
-            (load)="onPageLoad(page.index)"
-            (error)="onPageError($event, page)"
-          />
-        }
+        <div class="reader__zoom">
+          @if (isPageFailed(page.index)) {
+            <div class="reader__page-error">
+              <p>Failed to load</p>
+              <button (click)="retryPage(page); $event.stopPropagation()">Retry</button>
+            </div>
+          } @else {
+            <img
+              [src]="page.url"
+              [alt]="'Page ' + (page.index + 1)"
+              [attr.fetchpriority]="page.index === currentPage() ? 'high' : null"
+              loading="lazy"
+              decoding="async"
+              referrerpolicy="no-referrer"
+              draggable="false"
+              (load)="onPageLoad(page.index)"
+              (error)="onPageError($event, page)"
+            />
+          }
+        </div>
       </div>
     }
   </div>
@@ -113,13 +132,18 @@
     class="reader__pages"
     (click)="toggleHeader()"
     (scroll)="onScroll($event)"
+    (touchstart)="onLongstripTouchStart($event)"
+    (touchmove)="onLongstripTouchMove($event)"
+    (touchend)="onLongstripTouchEnd($event)"
+    (touchcancel)="onLongstripTouchCancel()"
   >
+    <div #stripContent class="reader__strip">
     @for (page of pages(); track page.index) {
       <div class="reader__page">
         @if (isPageFailed(page.index)) {
           <div class="reader__page-error">
             <p>Failed to load</p>
-            <button (click)="retryPage(page)">Retry</button>
+            <button (click)="retryPage(page); $event.stopPropagation()">Retry</button>
           </div>
         } @else {
           <img
@@ -153,6 +177,7 @@
         }
       </div>
       <button class="reader__error-btn" (click)="goBack()">Volver al manga</button>
+    </div>
     </div>
   </div>
 }

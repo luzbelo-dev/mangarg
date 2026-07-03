@@ -44,6 +44,20 @@ exports.handler = async function(event) {
     return json(400, { error: "bad base64" });
   }
 
+  // Referer explicito (base64url) para imagenes con proteccion anti-hotlink:
+  // el CDN exige el origin del SITIO, no el del propio CDN.
+  var refererOverride = null;
+  if (params.referer) {
+    try {
+      var refStd = params.referer.replace(/-/g, "+").replace(/_/g, "/");
+      var decodedRef = Buffer.from(refStd, "base64").toString("utf8");
+      var refParsed = new (require("url").URL)(decodedRef);
+      if (refParsed.protocol === "http:" || refParsed.protocol === "https:") {
+        refererOverride = refParsed.origin + "/";
+      }
+    } catch(e) { /* referer invalido: se ignora y se usa el default */ }
+  }
+
   var parsed;
   try {
     parsed = new (require("url").URL)(targetUrl);
@@ -77,7 +91,9 @@ exports.handler = async function(event) {
         "Accept-Language": "es-ES,es;q=0.9,en;q=0.8",
       }
     };
-    if (isMangaSite) {
+    if (refererOverride) {
+      options.headers["Referer"] = refererOverride;
+    } else if (isMangaSite) {
       options.headers["Referer"] = parsed.origin + "/";
     }
 

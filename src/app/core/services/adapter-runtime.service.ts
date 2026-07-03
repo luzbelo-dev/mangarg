@@ -23,7 +23,7 @@ export function validateAdapterInstance(instance: any): string | null {
   return null;
 }
 
-function needsProxy(url: string): boolean {
+export function needsProxy(url: string): boolean {
   if (isCapacitor()) return false;
   let parsed: URL;
   try {
@@ -39,9 +39,14 @@ function needsProxy(url: string): boolean {
   return true;
 }
 
-function proxyUrl(targetUrl: string, method = 'GET'): string {
+export function proxyUrl(targetUrl: string, method = 'GET', referer?: string): string {
   const encoded = btoa(targetUrl).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  return `/.netlify/functions/source-proxy?url=${encoded}&method=${method}`;
+  let url = `/.netlify/functions/source-proxy?url=${encoded}&method=${method}`;
+  if (referer) {
+    const encodedRef = btoa(referer).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    url += `&referer=${encodedRef}`;
+  }
+  return url;
 }
 
 function buildUrl(url: string, params?: Record<string, any>): string {

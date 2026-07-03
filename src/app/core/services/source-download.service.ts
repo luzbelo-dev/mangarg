@@ -1,8 +1,8 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { IndexedDbService } from './indexeddb.service';
 import { AdapterLoaderService } from './adapter-loader.service';
+import { ImageFetchService } from './image-fetch.service';
 
 export interface SourceDownloadedChapter {
   id: string; // chapterId
@@ -27,7 +27,7 @@ export interface SourceDownloadedPage {
 
 @Injectable({ providedIn: 'root' })
 export class SourceDownloadService {
-  private readonly http = inject(HttpClient);
+  private readonly imageFetch = inject(ImageFetchService);
   private readonly db = inject(IndexedDbService);
   private readonly adapterLoader = inject(AdapterLoaderService);
 
@@ -97,7 +97,9 @@ export class SourceDownloadService {
 
         try {
           if (controller.signal.aborted) throw new Error('Cancelled');
-          const blob = await firstValueFrom(this.http.get(page.url, { responseType: 'blob' }));
+          // Con Referer del sitio: varios CDNs de manga rechazan la descarga
+          // sin el (hotlink 403), igual que en el reader.
+          const blob = await this.imageFetch.fetchBlob(page.url, adapter.baseUrl);
           totalBytes += blob.size;
 
           const pageData: SourceDownloadedPage = {

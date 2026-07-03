@@ -5,6 +5,7 @@ import { from } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
+import { ImageFetchService } from '../../../core/services/image-fetch.service';
 import { ReaderSettingsService } from '../../../core/services/reader-settings.service';
 import { SourceDownloadService } from '../../../core/services/source-download.service';
 import { ReadingHistoryService } from '../../../core/services/reading-history.service';
@@ -28,6 +29,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly adapterLoader = inject(AdapterLoaderService);
+  private readonly imageFetch = inject(ImageFetchService);
   private readonly sourceDownload = inject(SourceDownloadService);
   private readonly readingHistory = inject(ReadingHistoryService);
   private readonly toast = inject(ToastService);
@@ -35,6 +37,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   readonly readerSettings = inject(ReaderSettingsService);
 
   @ViewChild('longstripContainer') longstripContainer?: ElementRef<HTMLDivElement>;
+  @ViewChild('stripContent') stripContent?: ElementRef<HTMLDivElement>;
   @ViewChild('pageViewport') pageViewport?: ElementRef<HTMLDivElement>;
 
   settings = this.readerSettings.settings;
@@ -75,6 +78,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private failedPages = new Set<number>();
   private preloadedPages = new Set<number>();
   private pageRetries = new Map<number, number>();
+  private originalPageUrls = new Map<number, string>();
   private prefetchGeneration = 0;
   private headerTimeout: ReturnType<typeof setTimeout> | null = null;
   private blobUrls: string[] = [];
@@ -82,8 +86,38 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private touchStartX = 0;
   private touchStartY = 0;
   private touchStartTime = 0;
-  private isTouchScrolling = false;
   private resumePage: number | null = null;
+
+  // --- Zoom del modo pagina (estilo Mihon) ---
+  // El zoom es un CSS transform sobre la capa .reader__zoom de la pagina
+  // actual: pellizco escala (1x-4x), un dedo panea cuando hay zoom, doble tap
+  // alterna 1x/2.5x. Mientras hay zoom el viewport queda congelado (clase
+  // --zoomed: overflow hidden + snap off) y las paginas no cambian solas.
+  private static readonly MAX_SCALE = 4;
+  private static readonly DOUBLE_TAP_SCALE = 2.5;
+  private static readonly DOUBLE_TAP_MS = 280;
+
+  private zoomScale = 1;
+  private zoomTx = 0;
+  private zoomTy = 0;
+  isZoomed = signal(false);
+  zoomDisplay = signal(100);
+
+  private pinchState: { d0: number; s0: number; midX0: number; midY0: number; tx0: number; ty0: number } | null = null;
+  private panState: { x: number; y: number; tx0: number; ty0: number } | null = null;
+  private lastZoomedTapTime = 0;
+  private lastClickTime = 0;
+  private lastClickX = 0;
+  private lastClickY = 0;
+  private pendingTapAction: ReturnType<typeof setTimeout> | null = null;
+
+  // Pinch del longstrip: durante el gesto se escala el strip entero con un
+  // transform (GPU, barato); al soltar se persiste como zoom de ancho y se
+  // compensa el scroll para que el punto pellizcado no se mueva.
+  private stripPinch: {
+    d0: number; zoom0: number; fx: number; fy: number;
+    sl0: number; st0: number; factor: number;
+  } | null = null;
 
   constructor() {
     // Centraliza el registro de progreso: cualquier cambio real de pagina
@@ -137,6 +171,9 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     if (this.headerTimeout) {
       clearTimeout(this.headerTimeout);
     }
+    if (this.pendingTapAction) {
+      clearTimeout(this.pendingTapAction);
+    }
     // Clean up blob URLs
     for (const url of this.blobUrls) {
       URL.revokeObjectURL(url);
@@ -171,17 +208,38 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
   onPageError(event: Event, page: SourcePage): void {
     const img = event.target as HTMLImageElement;
+    // blob: es una descarga offline o un fallback que ya fallo — no hay red
+    // que reintentar sobre esa URL.
+    if (this.isOffline() || page.url.startsWith('blob:')) {
+      this.failedPages.add(page.index);
+      img.style.display = 'none';
+      return;
+    }
     const attempts = this.pageRetries.get(page.index) ?? 0;
-    if (attempts < 1 && !this.isOffline()) {
-      // Primer fallo: suele ser un hiccup transitorio del CDN. Un reintento
-      // automatico con backoff corto antes de molestar con "Failed to load".
-      this.pageRetries.set(page.index, attempts + 1);
-      const url = page.url;
-      setTimeout(() => {
-        if (!img.isConnected) return;
-        img.src = '';
-        img.src = url;
-      }, 800);
+    this.pageRetries.set(page.index, attempts + 1);
+    if (attempts === 0) {
+      // 1er fallo: casi siempre es hotlink 403 (el sitio exige un Referer que
+      // el <img> no puede mandar). Se baja por HTTP nativo/proxy con Referer
+      // y se reemplaza la URL por un blob local. De paso cubre hiccups de CDN.
+      const referer = this.adapterLoader.getAdapter(this.sourceId)?.baseUrl;
+      this.imageFetch
+        .fetchBlobUrl(page.url, referer)
+        .then(blobUrl => {
+          if (!this.originalPageUrls.has(page.index)) {
+            this.originalPageUrls.set(page.index, page.url);
+          }
+          this.blobUrls.push(blobUrl);
+          this.pages.update(all => all.map(p => (p.index === page.index ? { ...p, url: blobUrl } : p)));
+        })
+        .catch(() => {
+          // 2do intento: recarga directa despues de una pausa
+          setTimeout(() => {
+            if (!img.isConnected) return;
+            const url = page.url;
+            img.src = '';
+            img.src = url;
+          }, 1000);
+        });
       return;
     }
     this.failedPages.add(page.index);
@@ -195,7 +253,14 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   retryPage(page: SourcePage): void {
     this.pageRetries.delete(page.index);
     this.failedPages.delete(page.index);
-    this.pages.update(current => [...current]);
+    // Si la URL habia sido reemplazada por un blob que fallo, se vuelve a la
+    // URL original de la fuente para rearrancar la escalera de reintentos.
+    const original = this.originalPageUrls.get(page.index);
+    if (original && !this.isOffline()) {
+      this.pages.update(all => all.map(p => (p.index === page.index ? { ...p, url: original } : p)));
+    } else {
+      this.pages.update(current => [...current]);
+    }
   }
 
   getPageUrl(pageIndex: number): string {
@@ -295,38 +360,106 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   setMode(mode: ReaderMode): void {
+    this.resetZoom(false);
     this.readerSettings.setMode(mode);
     this.currentPage.set(0);
   }
 
+  // En modo pagina los botones manejan el zoom por transform de la pagina
+  // actual; en longstrip ajustan el ancho persistente de las imagenes.
   zoomIn(): void {
+    if (this.isPagedMode()) {
+      this.zoomToScale(Math.min(SourceReaderComponent.MAX_SCALE, this.zoomScale * 1.5));
+      return;
+    }
     this.readerSettings.zoomIn();
   }
 
   zoomOut(): void {
+    if (this.isPagedMode()) {
+      const s = this.zoomScale / 1.5;
+      if (s <= 1.05) {
+        this.resetZoom(true);
+      } else {
+        this.zoomToScale(s);
+      }
+      return;
+    }
     this.readerSettings.zoomOut();
   }
 
-  // --- Zoom en modo pagina ---
-  // Las paginas de manga son altas: con object-fit:contain quedan limitadas
-  // por ALTURA, asi que agrandar el ancho de la caja no cambia nada visible.
-  // El zoom-in tiene que crecer en el eje contrario al del paginado, y el
-  // exceso se panea con scroll dentro de la celda:
-  //  - paginado horizontal (LTR/RTL) -> crece la ALTURA (pan vertical)
-  //  - paginado vertical             -> crece el ANCHO (pan horizontal)
-  isPagedZoomedIn(): boolean {
-    return this.settings().zoom > 100;
+  // --- Motor de zoom del modo pagina ---
+
+  private currentZoomLayer(): HTMLElement | null {
+    const vp = this.pageViewport?.nativeElement;
+    if (!vp) return null;
+    const layers = vp.querySelectorAll<HTMLElement>('.reader__zoom');
+    return layers[this.toDomIndex(this.currentPage())] ?? null;
   }
 
-  pagedZoomHeight(): number | null {
-    const z = this.settings().zoom;
-    return z > 100 && !this.isVerticalPaged() ? z : null;
+  private applyZoomTransform(animate = false): void {
+    this.zoomDisplay.set(Math.round(this.zoomScale * 100));
+    const layer = this.currentZoomLayer();
+    if (!layer) return;
+    layer.style.transition = animate ? 'transform 0.2s ease' : '';
+    layer.style.transform =
+      this.zoomScale === 1 && this.zoomTx === 0 && this.zoomTy === 0
+        ? ''
+        : `translate(${this.zoomTx}px, ${this.zoomTy}px) scale(${this.zoomScale})`;
   }
 
-  pagedZoomWidth(): number | null {
-    const z = this.settings().zoom;
-    if (z <= 100) return z;
-    return this.isVerticalPaged() ? z : null;
+  private clampPan(): void {
+    const vp = this.pageViewport?.nativeElement;
+    if (!vp) return;
+    const maxTx = Math.max(0, (vp.clientWidth * (this.zoomScale - 1)) / 2);
+    const maxTy = Math.max(0, (vp.clientHeight * (this.zoomScale - 1)) / 2);
+    this.zoomTx = Math.min(maxTx, Math.max(-maxTx, this.zoomTx));
+    this.zoomTy = Math.min(maxTy, Math.max(-maxTy, this.zoomTy));
+  }
+
+  private resetZoom(animate: boolean): void {
+    this.zoomScale = 1;
+    this.zoomTx = 0;
+    this.zoomTy = 0;
+    this.pinchState = null;
+    this.panState = null;
+    this.applyZoomTransform(animate);
+    this.isZoomed.set(false);
+  }
+
+  private zoomToScale(scale: number, clientX?: number, clientY?: number): void {
+    const vp = this.pageViewport?.nativeElement;
+    if (!vp) return;
+    const rect = vp.getBoundingClientRect();
+    const s0 = this.zoomScale;
+    const s1 = Math.min(SourceReaderComponent.MAX_SCALE, Math.max(1, scale));
+    // coordenadas relativas al centro del viewport (transform-origin: center)
+    const mx = clientX !== undefined ? clientX - rect.left - rect.width / 2 : 0;
+    const my = clientY !== undefined ? clientY - rect.top - rect.height / 2 : 0;
+    this.zoomTx = mx - (mx - this.zoomTx) * (s1 / s0);
+    this.zoomTy = my - (my - this.zoomTy) * (s1 / s0);
+    this.zoomScale = s1;
+    this.clampPan();
+    this.isZoomed.set(s1 > 1);
+    this.applyZoomTransform(true);
+  }
+
+  // Si el gesto termino casi en 1x, vuelve a 1x exacto y descongela el viewport.
+  private settleZoom(): void {
+    if (this.zoomScale < 1.08) {
+      this.resetZoom(true);
+    }
+  }
+
+  private handleZoomedTap(): void {
+    const now = Date.now();
+    if (now - this.lastZoomedTapTime < SourceReaderComponent.DOUBLE_TAP_MS) {
+      this.lastZoomedTapTime = 0;
+      this.resetZoom(true);
+      return;
+    }
+    this.lastZoomedTapTime = now;
+    this.toggleHeader();
   }
 
   async saveCurrentImage(): Promise<void> {
@@ -386,11 +519,41 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   onPageClick(event: MouseEvent): void {
-    const target = event.currentTarget as HTMLElement;
-    const rect = target.getBoundingClientRect();
+    // Zoomeado no llegan clicks (el touchstart hace preventDefault); esto
+    // cubre el caso mouse en desktop.
+    if (this.zoomScale > 1) return;
 
+    const now = Date.now();
+    const dist = Math.hypot(event.clientX - this.lastClickX, event.clientY - this.lastClickY);
+    if (now - this.lastClickTime < SourceReaderComponent.DOUBLE_TAP_MS && dist < 48) {
+      // doble tap: zoom anclado en el punto tocado
+      if (this.pendingTapAction) {
+        clearTimeout(this.pendingTapAction);
+        this.pendingTapAction = null;
+      }
+      this.lastClickTime = 0;
+      this.zoomToScale(SourceReaderComponent.DOUBLE_TAP_SCALE, event.clientX, event.clientY);
+      return;
+    }
+    this.lastClickTime = now;
+    this.lastClickX = event.clientX;
+    this.lastClickY = event.clientY;
+
+    // El tap simple se difiere un instante para poder distinguirlo del doble
+    // tap (si no, el primer tap del doble pasaria de pagina).
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const clientX = event.clientX;
+    const clientY = event.clientY;
+    if (this.pendingTapAction) clearTimeout(this.pendingTapAction);
+    this.pendingTapAction = setTimeout(() => {
+      this.pendingTapAction = null;
+      this.handleSingleTap(clientX, clientY, rect);
+    }, SourceReaderComponent.DOUBLE_TAP_MS);
+  }
+
+  private handleSingleTap(clientX: number, clientY: number, rect: DOMRect): void {
     if (this.isVerticalPaged()) {
-      const y = event.clientY - rect.top;
+      const y = clientY - rect.top;
       const height = rect.height;
       if (y < height * 0.3) {
         this.prevPage();
@@ -402,7 +565,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const x = event.clientX - rect.left;
+    const x = clientX - rect.left;
     const width = rect.width;
     // En RTL "adelante" queda del lado izquierdo de la pantalla, asi que las
     // zonas de tap se invierten respecto de LTR.
@@ -419,6 +582,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   onPageScroll(event: Event): void {
+    if (this.isZoomed()) return; // congelado: no hay cambio de pagina con zoom
     const container = event.target as HTMLElement;
 
     if (this.isVerticalPaged()) {
@@ -441,6 +605,8 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
   private scrollToPage(index: number): void {
     if (index < 0 || index >= this.pages().length) return;
+    // antes de cambiar currentPage: limpia el transform de la pagina actual
+    if (this.zoomScale > 1) this.resetZoom(false);
     this.currentPage.set(index);
     if (!this.pageViewport) return;
 
@@ -456,106 +622,213 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Los swipes de pagina y los taps normales los maneja el browser (snap
+  // nativo + click); aca solo viven los gestos de zoom: pinch, paneo con un
+  // dedo cuando hay zoom, y taps mientras esta zoomeado (los clicks no llegan
+  // porque el touchstart hace preventDefault).
   onViewportTouchStart(event: TouchEvent): void {
-    if (event.touches.length > 1) return;
+    if (event.touches.length === 2) {
+      // pinch: sin preventDefault el WebView arrancaria un scroll con estos dedos
+      event.preventDefault();
+      const a = event.touches[0];
+      const b = event.touches[1];
+      this.pinchState = {
+        d0: Math.max(1, Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)),
+        s0: this.zoomScale,
+        midX0: (a.clientX + b.clientX) / 2,
+        midY0: (a.clientY + b.clientY) / 2,
+        tx0: this.zoomTx,
+        ty0: this.zoomTy,
+      };
+      this.panState = null;
+      this.isZoomed.set(true); // congela el viewport (clase --zoomed) ya mismo
+      return;
+    }
     const touch = event.touches[0];
     this.touchStartX = touch.clientX;
     this.touchStartY = touch.clientY;
     this.touchStartTime = Date.now();
+    if (this.zoomScale > 1) {
+      event.preventDefault(); // zoomeado: un dedo panea, no scrollea
+      this.panState = { x: touch.clientX, y: touch.clientY, tx0: this.zoomTx, ty0: this.zoomTy };
+    }
+  }
+
+  onViewportTouchMove(event: TouchEvent): void {
+    if (this.pinchState && event.touches.length >= 2) {
+      event.preventDefault();
+      const vp = this.pageViewport?.nativeElement;
+      if (!vp) return;
+      const a = event.touches[0];
+      const b = event.touches[1];
+      const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      const p = this.pinchState;
+      const s1 = Math.min(SourceReaderComponent.MAX_SCALE, Math.max(1, p.s0 * (d / p.d0)));
+      const rect = vp.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const midX = (a.clientX + b.clientX) / 2;
+      const midY = (a.clientY + b.clientY) / 2;
+      // el punto de la imagen que estaba bajo el pellizco inicial sigue al
+      // punto medio actual: escala + paneo en un solo gesto
+      const ratio = s1 / p.s0;
+      this.zoomTx = (midX - cx) - ((p.midX0 - cx) - p.tx0) * ratio;
+      this.zoomTy = (midY - cy) - ((p.midY0 - cy) - p.ty0) * ratio;
+      this.zoomScale = s1;
+      this.clampPan();
+      this.applyZoomTransform();
+      return;
+    }
+    if (this.panState && event.touches.length === 1) {
+      event.preventDefault();
+      const touch = event.touches[0];
+      this.zoomTx = this.panState.tx0 + (touch.clientX - this.panState.x);
+      this.zoomTy = this.panState.ty0 + (touch.clientY - this.panState.y);
+      this.clampPan();
+      this.applyZoomTransform();
+    }
   }
 
   onViewportTouchEnd(event: TouchEvent): void {
-    if (event.changedTouches.length > 1) return;
-    const touch = event.changedTouches[0];
-    const deltaX = touch.clientX - this.touchStartX;
-    const deltaY = touch.clientY - this.touchStartY;
-    const elapsed = Date.now() - this.touchStartTime;
-    const absDx = Math.abs(deltaX);
-    const absDy = Math.abs(deltaY);
-
-    if (this.isVerticalPaged()) {
-      if (elapsed < 400 && absDy > 40 && absDy > absDx * 1.5) {
-        if (deltaY < 0) {
-          this.nextPage();
-        } else {
-          this.prevPage();
-        }
+    if (this.pinchState) {
+      if (event.touches.length >= 2) return;
+      this.pinchState = null;
+      if (event.touches.length === 1) {
+        // quedo un dedo apoyado: sigue como paneo
+        const touch = event.touches[0];
+        this.panState = { x: touch.clientX, y: touch.clientY, tx0: this.zoomTx, ty0: this.zoomTy };
         return;
       }
-
-      if (elapsed < 300 && absDx < 15 && absDy < 15) {
-        const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-        const y = touch.clientY - rect.top;
-        const height = rect.height;
-
-        if (y < height * 0.35) {
-          this.prevPage();
-        } else if (y > height * 0.65) {
-          this.nextPage();
-        } else {
-          this.toggleHeader();
-        }
-      }
+      this.settleZoom();
       return;
     }
-
-    if (elapsed < 400 && absDx > 40 && absDx > absDy * 1.5) {
-      // Swipe (arrastre): estandar de carrusel, independiente de las zonas
-      // de tap. En RTL se invierte igual que el resto de la navegacion.
-      const swipedTowardStart = this.isRtl() ? deltaX > 0 : deltaX < 0;
-      if (swipedTowardStart) {
-        this.nextPage();
-      } else {
-        this.prevPage();
+    if (this.panState) {
+      if (event.touches.length > 0) {
+        const touch = event.touches[0];
+        this.panState = { x: touch.clientX, y: touch.clientY, tx0: this.zoomTx, ty0: this.zoomTy };
+        return;
       }
-      return;
-    }
-
-    if (elapsed < 300 && absDx < 15 && absDy < 15) {
-      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-      const x = touch.clientX - rect.left;
-      const width = rect.width;
-      const backwardZone = this.isRtl() ? x > width * 0.65 : x < width * 0.35;
-      const forwardZone = this.isRtl() ? x < width * 0.35 : x > width * 0.65;
-
-      if (backwardZone) {
-        this.prevPage();
-      } else if (forwardZone) {
-        this.nextPage();
-      } else {
-        this.toggleHeader();
+      this.panState = null;
+      const touch = event.changedTouches[0];
+      const dx = Math.abs(touch.clientX - this.touchStartX);
+      const dy = Math.abs(touch.clientY - this.touchStartY);
+      const elapsed = Date.now() - this.touchStartTime;
+      if (elapsed < 300 && dx < 12 && dy < 12) {
+        this.handleZoomedTap();
       }
+      this.settleZoom();
     }
+  }
+
+  onViewportTouchCancel(): void {
+    this.pinchState = null;
+    this.panState = null;
+    this.settleZoom();
   }
 
   onLongstripTouchStart(event: TouchEvent): void {
-    const touch = event.touches[0];
-    this.touchStartX = touch.clientX;
-    this.touchStartY = touch.clientY;
-    this.touchStartTime = Date.now();
-    this.isTouchScrolling = false;
+    if (event.touches.length !== 2) return;
+    event.preventDefault();
+    const container = this.longstripContainer?.nativeElement;
+    const strip = this.stripContent?.nativeElement;
+    if (!container || !strip) return;
+    const rect = container.getBoundingClientRect();
+    const a = event.touches[0];
+    const b = event.touches[1];
+    const fx = (a.clientX + b.clientX) / 2 - rect.left;
+    const fy = (a.clientY + b.clientY) / 2 - rect.top;
+    this.stripPinch = {
+      d0: Math.max(1, Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)),
+      zoom0: this.settings().zoom,
+      fx,
+      fy,
+      sl0: container.scrollLeft,
+      st0: container.scrollTop,
+      factor: 1,
+    };
+    // el origen del transform es el punto pellizcado, en coordenadas del contenido
+    strip.style.transformOrigin = `${this.stripPinch.sl0 + fx}px ${this.stripPinch.st0 + fy}px`;
+    strip.style.willChange = 'transform';
   }
 
-  onLongstripTouchMove(): void {
-    this.isTouchScrolling = true;
+  onLongstripTouchMove(event: TouchEvent): void {
+    if (!this.stripPinch || event.touches.length < 2) return;
+    event.preventDefault();
+    const strip = this.stripContent?.nativeElement;
+    if (!strip) return;
+    const a = event.touches[0];
+    const b = event.touches[1];
+    const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const p = this.stripPinch;
+    // limita el factor para que el zoom final quede dentro de [50, 300]
+    const factor = Math.min(300 / p.zoom0, Math.max(50 / p.zoom0, d / p.d0));
+    p.factor = factor;
+    strip.style.transform = `scale(${factor})`;
   }
 
-  onLongstripTouchEnd(): void {
-    if (this.isTouchScrolling) return;
-    const elapsed = Date.now() - this.touchStartTime;
-    if (elapsed < 300) {
-      this.toggleHeader();
+  onLongstripTouchEnd(event: TouchEvent): void {
+    if (!this.stripPinch) return;
+    if (event.touches.length > 0) return; // esperar a que suelte todos los dedos
+    const p = this.stripPinch;
+    this.stripPinch = null;
+    const strip = this.stripContent?.nativeElement;
+    if (strip) {
+      strip.style.transform = '';
+      strip.style.transformOrigin = '';
+      strip.style.willChange = '';
+    }
+    const newZoom = Math.round(p.zoom0 * p.factor);
+    if (newZoom === p.zoom0) return;
+    this.readerSettings.setZoom(newZoom);
+    // tras el re-layout con el ancho nuevo, recolocar el scroll para que el
+    // punto pellizcado quede en el mismo lugar de la pantalla
+    const ratio = newZoom / p.zoom0;
+    requestAnimationFrame(() => {
+      const container = this.longstripContainer?.nativeElement;
+      if (!container) return;
+      container.scrollTop = (p.st0 + p.fy) * ratio - p.fy;
+      container.scrollLeft = (p.sl0 + p.fx) * ratio - p.fx;
+    });
+  }
+
+  onLongstripTouchCancel(): void {
+    if (!this.stripPinch) return;
+    this.stripPinch = null;
+    const strip = this.stripContent?.nativeElement;
+    if (strip) {
+      strip.style.transform = '';
+      strip.style.transformOrigin = '';
+      strip.style.willChange = '';
     }
   }
 
   onPageWheel(event: WheelEvent): void {
+    if (!this.isPagedMode()) return;
+    if (event.ctrlKey) {
+      // ctrl+rueda: zoom de escritorio anclado al cursor
+      event.preventDefault();
+      const factor = event.deltaY < 0 ? 1.2 : 1 / 1.2;
+      const s = this.zoomScale * factor;
+      if (s <= 1.02) {
+        this.resetZoom(true);
+      } else {
+        this.zoomToScale(s, event.clientX, event.clientY);
+      }
+      return;
+    }
+    if (this.zoomScale > 1) {
+      // zoomeado: la rueda panea la pagina
+      event.preventDefault();
+      this.zoomTx -= event.deltaX;
+      this.zoomTy -= event.deltaY;
+      this.clampPan();
+      this.applyZoomTransform();
+      return;
+    }
     // El scroll-snap vertical nativo ya maneja la rueda en modo vertical;
-    // acá solo traducimos rueda (vertical por naturaleza) a paginas
+    // aca solo traducimos rueda (vertical por naturaleza) a paginas
     // horizontales, que si necesitan ayuda manual.
-    if (this.isVerticalPaged() || !this.isPagedMode()) return;
-    // Con zoom activo la rueda tiene que PANEAR la pagina zoomeada (scroll
-    // nativo de la celda), no saltar de pagina.
-    if (this.isPagedZoomedIn()) return;
+    if (this.isVerticalPaged()) return;
     event.preventDefault();
     if (event.deltaY > 0) {
       this.nextPage();
@@ -664,10 +937,12 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private async loadPages(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
+    this.resetZoom(false);
     this.currentPage.set(0);
     this.failedPages.clear();
     this.preloadedPages.clear();
     this.pageRetries.clear();
+    this.originalPageUrls.clear();
     this.prefetchGeneration++; // cancela los workers de prefetch del capitulo anterior
     for (const url of this.blobUrls) {
       URL.revokeObjectURL(url);
