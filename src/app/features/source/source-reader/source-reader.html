@@ -214,10 +214,15 @@
 <!-- Bottom bar -->
 @if (!loading() && pages().length > 0) {
   <div class="reader__bottom" [class.visible]="showHeader()">
-    <button class="reader__bottom-nav" [disabled]="!prevChapter()" (click)="prevChapter() && navigateToChapter(prevChapter()!)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
-      <span>Cap anterior</span>
-    </button>
+    <!-- Navegacion de capitulo solo en modo pagina; en scroll (longstrip) ya
+         esta la navegacion grande al final del capitulo (reader__end), tenerla
+         aca ademas mostraba dos botones "siguiente capitulo" a la vez. -->
+    @if (isPagedMode()) {
+      <button class="reader__bottom-nav" [disabled]="!prevChapter()" (click)="prevChapter() && navigateToChapter(prevChapter()!)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>Cap anterior</span>
+      </button>
+    }
     <div class="reader__bottom-slider">
       <span class="reader__bottom-page">{{ currentPage() + 1 }}</span>
       <input
@@ -230,9 +235,11 @@
       />
       <span class="reader__bottom-page">{{ pages().length }}</span>
     </div>
-    <button class="reader__bottom-nav" [disabled]="!nextChapter()" (click)="nextChapter() && navigateToChapter(nextChapter()!)">
-      <span>Sig capitulo</span>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-    </button>
+    @if (isPagedMode()) {
+      <button class="reader__bottom-nav" [disabled]="!nextChapter()" (click)="nextChapter() && navigateToChapter(nextChapter()!)">
+        <span>Sig capitulo</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    }
   </div>
 }

@@ -22,7 +22,7 @@ const HISTORY_LIMIT = 100;
 
       @if (entries().length > 0) {
         <div class="history__list">
-          @for (entry of entries(); track entry.chapterId) {
+          @for (entry of entries(); track entry.sourceId + '::' + entry.mangaSlug) {
             <button class="history__item" (click)="resume(entry)">
               <div class="history__cover">
                 @if (entry.coverUrl) {
@@ -174,7 +174,7 @@ export class HistoryPageComponent implements OnInit {
   t = this.i18n.t;
   lang = this.i18n.lang;
 
-  entries = toSignal(this.readingHistory.getRecentHistory(HISTORY_LIMIT), { initialValue: [] as ReadingHistory[] });
+  entries = toSignal(this.readingHistory.getRecentMangaHistory(HISTORY_LIMIT), { initialValue: [] as ReadingHistory[] });
 
   ngOnInit(): void {
     this.readingHistory.loadHistory().subscribe();

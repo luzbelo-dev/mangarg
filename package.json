@@ -1,6 +1,6 @@
 ﻿{
   "name": "mangarg",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "description": "Lector de manga gratuito en espaÃ±ol con tracking, biblioteca y descargas offline",
   "main": "electron/main.js",
   "scripts": {

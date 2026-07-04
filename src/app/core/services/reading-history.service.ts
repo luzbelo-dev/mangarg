@@ -52,6 +52,28 @@ export class ReadingHistoryService {
     );
   }
 
+  // Historial agrupado por MANGA: una fila por serie con el capitulo mas
+  // reciente que se estaba leyendo (no una fila por capitulo). Si leo One Piece,
+  // Naruto y Berserk a la vez, veo 3 entradas, no cientos. Al tocar una, resume()
+  // usa el chapterId de esa entrada (el ultimo capitulo/pagina visto).
+  getRecentMangaHistory(limit: number): Observable<ReadingHistory[]> {
+    return this.history$.pipe(
+      map(m => {
+        const latestByManga = new Map<string, ReadingHistory>();
+        for (const entry of m.values()) {
+          const key = `${entry.sourceId}::${entry.mangaSlug}`;
+          const existing = latestByManga.get(key);
+          if (!existing || new Date(entry.readAt).getTime() > new Date(existing.readAt).getTime()) {
+            latestByManga.set(key, entry);
+          }
+        }
+        return [...latestByManga.values()]
+          .sort((a, b) => new Date(b.readAt).getTime() - new Date(a.readAt).getTime())
+          .slice(0, limit);
+      })
+    );
+  }
+
   getLastReadChapter(sourceId: string, mangaSlug: string): ReadingHistory | undefined {
     const entries = [...this.history$.value.values()]
       .filter(h => h.sourceId === sourceId && h.mangaSlug === mangaSlug)
