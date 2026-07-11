@@ -54,3 +54,13 @@ test-adapters.mjs
 # Claves de firma de Android — NUNCA commitear
 *.jks
 *.keystore
+
+# Artefactos de sesiones de prueba locales (no versionar)
+*.apk
+screen*.png
+e2e-screenshots/
+emu-*.mjs
+e2e-test.mjs
+test-on-device.mjs
+ui*.xml
+commit_msg.txt
