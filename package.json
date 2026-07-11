@@ -1,7 +1,7 @@
 ﻿{
   "name": "mangarg",
   "version": "1.6.3",
-  "description": "Lector de manga gratuito en espaÃ±ol con tracking, biblioteca y descargas offline",
+  "description": "Lector de manga gratuito en español con tracking, biblioteca y descargas offline",
   "main": "electron/main.js",
   "scripts": {
     "ng": "ng",
@@ -20,13 +20,11 @@
     "@angular/common": "^22.0.0",
     "@angular/compiler": "^22.0.0",
     "@angular/core": "^22.0.0",
-    "@angular/forms": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
     "@angular/service-worker": "^22.0.0",
     "@capacitor/android": "^8.4.1",
     "@capacitor/app": "^8.1.0",
-    "@capacitor/cli": "^8.4.1",
     "@capacitor/core": "^8.4.1",
     "@capacitor/filesystem": "^8.1.2",
     "rxjs": "~7.8.0",
@@ -37,17 +35,15 @@
     "@angular/cli": "^22.0.3",
     "@angular/compiler-cli": "^22.0.0",
     "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.4.1",
     "@eslint/js": "^10.0.1",
     "angular-eslint": "22.0.0",
     "electron": "^42.4.1",
     "electron-builder": "^26.15.3",
     "eslint": "^10.3.0",
-    "jsdom": "^29.1.1",
-    "playwright": "^1.61.1",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
-    "typescript-eslint": "8.60.1",
-    "ws": "^8.21.0"
+    "typescript-eslint": "8.60.1"
   },
   "build": {
     "appId": "com.mangarg.app",
