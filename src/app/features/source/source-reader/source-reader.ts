@@ -14,6 +14,8 @@ import { SourcePage, SourceChapter } from '../../../core/models/source.model';
 import { ReaderMode } from '../../../core/models/reader.model';
 import { ReadingHistory } from '../../../core/models/tracking.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
+import { PagedZoomEngine, DOUBLE_TAP_MS, DOUBLE_TAP_SCALE } from './paged-zoom';
+import { LongstripPinchZoom } from './longstrip-zoom';
 
 const READER_BODY_CLASS = 'source-reader-active';
 
@@ -83,41 +85,34 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private headerTimeout: ReturnType<typeof setTimeout> | null = null;
   private blobUrls: string[] = [];
 
-  private touchStartX = 0;
-  private touchStartY = 0;
-  private touchStartTime = 0;
   private resumePage: number | null = null;
 
-  // --- Zoom del modo pagina (estilo Mihon) ---
-  // El zoom es un CSS transform sobre la capa .reader__zoom de la pagina
-  // actual: pellizco escala (1x-4x), un dedo panea cuando hay zoom, doble tap
-  // alterna 1x/2.5x. Mientras hay zoom el viewport queda congelado (clase
-  // --zoomed: overflow hidden + snap off) y las paginas no cambian solas.
-  private static readonly MAX_SCALE = 4;
-  private static readonly DOUBLE_TAP_SCALE = 2.5;
-  private static readonly DOUBLE_TAP_MS = 280;
-
-  private zoomScale = 1;
-  private zoomTx = 0;
-  private zoomTy = 0;
-  isZoomed = signal(false);
-  zoomDisplay = signal(100);
-
-  private pinchState: { d0: number; s0: number; midX0: number; midY0: number; tx0: number; ty0: number } | null = null;
-  private panState: { x: number; y: number; tx0: number; ty0: number } | null = null;
-  private lastZoomedTapTime = 0;
   private lastClickTime = 0;
   private lastClickX = 0;
   private lastClickY = 0;
   private pendingTapAction: ReturnType<typeof setTimeout> | null = null;
 
-  // Pinch del longstrip: durante el gesto se escala el strip entero con un
-  // transform (GPU, barato); al soltar se persiste como zoom de ancho y se
-  // compensa el scroll para que el punto pellizcado no se mueva.
-  private stripPinch: {
-    d0: number; zoom0: number; fx: number; fy: number;
-    sl0: number; st0: number; factor: number;
-  } | null = null;
+  // Motores de zoom (ver paged-zoom.ts y longstrip-zoom.ts): el modo pagina
+  // usa un transform sobre la pagina actual; el longstrip persiste el ancho.
+  private readonly pagedZoom = new PagedZoomEngine({
+    viewport: () => this.pageViewport?.nativeElement ?? null,
+    currentLayer: () => {
+      const vp = this.pageViewport?.nativeElement;
+      if (!vp) return null;
+      const layers = vp.querySelectorAll<HTMLElement>('.reader__zoom');
+      return layers[this.toDomIndex(this.currentPage())] ?? null;
+    },
+    onTapWhileZoomed: () => this.toggleHeader(),
+  });
+  readonly isZoomed = this.pagedZoom.isZoomed;
+  readonly zoomDisplay = this.pagedZoom.zoomDisplay;
+
+  private readonly stripZoom = new LongstripPinchZoom({
+    container: () => this.longstripContainer?.nativeElement ?? null,
+    strip: () => this.stripContent?.nativeElement ?? null,
+    zoom: () => this.settings().zoom,
+    setZoom: zoom => this.readerSettings.setZoom(zoom),
+  });
 
   constructor() {
     // Centraliza el registro de progreso: cualquier cambio real de pagina
@@ -360,7 +355,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   setMode(mode: ReaderMode): void {
-    this.resetZoom(false);
+    this.pagedZoom.reset(false);
     this.readerSettings.setMode(mode);
     this.currentPage.set(0);
   }
@@ -369,7 +364,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   // actual; en longstrip ajustan el ancho persistente de las imagenes.
   zoomIn(): void {
     if (this.isPagedMode()) {
-      this.zoomToScale(Math.min(SourceReaderComponent.MAX_SCALE, this.zoomScale * 1.5));
+      this.pagedZoom.stepIn();
       return;
     }
     this.readerSettings.zoomIn();
@@ -377,89 +372,10 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
 
   zoomOut(): void {
     if (this.isPagedMode()) {
-      const s = this.zoomScale / 1.5;
-      if (s <= 1.05) {
-        this.resetZoom(true);
-      } else {
-        this.zoomToScale(s);
-      }
+      this.pagedZoom.stepOut();
       return;
     }
     this.readerSettings.zoomOut();
-  }
-
-  // --- Motor de zoom del modo pagina ---
-
-  private currentZoomLayer(): HTMLElement | null {
-    const vp = this.pageViewport?.nativeElement;
-    if (!vp) return null;
-    const layers = vp.querySelectorAll<HTMLElement>('.reader__zoom');
-    return layers[this.toDomIndex(this.currentPage())] ?? null;
-  }
-
-  private applyZoomTransform(animate = false): void {
-    this.zoomDisplay.set(Math.round(this.zoomScale * 100));
-    const layer = this.currentZoomLayer();
-    if (!layer) return;
-    layer.style.transition = animate ? 'transform 0.2s ease' : '';
-    layer.style.transform =
-      this.zoomScale === 1 && this.zoomTx === 0 && this.zoomTy === 0
-        ? ''
-        : `translate(${this.zoomTx}px, ${this.zoomTy}px) scale(${this.zoomScale})`;
-  }
-
-  private clampPan(): void {
-    const vp = this.pageViewport?.nativeElement;
-    if (!vp) return;
-    const maxTx = Math.max(0, (vp.clientWidth * (this.zoomScale - 1)) / 2);
-    const maxTy = Math.max(0, (vp.clientHeight * (this.zoomScale - 1)) / 2);
-    this.zoomTx = Math.min(maxTx, Math.max(-maxTx, this.zoomTx));
-    this.zoomTy = Math.min(maxTy, Math.max(-maxTy, this.zoomTy));
-  }
-
-  private resetZoom(animate: boolean): void {
-    this.zoomScale = 1;
-    this.zoomTx = 0;
-    this.zoomTy = 0;
-    this.pinchState = null;
-    this.panState = null;
-    this.applyZoomTransform(animate);
-    this.isZoomed.set(false);
-  }
-
-  private zoomToScale(scale: number, clientX?: number, clientY?: number): void {
-    const vp = this.pageViewport?.nativeElement;
-    if (!vp) return;
-    const rect = vp.getBoundingClientRect();
-    const s0 = this.zoomScale;
-    const s1 = Math.min(SourceReaderComponent.MAX_SCALE, Math.max(1, scale));
-    // coordenadas relativas al centro del viewport (transform-origin: center)
-    const mx = clientX !== undefined ? clientX - rect.left - rect.width / 2 : 0;
-    const my = clientY !== undefined ? clientY - rect.top - rect.height / 2 : 0;
-    this.zoomTx = mx - (mx - this.zoomTx) * (s1 / s0);
-    this.zoomTy = my - (my - this.zoomTy) * (s1 / s0);
-    this.zoomScale = s1;
-    this.clampPan();
-    this.isZoomed.set(s1 > 1);
-    this.applyZoomTransform(true);
-  }
-
-  // Si el gesto termino casi en 1x, vuelve a 1x exacto y descongela el viewport.
-  private settleZoom(): void {
-    if (this.zoomScale < 1.08) {
-      this.resetZoom(true);
-    }
-  }
-
-  private handleZoomedTap(): void {
-    const now = Date.now();
-    if (now - this.lastZoomedTapTime < SourceReaderComponent.DOUBLE_TAP_MS) {
-      this.lastZoomedTapTime = 0;
-      this.resetZoom(true);
-      return;
-    }
-    this.lastZoomedTapTime = now;
-    this.toggleHeader();
   }
 
   async saveCurrentImage(): Promise<void> {
@@ -521,18 +437,18 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   onPageClick(event: MouseEvent): void {
     // Zoomeado no llegan clicks (el touchstart hace preventDefault); esto
     // cubre el caso mouse en desktop.
-    if (this.zoomScale > 1) return;
+    if (this.pagedZoom.currentScale > 1) return;
 
     const now = Date.now();
     const dist = Math.hypot(event.clientX - this.lastClickX, event.clientY - this.lastClickY);
-    if (now - this.lastClickTime < SourceReaderComponent.DOUBLE_TAP_MS && dist < 48) {
+    if (now - this.lastClickTime < DOUBLE_TAP_MS && dist < 48) {
       // doble tap: zoom anclado en el punto tocado
       if (this.pendingTapAction) {
         clearTimeout(this.pendingTapAction);
         this.pendingTapAction = null;
       }
       this.lastClickTime = 0;
-      this.zoomToScale(SourceReaderComponent.DOUBLE_TAP_SCALE, event.clientX, event.clientY);
+      this.pagedZoom.zoomTo(DOUBLE_TAP_SCALE, event.clientX, event.clientY);
       return;
     }
     this.lastClickTime = now;
@@ -548,7 +464,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
     this.pendingTapAction = setTimeout(() => {
       this.pendingTapAction = null;
       this.handleSingleTap(clientX, clientY, rect);
-    }, SourceReaderComponent.DOUBLE_TAP_MS);
+    }, DOUBLE_TAP_MS);
   }
 
   private handleSingleTap(clientX: number, clientY: number, rect: DOMRect): void {
@@ -606,7 +522,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private scrollToPage(index: number): void {
     if (index < 0 || index >= this.pages().length) return;
     // antes de cambiar currentPage: limpia el transform de la pagina actual
-    if (this.zoomScale > 1) this.resetZoom(false);
+    if (this.pagedZoom.currentScale > 1) this.pagedZoom.reset(false);
     this.currentPage.set(index);
     if (!this.pageViewport) return;
 
@@ -623,208 +539,42 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   }
 
   // Los swipes de pagina y los taps normales los maneja el browser (snap
-  // nativo + click); aca solo viven los gestos de zoom: pinch, paneo con un
-  // dedo cuando hay zoom, y taps mientras esta zoomeado (los clicks no llegan
-  // porque el touchstart hace preventDefault).
+  // nativo + click); los gestos de zoom viven en los motores de zoom.
   onViewportTouchStart(event: TouchEvent): void {
-    if (event.touches.length === 2) {
-      // pinch: sin preventDefault el WebView arrancaria un scroll con estos dedos
-      event.preventDefault();
-      const a = event.touches[0];
-      const b = event.touches[1];
-      this.pinchState = {
-        d0: Math.max(1, Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)),
-        s0: this.zoomScale,
-        midX0: (a.clientX + b.clientX) / 2,
-        midY0: (a.clientY + b.clientY) / 2,
-        tx0: this.zoomTx,
-        ty0: this.zoomTy,
-      };
-      this.panState = null;
-      this.isZoomed.set(true); // congela el viewport (clase --zoomed) ya mismo
-      return;
-    }
-    const touch = event.touches[0];
-    this.touchStartX = touch.clientX;
-    this.touchStartY = touch.clientY;
-    this.touchStartTime = Date.now();
-    if (this.zoomScale > 1) {
-      event.preventDefault(); // zoomeado: un dedo panea, no scrollea
-      this.panState = { x: touch.clientX, y: touch.clientY, tx0: this.zoomTx, ty0: this.zoomTy };
-    }
+    this.pagedZoom.onTouchStart(event);
   }
 
   onViewportTouchMove(event: TouchEvent): void {
-    if (this.pinchState && event.touches.length >= 2) {
-      event.preventDefault();
-      const vp = this.pageViewport?.nativeElement;
-      if (!vp) return;
-      const a = event.touches[0];
-      const b = event.touches[1];
-      const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      const p = this.pinchState;
-      const s1 = Math.min(SourceReaderComponent.MAX_SCALE, Math.max(1, p.s0 * (d / p.d0)));
-      const rect = vp.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const midX = (a.clientX + b.clientX) / 2;
-      const midY = (a.clientY + b.clientY) / 2;
-      // el punto de la imagen que estaba bajo el pellizco inicial sigue al
-      // punto medio actual: escala + paneo en un solo gesto
-      const ratio = s1 / p.s0;
-      this.zoomTx = (midX - cx) - ((p.midX0 - cx) - p.tx0) * ratio;
-      this.zoomTy = (midY - cy) - ((p.midY0 - cy) - p.ty0) * ratio;
-      this.zoomScale = s1;
-      this.clampPan();
-      this.applyZoomTransform();
-      return;
-    }
-    if (this.panState && event.touches.length === 1) {
-      event.preventDefault();
-      const touch = event.touches[0];
-      this.zoomTx = this.panState.tx0 + (touch.clientX - this.panState.x);
-      this.zoomTy = this.panState.ty0 + (touch.clientY - this.panState.y);
-      this.clampPan();
-      this.applyZoomTransform();
-    }
+    this.pagedZoom.onTouchMove(event);
   }
 
   onViewportTouchEnd(event: TouchEvent): void {
-    if (this.pinchState) {
-      if (event.touches.length >= 2) return;
-      this.pinchState = null;
-      if (event.touches.length === 1) {
-        // quedo un dedo apoyado: sigue como paneo
-        const touch = event.touches[0];
-        this.panState = { x: touch.clientX, y: touch.clientY, tx0: this.zoomTx, ty0: this.zoomTy };
-        return;
-      }
-      this.settleZoom();
-      return;
-    }
-    if (this.panState) {
-      if (event.touches.length > 0) {
-        const touch = event.touches[0];
-        this.panState = { x: touch.clientX, y: touch.clientY, tx0: this.zoomTx, ty0: this.zoomTy };
-        return;
-      }
-      this.panState = null;
-      const touch = event.changedTouches[0];
-      const dx = Math.abs(touch.clientX - this.touchStartX);
-      const dy = Math.abs(touch.clientY - this.touchStartY);
-      const elapsed = Date.now() - this.touchStartTime;
-      if (elapsed < 300 && dx < 12 && dy < 12) {
-        this.handleZoomedTap();
-      }
-      this.settleZoom();
-    }
+    this.pagedZoom.onTouchEnd(event);
   }
 
   onViewportTouchCancel(): void {
-    this.pinchState = null;
-    this.panState = null;
-    this.settleZoom();
+    this.pagedZoom.onTouchCancel();
   }
 
   onLongstripTouchStart(event: TouchEvent): void {
-    if (event.touches.length !== 2) return;
-    event.preventDefault();
-    const container = this.longstripContainer?.nativeElement;
-    const strip = this.stripContent?.nativeElement;
-    if (!container || !strip) return;
-    const rect = container.getBoundingClientRect();
-    const a = event.touches[0];
-    const b = event.touches[1];
-    const fx = (a.clientX + b.clientX) / 2 - rect.left;
-    const fy = (a.clientY + b.clientY) / 2 - rect.top;
-    this.stripPinch = {
-      d0: Math.max(1, Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)),
-      zoom0: this.settings().zoom,
-      fx,
-      fy,
-      sl0: container.scrollLeft,
-      st0: container.scrollTop,
-      factor: 1,
-    };
-    // el origen del transform es el punto pellizcado, en coordenadas del contenido
-    strip.style.transformOrigin = `${this.stripPinch.sl0 + fx}px ${this.stripPinch.st0 + fy}px`;
-    strip.style.willChange = 'transform';
+    this.stripZoom.onTouchStart(event);
   }
 
   onLongstripTouchMove(event: TouchEvent): void {
-    if (!this.stripPinch || event.touches.length < 2) return;
-    event.preventDefault();
-    const strip = this.stripContent?.nativeElement;
-    if (!strip) return;
-    const a = event.touches[0];
-    const b = event.touches[1];
-    const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-    const p = this.stripPinch;
-    // limita el factor para que el zoom final quede dentro de [50, 300]
-    const factor = Math.min(300 / p.zoom0, Math.max(50 / p.zoom0, d / p.d0));
-    p.factor = factor;
-    strip.style.transform = `scale(${factor})`;
+    this.stripZoom.onTouchMove(event);
   }
 
   onLongstripTouchEnd(event: TouchEvent): void {
-    if (!this.stripPinch) return;
-    if (event.touches.length > 0) return; // esperar a que suelte todos los dedos
-    const p = this.stripPinch;
-    this.stripPinch = null;
-    const strip = this.stripContent?.nativeElement;
-    if (strip) {
-      strip.style.transform = '';
-      strip.style.transformOrigin = '';
-      strip.style.willChange = '';
-    }
-    const newZoom = Math.round(p.zoom0 * p.factor);
-    if (newZoom === p.zoom0) return;
-    this.readerSettings.setZoom(newZoom);
-    // tras el re-layout con el ancho nuevo, recolocar el scroll para que el
-    // punto pellizcado quede en el mismo lugar de la pantalla
-    const ratio = newZoom / p.zoom0;
-    requestAnimationFrame(() => {
-      const container = this.longstripContainer?.nativeElement;
-      if (!container) return;
-      container.scrollTop = (p.st0 + p.fy) * ratio - p.fy;
-      container.scrollLeft = (p.sl0 + p.fx) * ratio - p.fx;
-    });
+    this.stripZoom.onTouchEnd(event);
   }
 
   onLongstripTouchCancel(): void {
-    if (!this.stripPinch) return;
-    this.stripPinch = null;
-    const strip = this.stripContent?.nativeElement;
-    if (strip) {
-      strip.style.transform = '';
-      strip.style.transformOrigin = '';
-      strip.style.willChange = '';
-    }
+    this.stripZoom.onTouchCancel();
   }
 
   onPageWheel(event: WheelEvent): void {
     if (!this.isPagedMode()) return;
-    if (event.ctrlKey) {
-      // ctrl+rueda: zoom de escritorio anclado al cursor
-      event.preventDefault();
-      const factor = event.deltaY < 0 ? 1.2 : 1 / 1.2;
-      const s = this.zoomScale * factor;
-      if (s <= 1.02) {
-        this.resetZoom(true);
-      } else {
-        this.zoomToScale(s, event.clientX, event.clientY);
-      }
-      return;
-    }
-    if (this.zoomScale > 1) {
-      // zoomeado: la rueda panea la pagina
-      event.preventDefault();
-      this.zoomTx -= event.deltaX;
-      this.zoomTy -= event.deltaY;
-      this.clampPan();
-      this.applyZoomTransform();
-      return;
-    }
+    if (this.pagedZoom.onWheel(event)) return;
     // El scroll-snap vertical nativo ya maneja la rueda en modo vertical;
     // aca solo traducimos rueda (vertical por naturaleza) a paginas
     // horizontales, que si necesitan ayuda manual.
@@ -937,7 +687,7 @@ export class SourceReaderComponent implements OnInit, OnDestroy {
   private async loadPages(): Promise<void> {
     this.loading.set(true);
     this.error.set(null);
-    this.resetZoom(false);
+    this.pagedZoom.reset(false);
     this.currentPage.set(0);
     this.failedPages.clear();
     this.preloadedPages.clear();
