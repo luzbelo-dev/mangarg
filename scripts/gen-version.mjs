@@ -6,7 +6,9 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+// El replace tolera un BOM UTF-8 (tipico de ediciones en Windows), que JSON.parse rechaza.
+const raw = readFileSync(join(root, 'package.json'), 'utf8').replace(/^﻿/, '');
+const pkg = JSON.parse(raw);
 
 const info = {
   version: pkg.version,
