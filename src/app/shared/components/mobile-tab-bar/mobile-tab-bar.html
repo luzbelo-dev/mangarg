@@ -1,0 +1,196 @@
+<nav class="tab-bar" role="tablist">
+  <a
+    routerLink="/library"
+    routerLinkActive="tab-bar__tab--active"
+    class="tab-bar__tab"
+    role="tab"
+  >
+    <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </svg>
+    <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M6.5 2C5.12 2 4 3.12 4 4.5v15C4 20.88 5.12 22 6.5 22H20V2H6.5zM4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+    </svg>
+    <span class="tab-bar__label">{{ t().nav.library }}</span>
+  </a>
+
+  <a
+    routerLink="/updates"
+    routerLinkActive="tab-bar__tab--active"
+    class="tab-bar__tab"
+    role="tab"
+  >
+    <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+    <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" fill="none" stroke="currentColor" stroke-width="2"/>
+    </svg>
+    <span class="tab-bar__label">{{ t().nav.updates }}</span>
+  </a>
+
+  <a
+    routerLink="/history"
+    routerLinkActive="tab-bar__tab--active"
+    class="tab-bar__tab"
+    role="tab"
+  >
+    <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14"/>
+    </svg>
+    <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <circle cx="12" cy="12" r="10"/>
+      <polyline points="12 6 12 12 16 14" fill="none" stroke="var(--bg-nav)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="tab-bar__label">{{ t().nav.history }}</span>
+  </a>
+
+  <a
+    routerLink="/browse"
+    class="tab-bar__tab"
+    [class.tab-bar__tab--active]="browseActive()"
+    role="tab"
+  >
+    <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>
+    </svg>
+    <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <circle cx="12" cy="12" r="10"/>
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="var(--bg-nav)"/>
+    </svg>
+    <span class="tab-bar__label">{{ t().nav.browse }}</span>
+  </a>
+
+  <button
+    class="tab-bar__tab"
+    [class.tab-bar__tab--active]="moreOpen()"
+    role="tab"
+    (click)="toggleMore()"
+  >
+    <svg class="tab-bar__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="5" r="1"/>
+      <circle cx="12" cy="12" r="1"/>
+      <circle cx="12" cy="19" r="1"/>
+    </svg>
+    <svg class="tab-bar__icon-filled" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <circle cx="12" cy="5" r="2"/>
+      <circle cx="12" cy="12" r="2"/>
+      <circle cx="12" cy="19" r="2"/>
+    </svg>
+    <span class="tab-bar__label">{{ t().nav.more }}</span>
+  </button>
+</nav>
+
+<!-- More menu overlay -->
+@if (moreOpen()) {
+  <div class="more-overlay" (click)="closeMore()">
+    <div class="more-sheet" (click)="$event.stopPropagation()">
+      <div class="more-sheet__header">
+        <span class="more-sheet__title">{{ t().nav.more }}</span>
+        <button class="more-sheet__close" (click)="closeMore()" [attr.aria-label]="t().nav.close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="more-sheet__content">
+        <div class="more-sheet__item">
+          <span class="more-sheet__item-label">{{ isEnglish() ? 'Language' : 'Idioma' }}</span>
+          <select
+            class="more-sheet__select"
+            [value]="lang()"
+            (change)="onLangChange($event)"
+            aria-label="Language"
+          >
+            <option value="es">ES</option>
+            <option value="en">EN</option>
+          </select>
+        </div>
+
+        <div class="more-sheet__item">
+          <span class="more-sheet__item-label">{{ isEnglish() ? 'Theme' : 'Tema' }}</span>
+          <button class="more-sheet__theme-toggle" (click)="toggleTheme()">
+            @if (isDark()) {
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+              </svg>
+              <span>{{ isEnglish() ? 'Light' : 'Claro' }}</span>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+              <span>{{ isEnglish() ? 'Dark' : 'Oscuro' }}</span>
+            }
+          </button>
+        </div>
+
+        <button class="more-sheet__item more-sheet__item--clickable" (click)="toggleCustomize()">
+          <span class="more-sheet__item-label">{{ t().customize.title }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-secondary)">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1.08z"/>
+          </svg>
+        </button>
+
+        @if (customizeOpen()) {
+          <div class="customize-panel">
+            <div class="customize-panel__section">
+              <span class="customize-panel__label">{{ t().customize.accentColor }}</span>
+              <div class="customize-panel__colors">
+                @for (preset of accentPresets; track preset.color) {
+                  <button
+                    class="customize-panel__color-btn"
+                    [class.customize-panel__color-btn--active]="customization.accentColor() === preset.color"
+                    [style.background]="preset.color"
+                    (click)="customization.setAccentColor(preset.color)"
+                    [attr.aria-label]="preset.name"
+                  ></button>
+                }
+              </div>
+            </div>
+
+            <div class="customize-panel__section">
+              <span class="customize-panel__label">{{ t().customize.font }}</span>
+              <div class="customize-panel__fonts">
+                @for (font of fontPresets; track font.name) {
+                  <button
+                    class="customize-panel__font-btn"
+                    [class.customize-panel__font-btn--active]="customization.fontFamily() === font.value"
+                    [style.font-family]="font.value"
+                    (click)="customization.setFontFamily(font.value)"
+                  >{{ font.name }}</button>
+                }
+              </div>
+            </div>
+
+            <button class="customize-panel__reset" (click)="customization.reset()">
+              {{ t().customize.reset }}
+            </button>
+          </div>
+        }
+
+        <div class="more-sheet__divider"></div>
+
+        <a class="more-sheet__link" routerLink="/download" (click)="closeMore()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          <span>{{ t().nav.download }}</span>
+        </a>
+
+        <div class="more-sheet__version">
+          Mangarg v{{ version }}
+        </div>
+      </div>
+    </div>
+  </div>
+}
