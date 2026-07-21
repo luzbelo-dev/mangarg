@@ -64,23 +64,61 @@ function buildUrl(url: string, params?: Record<string, any>): string {
   return fullUrl.toString();
 }
 
+// TTL del cache automatico de lecturas (get/getText). Corto a proposito: evita
+// que cambiar de tab (Popular -> Ultimos -> Popular) o volver de un detalle
+// vuelva a pegarle a la red/proxy en el mismo minuto y medio, sin que un
+// listado quede desactualizado por mucho tiempo. Ninguna extension (nativa
+// ni Mangayomi) usaba el AdapterCache expuesto en `api.cache`, asi que esto
+// vive un nivel mas abajo y beneficia a TODAS sin que tengan que pedirlo.
+const HTTP_CACHE_TTL_MS = 90_000;
+// Tope de entradas para no crecer sin limite en una sesion larga navegando
+// muchas fuentes/paginas; evict FIFO (Map conserva orden de insercion).
+const HTTP_CACHE_MAX_ENTRIES = 200;
+
 @Injectable({ providedIn: 'root' })
 export class AdapterRuntimeService {
   private readonly http = inject(HttpClient);
   private readonly cacheStore = new Map<string, { value: string; expiresAt: number }>();
+  private readonly httpCache = new Map<string, { value: unknown; expiresAt: number }>();
+  private readonly inFlight = new Map<string, Promise<unknown>>();
+
+  // Cachea solo lecturas idempotentes (GET). POST se deja afuera a proposito:
+  // aunque hoy los adapters solo lo usan para leer, no es una garantia del
+  // protocolo y cachearlo a ciegas seria arriesgado.
+  private async withCache<T>(key: string, fetcher: () => Promise<T>): Promise<T> {
+    const cached = this.httpCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) return cached.value as T;
+
+    const pending = this.inFlight.get(key) as Promise<T> | undefined;
+    if (pending) return pending;
+
+    const promise = fetcher()
+      .then(value => {
+        if (this.httpCache.size >= HTTP_CACHE_MAX_ENTRIES) {
+          const oldestKey = this.httpCache.keys().next().value;
+          if (oldestKey !== undefined) this.httpCache.delete(oldestKey);
+        }
+        this.httpCache.set(key, { value, expiresAt: Date.now() + HTTP_CACHE_TTL_MS });
+        return value;
+      })
+      .finally(() => this.inFlight.delete(key));
+
+    this.inFlight.set(key, promise);
+    return promise;
+  }
 
   createApi(): AdapterApi {
     return {
       get: <T>(url: string, params?: Record<string, any>): Promise<T> => {
         const target = buildUrl(url, params);
         const fetchUrl = needsProxy(target) ? proxyUrl(target) : target;
-        return firstValueFrom(this.http.get<T>(fetchUrl));
+        return this.withCache(`GET:${target}`, () => firstValueFrom(this.http.get<T>(fetchUrl)));
       },
 
       getText: (url: string, params?: Record<string, any>): Promise<string> => {
         const target = buildUrl(url, params);
         const fetchUrl = needsProxy(target) ? proxyUrl(target) : target;
-        return firstValueFrom(this.http.get(fetchUrl, { responseType: 'text' }));
+        return this.withCache(`GET:${target}`, () => firstValueFrom(this.http.get(fetchUrl, { responseType: 'text' })));
       },
 
       postText: (url: string, body?: any): Promise<string> => {
@@ -134,7 +172,9 @@ export class AdapterRuntimeService {
     const fetchUrl = needsProxy(url) ? proxyUrl(url, 'GET', referer) : url;
     const options: { responseType: 'text'; headers?: HttpHeaders } = { responseType: 'text' };
     if (!needsProxy(url) && headers) options.headers = new HttpHeaders(headers);
-    return firstValueFrom(this.http.get(fetchUrl, options));
+    // Cache key incluye el referer: en teoria un mismo URL podria responder
+    // distinto segun de donde "viene" la visita (poco comun, pero mas seguro).
+    return this.withCache(`GET:${url}|ref:${referer ?? ''}`, () => firstValueFrom(this.http.get(fetchUrl, options)));
   }
 
   private headerAwarePost(url: string, headers?: Record<string, string>, body?: string): Promise<string> {

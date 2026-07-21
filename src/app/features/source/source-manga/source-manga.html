@@ -29,6 +29,8 @@
             [src]="manga()!.coverUrl"
             [alt]="manga()!.title"
             class="source-manga__cover-img"
+            decoding="async"
+            fetchpriority="high"
             (error)="onCoverError($event)"
           />
         } @else {
