@@ -81,7 +81,7 @@ export class AdapterLoaderService {
       this.installedAdapters.set(adapters);
       for (const adapter of adapters) {
         try {
-          const instance = this.runtime.execute(adapter.code, adapter.config);
+          const instance = this.runtime.build(adapter.code, adapter.config);
           this.loadedAdapters.set(adapter.id, instance);
         } catch (e) {
           console.error(`Failed to load adapter ${adapter.id}:`, e);
@@ -167,7 +167,7 @@ export class AdapterLoaderService {
       }
 
       const cfg = manifest.config ?? { baseUrl: manifest.baseUrl, id: manifest.id, name: manifest.name, icon: manifest.icon, iconColor: manifest.iconColor, lang: manifest.lang };
-      const instance = this.runtime.execute(code, cfg);
+      const instance = this.runtime.build(code, cfg);
       const invalid = validateAdapterInstance(instance);
       if (invalid) {
         console.error(`Adapter ${manifest.id} invalido: ${invalid}`);
@@ -207,7 +207,7 @@ export class AdapterLoaderService {
 
   async installFromCode(code: string, sourceUrl?: string): Promise<{ success: boolean; name?: string; error?: string }> {
     try {
-      const instance = this.runtime.execute(code, {});
+      const instance = this.runtime.build(code, {});
       const invalid = validateAdapterInstance(instance);
       if (invalid) {
         return { success: false, error: `Adapter invalido: ${invalid}` };

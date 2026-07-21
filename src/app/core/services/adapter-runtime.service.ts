@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AdapterApi, AdapterCache, MangaAdapterInstance } from '../models/adapter.model';
 import { isCapacitor } from '../utils/platform';
+import { isMangayomiExtension, buildMangayomiAdapter } from './mangayomi-runtime';
 
 const CORS_SAFE_DOMAINS: string[] = [];
 
@@ -111,6 +112,36 @@ export class AdapterRuntimeService {
     const cfg = config ?? {};
     const factory = new Function('api', 'config', `"use strict"; return (${code})(api, config);`);
     return factory(api, cfg);
+  }
+
+  // Punto de entrada unico: detecta el formato (nativo Mangarg vs Mangayomi) y
+  // construye el MangaAdapterInstance correspondiente. El loader usa esto.
+  build(code: string, config?: Record<string, any>): MangaAdapterInstance {
+    if (isMangayomiExtension(code)) {
+      return buildMangayomiAdapter(code, {
+        httpGet: (url, headers) => this.headerAwareGet(url, headers),
+        httpPost: (url, headers, body) => this.headerAwarePost(url, headers, body),
+      });
+    }
+    return this.execute(code, config);
+  }
+
+  // GET/POST que respetan headers (Referer/User-Agent). En web van por el proxy
+  // (que aplica el Referer server-side); en la APK van directo con headers
+  // nativos via CapacitorHttp.
+  private headerAwareGet(url: string, headers?: Record<string, string>): Promise<string> {
+    const referer = headers?.['Referer'] ?? headers?.['referer'];
+    const fetchUrl = needsProxy(url) ? proxyUrl(url, 'GET', referer) : url;
+    const options: { responseType: 'text'; headers?: HttpHeaders } = { responseType: 'text' };
+    if (!needsProxy(url) && headers) options.headers = new HttpHeaders(headers);
+    return firstValueFrom(this.http.get(fetchUrl, options));
+  }
+
+  private headerAwarePost(url: string, headers?: Record<string, string>, body?: string): Promise<string> {
+    const referer = headers?.['Referer'] ?? headers?.['referer'];
+    const fetchUrl = needsProxy(url) ? proxyUrl(url, 'POST', referer) : url;
+    const h = new HttpHeaders(headers ?? { 'Content-Type': 'application/x-www-form-urlencoded' });
+    return firstValueFrom(this.http.post(fetchUrl, body ?? '', { responseType: 'text', headers: h }));
   }
 
   private createCache(): AdapterCache {
