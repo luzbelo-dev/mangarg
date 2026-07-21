@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { from } from 'rxjs';
+import { from, timeout, TimeoutError, Subscription } from 'rxjs';
 import { AdapterLoaderService } from '../../../core/services/adapter-loader.service';
 import { TranslateService } from '../../../core/i18n/translate.service';
 import { MangaAdapterInstance } from '../../../core/models/adapter.model';
@@ -9,6 +9,10 @@ import { SourceManga } from '../../../core/models/source.model';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 
 type BrowseTab = 'popular' | 'latest' | 'search';
+
+// Sin timeout, una fuente/proxy colgado dejaba la busqueda "cargando" hasta que
+// el SO cortaba la conexion (1-2 min). Con esto falla rapido y claro.
+const REQUEST_TIMEOUT_MS = 20000;
 
 @Component({
   selector: 'mt-source-browse',
@@ -40,6 +44,15 @@ export class SourceBrowseComponent implements OnInit {
   private sourceId = '';
   private currentPage = 1;
   private searchPage = 1;
+  // Busqueda en curso: se cancela si el usuario dispara otra (evita que llegue
+  // el resultado viejo despues del nuevo y pise la pantalla).
+  private searchSub?: Subscription;
+
+  private timeoutMessage(): string {
+    return this.lang() === 'es'
+      ? 'La fuente tardó demasiado en responder. Probá de nuevo o cambiá de fuente.'
+      : 'The source took too long to respond. Try again or switch source.';
+  }
 
   ngOnInit(): void {
     this.route.params
@@ -89,7 +102,7 @@ export class SourceBrowseComponent implements OnInit {
     this.results.set([]);
 
     from(instance.getPopular(1))
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(timeout(REQUEST_TIMEOUT_MS), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.results.set(data);
@@ -99,9 +112,11 @@ export class SourceBrowseComponent implements OnInit {
         error: (err) => {
           console.error('Failed to load popular manga:', err);
           this.error.set(
-            this.lang() === 'es'
-              ? 'Error al cargar manga popular'
-              : 'Failed to load popular manga'
+            err instanceof TimeoutError
+              ? this.timeoutMessage()
+              : this.lang() === 'es'
+                ? 'Error al cargar manga popular'
+                : 'Failed to load popular manga'
           );
           this.loading.set(false);
         },
@@ -126,7 +141,7 @@ export class SourceBrowseComponent implements OnInit {
     this.results.set([]);
 
     from(instance.getLatest(1))
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(timeout(REQUEST_TIMEOUT_MS), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.results.set(data);
@@ -136,9 +151,11 @@ export class SourceBrowseComponent implements OnInit {
         error: (err) => {
           console.error('Failed to load latest manga:', err);
           this.error.set(
-            this.lang() === 'es'
-              ? 'Error al cargar últimos manga'
-              : 'Failed to load latest manga'
+            err instanceof TimeoutError
+              ? this.timeoutMessage()
+              : this.lang() === 'es'
+                ? 'Error al cargar últimos manga'
+                : 'Failed to load latest manga'
           );
           this.loading.set(false);
         },
@@ -169,7 +186,7 @@ export class SourceBrowseComponent implements OnInit {
     }
 
     from(request)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(timeout(REQUEST_TIMEOUT_MS), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           const existing = this.results();
@@ -195,14 +212,15 @@ export class SourceBrowseComponent implements OnInit {
     const instance = this.adapter();
     if (!instance || !query) return;
 
+    this.searchSub?.unsubscribe(); // cancela una busqueda anterior en vuelo
     this.loading.set(true);
     this.error.set(null);
     this.results.set([]);
     this.searchPage = 1;
     this.hasMore.set(true);
 
-    from(instance.search(query, 1))
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    this.searchSub = from(instance.search(query, 1))
+      .pipe(timeout(REQUEST_TIMEOUT_MS), takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (data) => {
           this.results.set(data);
@@ -212,9 +230,11 @@ export class SourceBrowseComponent implements OnInit {
         error: (err) => {
           console.error('Search failed:', err);
           this.error.set(
-            this.lang() === 'es'
-              ? 'Error en la búsqueda. Intentá de nuevo.'
-              : 'Search failed. Please try again.'
+            err instanceof TimeoutError
+              ? this.timeoutMessage()
+              : this.lang() === 'es'
+                ? 'Error en la búsqueda. Intentá de nuevo.'
+                : 'Search failed. Please try again.'
           );
           this.loading.set(false);
         },
