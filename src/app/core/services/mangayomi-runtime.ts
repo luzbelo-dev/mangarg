@@ -202,12 +202,13 @@ export function buildMangayomiAdapter(code: string, deps: MangayomiHttpDeps): Ma
     setString(k: string, v: string): void { localStorage.setItem(this.key(k), String(v)); }
   };
 
-  // Base minima: la app real setea `source`; aca lo hace el wrapper. Provee
-  // defaults que algunas extensiones asumen.
+  // Base minima: la app real setea `source`; aca lo hace el wrapper. NO define
+  // `supportsLatest`: las extensiones que soportan Latest lo agregan con un
+  // getter propio; si lo pusiera aca como campo, sombrearia ese getter. El
+  // wrapper trata `undefined` como false.
   const MProvider = class {
     source: any;
     getHeaders(_url?: string): Record<string, string> { return {}; }
-    get supportsLatest(): boolean { return false; }
     getPreference(key: string): string { return new SharedPreferences().get(key); }
   };
 
